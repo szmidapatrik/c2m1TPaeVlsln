@@ -1384,3 +1384,1263 @@ b@https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458:1:1
 
 1695333110445	Marionette	INFO	Stopped listening on port 54881
 Dynamically enable window occlusion 1
+1695333291244	geckodriver	INFO	Listening on 127.0.0.1:54975
+1695333294311	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 6" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileXbXq1J"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333294607	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333294722	Marionette	INFO	Listening on port 54984
+WebDriver BiDi listening on ws://127.0.0.1:54976
+Read port: 54984
+1695333294908	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:54976/devtools/browser/eae65332-bc49-4321-9a4e-7fcaad4b0e5d
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+1695333304155	Marionette	INFO	Stopped listening on port 54984
+JavaScript warning: https://www.hltv.org/scripts/hltv-base-js.js?hash=efe3a2417256e7d15f754c2deb023157, line 1: Script terminated by timeout at:
+Pt@https://www.hltv.org/scripts/hltv-base-js.js?hash=efe3a2417256e7d15f754c2deb023157:1:23168
+933/i</ft.prototype.handleImpressionConfirmation_eqqeiz_k$@https://www.hltv.org/scripts/hltv-base-js.js?hash=efe3a2417256e7d15f754c2deb023157:1:16444
+933/i</it/i/i<@https://www.hltv.org/scripts/hltv-base-js.js?hash=efe3a2417256e7d15f754c2deb023157:1:5945
+933/i</it/i@https://www.hltv.org/scripts/hltv-base-js.js?hash=efe3a2417256e7d15f754c2deb023157:1:6260
+
+Dynamically enable window occlusion 1
+1695333311487	geckodriver	INFO	Listening on 127.0.0.1:55038
+1695333314550	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 9" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileRymutL"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333314856	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333314969	Marionette	INFO	Listening on port 55046
+WebDriver BiDi listening on ws://127.0.0.1:55039
+Read port: 55046
+1695333315125	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55039/devtools/browser/37225fd1-0350-403c-afe7-d5f7f8d2540c
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+1695333324031	Marionette	INFO	Stopped listening on port 55046
+JavaScript warning: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: Script terminated by timeout at:
+m@https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458:1:464095
+[431]</<@https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458:1:2045126
+
+Dynamically enable window occlusion 1
+1695333331256	geckodriver	INFO	Listening on 127.0.0.1:55100
+1695333334336	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 1" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileTdlSLW"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333334625	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333334739	Marionette	INFO	Listening on port 55108
+WebDriver BiDi listening on ws://127.0.0.1:55101
+Read port: 55108
+1695333334923	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55101/devtools/browser/0d1d6684-f9fe-4fef-b363-86e7d55038ee
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+1695333346235	Marionette	INFO	Stopped listening on port 55108
+JavaScript warning: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: Script terminated by timeout at:
+data@https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458:1:496762
+s@https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458:1:2412814
+[530]</n.installZebraTooltips/e.Zebra_Tooltips/p/t.show_timeout<@https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458:1:2415940
+
+Dynamically enable window occlusion 1
+1695333353849	geckodriver	INFO	Listening on 127.0.0.1:55164
+1695333356941	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 5" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileLpyB5H"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333357232	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333357347	Marionette	INFO	Listening on port 55172
+WebDriver BiDi listening on ws://127.0.0.1:55165
+Read port: 55172
+1695333357531	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55165/devtools/browser/dd5d13e7-9229-4890-a456-519ab670e4d9
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: Script terminated by timeout at:
+b@https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458:1:107167
+
+1695333597511	Marionette	INFO	Stopped listening on port 55172
+Dynamically enable window occlusion 1
+\rust_mozprofile94xlN5"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333482243	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333482356	Marionette	INFO	Listening on port 55250
+WebDriver BiDi listening on ws://127.0.0.1:55240
+Read port: 55250
+1695333482545	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55240/devtools/browser/854e03b7-531c-42aa-b4b9-d6b8fa0f466f
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript error: , line 0: TypeError: NetworkError when attempting to fetch resource.
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: Script terminated by timeout at:
+b@https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458:1:107167
+
+1695333527508	Marionette	INFO	Stopped listening on port 55250
+Dynamically enable window occlusion 1
+1695333657494	geckodriver	INFO	Listening on 127.0.0.1:55345
+1695333660561	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 6" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileqRIxi8"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333660851	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333660962	Marionette	INFO	Listening on port 55354
+WebDriver BiDi listening on ws://127.0.0.1:55346
+Read port: 55354
+1695333661153	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55346/devtools/browser/6183c1a1-01c3-422c-94ad-8bd5a9770b80
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+1695333671011	Marionette	INFO	Stopped listening on port 55354
+JavaScript warning: https://www.hltv.org/scripts/hltv-fusionchart.js?hash=cff0559dec4127b68d4c88b10e3bf39a, line 1: Script terminated by timeout at:
+e@https://www.hltv.org/scripts/hltv-fusionchart.js?hash=cff0559dec4127b68d4c88b10e3bf39a:1:355709
+
+Dynamically enable window occlusion 1
+JavaScript error: , line 0: TypeError: NetworkError when attempting to fetch resource.
+1695333689954	geckodriver	INFO	Listening on 127.0.0.1:55408
+1695333693028	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 9" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileGvAx6H"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333693321	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333693433	Marionette	INFO	Listening on port 55417
+WebDriver BiDi listening on ws://127.0.0.1:55409
+Read port: 55417
+1695333693622	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55409/devtools/browser/2943abdb-09a6-477c-8af3-119dfe921e91
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: Script terminated by timeout at:
+b@https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458:1:107167
+
+1695333710630	Marionette	INFO	Stopped listening on port 55417
+Dynamically enable window occlusion 1
+1695333799656	geckodriver	INFO	Listening on 127.0.0.1:55498
+1695333802742	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 9" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilehoTX61"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333803027	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333803144	Marionette	INFO	Listening on port 55507
+WebDriver BiDi listening on ws://127.0.0.1:55499
+Read port: 55507
+1695333803336	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55499/devtools/browser/5bb88c20-3daf-4922-9280-b009f0a462cb
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333812027	Marionette	INFO	Stopped listening on port 55507
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+t@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701078
+t/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701154
+
+Dynamically enable window occlusion 1
+1695333819471	geckodriver	INFO	Listening on 127.0.0.1:55573
+1695333822546	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 4" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileqxcGei"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333822839	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333822956	Marionette	INFO	Listening on port 55581
+WebDriver BiDi listening on ws://127.0.0.1:55574
+Read port: 55581
+1695333823111	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55574/devtools/browser/8bf2bd7a-7d67-4de9-a611-1972922632d6
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333831950	Marionette	INFO	Stopped listening on port 55581
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:691208
+55849/c</e.checkBait@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702935
+55849/c</e.check/this.config.loop<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702556
+
+Dynamically enable window occlusion 1
+1695333840148	geckodriver	INFO	Listening on 127.0.0.1:55651
+1695333843203	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 2" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilerYgCAn"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333843496	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333843614	Marionette	INFO	Listening on port 55659
+WebDriver BiDi listening on ws://127.0.0.1:55652
+Read port: 55659
+1695333843811	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55652/devtools/browser/624d5853-6e32-453c-a46c-8bcf05710615
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333855594	Marionette	INFO	Stopped listening on port 55659
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+t@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701164
+t/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701154
+
+Dynamically enable window occlusion 1
+1695333863137	geckodriver	INFO	Listening on 127.0.0.1:55720
+1695333866201	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 1" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilewNkDTA"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333866486	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333866599	Marionette	INFO	Listening on port 55728
+WebDriver BiDi listening on ws://127.0.0.1:55721
+Read port: 55728
+1695333866791	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55721/devtools/browser/7dba3b13-d3e7-49f4-9c6b-724ea041f8eb
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333876794	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695333877106	Marionette	INFO	Stopped listening on port 55728
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695333884592	geckodriver	INFO	Listening on 127.0.0.1:55841
+1695333887675	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 2" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileTEg2Gg"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333887961	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333888073	Marionette	INFO	Listening on port 55849
+WebDriver BiDi listening on ws://127.0.0.1:55842
+Read port: 55849
+1695333888261	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55842/devtools/browser/7a875add-ec13-4131-9220-ced09e2061e7
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333899704	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695333899999	Marionette	INFO	Stopped listening on port 55849
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.loadUsingScanMode/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:648362
+
+Dynamically enable window occlusion 1
+1695333907362	geckodriver	INFO	Listening on 127.0.0.1:55968
+1695333910437	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 9" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileXE9a27"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333910735	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333910851	Marionette	INFO	Listening on port 55976
+WebDriver BiDi listening on ws://127.0.0.1:55969
+Read port: 55976
+1695333911047	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:55969/devtools/browser/5cb30266-5af8-46a1-8d8e-ef86ba9e3e6c
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333924925	Marionette	INFO	Stopped listening on port 55976
+Dynamically enable window occlusion 1
+1695333928312	geckodriver	INFO	Listening on 127.0.0.1:56033
+1695333931401	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 4" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileUGTSon"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333931699	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333931816	Marionette	INFO	Listening on port 56041
+WebDriver BiDi listening on ws://127.0.0.1:56034
+Read port: 56041
+1695333932004	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:56034/devtools/browser/937b1eae-f13f-4be1-a3d0-abeba1f8f85a
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333942214	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333943139	Marionette	WARN	Ignoring event 'DOMContentLoaded' because document has an invalid readyState of 'complete'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 2632 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695333945267	Marionette	INFO	Stopped listening on port 56041
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.loadUsingScanMode/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:648362
+
+Dynamically enable window occlusion 1
+1695333948772	geckodriver	INFO	Listening on 127.0.0.1:56250
+1695333951832	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 1" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileaj40yn"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333952128	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333952244	Marionette	INFO	Listening on port 56258
+WebDriver BiDi listening on ws://127.0.0.1:56251
+Read port: 56258
+1695333952442	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:56251/devtools/browser/8ecea9bc-1992-461e-b51f-16768fc5c906
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333962275	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695333963034	Marionette	WARN	Ignoring event 'DOMContentLoaded' because document has an invalid readyState of 'complete'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 6261 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695333965205	Marionette	INFO	Stopped listening on port 56258
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.loadUsingScanMode/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:648362
+
+Dynamically enable window occlusion 1
+1695333968751	geckodriver	INFO	Listening on 127.0.0.1:63269
+1695333971824	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 0" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilexILiA9"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333972127	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333972246	Marionette	INFO	Listening on port 63277
+WebDriver BiDi listening on ws://127.0.0.1:63270
+Read port: 63277
+1695333972397	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:63270/devtools/browser/49ca54e0-093a-450f-b095-6030784a51a1
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333982258	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695333983695	Marionette	WARN	Ignoring event 'DOMContentLoaded' because document has an invalid readyState of 'complete'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 2063 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695333985383	Marionette	INFO	Stopped listening on port 63277
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695333988766	geckodriver	INFO	Listening on 127.0.0.1:63478
+1695333991851	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 9" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileiGFZ5b"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695333992144	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695333992258	Marionette	INFO	Listening on port 63486
+WebDriver BiDi listening on ws://127.0.0.1:63479
+Read port: 63486
+1695333992455	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:63479/devtools/browser/3b102783-0e67-4c14-8707-6d426801b301
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695334003652	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695334004325	Marionette	WARN	Ignoring event 'DOMContentLoaded' because document has an invalid readyState of 'complete'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 6953 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695334006560	Marionette	INFO	Stopped listening on port 63486
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642767
+
+Dynamically enable window occlusion 1
+1695334639117	geckodriver	INFO	Listening on 127.0.0.1:61364
+1695334642171	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 5" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileyLXqGB"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695334642462	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695334642581	Marionette	INFO	Listening on port 61374
+WebDriver BiDi listening on ws://127.0.0.1:61365
+Read port: 61374
+1695334642785	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:61365/devtools/browser/4b1a129c-5277-4a89-93c1-6c679509a540
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695334653099	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695334653955	Marionette	INFO	Stopped listening on port 61374
+Dynamically enable window occlusion 1
+1695335046627	geckodriver	INFO	Listening on 127.0.0.1:62181
+1695335049705	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 2" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileSYSmRz"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335050001	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335050120	Marionette	INFO	Listening on port 62190
+WebDriver BiDi listening on ws://127.0.0.1:62182
+Read port: 62190
+1695335050284	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:62182/devtools/browser/c87977ee-164e-4a7f-953b-9cf97bed7019
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335058725	Marionette	INFO	Stopped listening on port 62190
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+t@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701078
+t/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701154
+
+Dynamically enable window occlusion 1
+1695335066227	geckodriver	INFO	Listening on 127.0.0.1:62257
+1695335069309	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 8" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofile8iPvnf"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335069607	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335069718	Marionette	INFO	Listening on port 62265
+WebDriver BiDi listening on ws://127.0.0.1:62258
+Read port: 62265
+1695335069908	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:62258/devtools/browser/311da2cb-29b6-46c3-a84d-03099436c1e8
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335077686	Marionette	INFO	Stopped listening on port 62265
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+t@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701164
+t/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701154
+
+Dynamically enable window occlusion 1
+1695335085161	geckodriver	INFO	Listening on 127.0.0.1:62324
+1695335088234	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 5" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileEpIE2Y"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335088531	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335088649	Marionette	INFO	Listening on port 62333
+WebDriver BiDi listening on ws://127.0.0.1:62325
+Read port: 62333
+1695335088851	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:62325/devtools/browser/bea94d56-5953-4bc5-8173-38987e280d38
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335099858	Marionette	INFO	Stopped listening on port 62333
+JavaScript warning: https://consent.cookiebot.com/uc.js, line 2: Script terminated by timeout at:
+window.CookieControl.Cookie/this.init/document.createElement<@https://consent.cookiebot.com/uc.js:2:45544
+55849/c</e.createBait@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701989
+55849/c</e.init/</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701419
+
+Dynamically enable window occlusion 1
+1695335107383	geckodriver	INFO	Listening on 127.0.0.1:62393
+1695335110446	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 4" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilekv2VHK"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335110731	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335110842	Marionette	INFO	Listening on port 62401
+WebDriver BiDi listening on ws://127.0.0.1:62394
+Read port: 62401
+1695335111033	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:62394/devtools/browser/171aae87-492b-4779-aa5a-121bc401a404
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335123759	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695335124209	Marionette	INFO	Stopped listening on port 62401
+JavaScript warning: https://cadmus.script.ac/d1oykxszdrgjgl/script.js, line 1: Script terminated by timeout at:
+ey@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:84934
+
+Dynamically enable window occlusion 1
+1695335131552	geckodriver	INFO	Listening on 127.0.0.1:62526
+1695335134632	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 7" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileJgFHFA"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335134916	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335135031	Marionette	INFO	Listening on port 62534
+WebDriver BiDi listening on ws://127.0.0.1:62527
+Read port: 62534
+1695335135225	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:62527/devtools/browser/e879f484-1876-4bac-b121-cdd3a3f9baf1
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335144080	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695335144267	Marionette	INFO	Stopped listening on port 62534
+JavaScript warning: https://cadmus.script.ac/d1oykxszdrgjgl/script.js, line 1: Script terminated by timeout at:
+ey@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:84934
+
+Dynamically enable window occlusion 1
+1695335151761	geckodriver	INFO	Listening on 127.0.0.1:62646
+1695335154832	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 7" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileOZcph6"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335155125	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335155239	Marionette	INFO	Listening on port 62654
+WebDriver BiDi listening on ws://127.0.0.1:62647
+Read port: 62654
+1695335155436	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:62647/devtools/browser/11735d19-4888-4972-807c-c09177fef08f
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335166798	Marionette	INFO	Stopped listening on port 62654
+JavaScript warning: https://www.google-analytics.com/analytics.js, line 7: Script terminated by timeout at:
+B@https://www.google-analytics.com/analytics.js:7:742
+@https://www.google-analytics.com/analytics.js:7:859
+@https://www.google-analytics.com/analytics.js:20:409
+
+Dynamically enable window occlusion 1
+1695335170202	geckodriver	INFO	Listening on 127.0.0.1:62710
+1695335173286	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 1" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileEpQRMZ"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335173583	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335173697	Marionette	INFO	Listening on port 62718
+WebDriver BiDi listening on ws://127.0.0.1:62711
+Read port: 62718
+1695335173885	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:62711/devtools/browser/532668ce-f5f0-4d0e-b72f-124e0f061d6a
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335183099	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695335184288	Marionette	WARN	Ignoring event 'DOMContentLoaded' because document has an invalid readyState of 'complete'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 5165 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335185831	Marionette	INFO	Stopped listening on port 62718
+JavaScript warning: https://cadmus.script.ac/d1oykxszdrgjgl/script.js, line 1: Script terminated by timeout at:
+ey@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:84934
+
+Dynamically enable window occlusion 1
+1695335189386	geckodriver	INFO	Listening on 127.0.0.1:62928
+1695335192458	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 9" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileKylQ2F"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335192770	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335192891	Marionette	INFO	Listening on port 62937
+Read port: 62937
+WebDriver BiDi listening on ws://127.0.0.1:62929
+1695335192953	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:62929/devtools/browser/a811c27e-70fa-485f-806f-929e63b106f6
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335201840	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 392 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335204591	Marionette	WARN	Ignoring event 'DOMContentLoaded' because document has an invalid readyState of 'complete'.
+1695335204828	Marionette	INFO	Stopped listening on port 62937
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642767
+
+Dynamically enable window occlusion 1
+1695335208345	geckodriver	INFO	Listening on 127.0.0.1:63142
+1695335211437	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 3" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileDjixj9"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335211731	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335211848	Marionette	INFO	Listening on port 63150
+WebDriver BiDi listening on ws://127.0.0.1:63143
+Read port: 63150
+1695335212050	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:63143/devtools/browser/cdc90bc9-c066-4876-9072-fc6dbb410dc0
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335220315	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695335220708	Marionette	WARN	Ignoring event 'DOMContentLoaded' because document has an invalid readyState of 'complete'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 7502 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335223526	Marionette	INFO	Stopped listening on port 63150
+JavaScript warning: https://cadmus.script.ac/d1oykxszdrgjgl/script.js, line 1: Script terminated by timeout at:
+ey@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:84934
+
+JavaScript warning: https://tpc.googlesyndication.com/sodar/sodar2/225/runner.html, line 26: Script terminated by timeout at:
+ra/</<@https://tpc.googlesyndication.com/sodar/sodar2/225/runner.html:26:93
+
+Dynamically enable window occlusion 1
+1695335227294	geckodriver	INFO	Listening on 127.0.0.1:63373
+1695335230375	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 4" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilepI0bQ9"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335230663	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335230781	Marionette	INFO	Listening on port 63381
+WebDriver BiDi listening on ws://127.0.0.1:63374
+Read port: 63381
+1695335230972	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:63374/devtools/browser/42877e73-350b-44fc-b6a6-47a2688bea7b
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335239000	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335240260	Marionette	WARN	Ignoring event 'DOMContentLoaded' because document has an invalid readyState of 'complete'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 3369 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335242042	Marionette	INFO	Stopped listening on port 63381
+JavaScript warning: https://cadmus.script.ac/d1oykxszdrgjgl/script.js, line 1: Script terminated by timeout at:
+ey@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:84934
+
+Dynamically enable window occlusion 1
+1695335249803	geckodriver	INFO	Listening on 127.0.0.1:63603
+1695335252867	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 4" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilelpP83G"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335253160	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335253279	Marionette	INFO	Listening on port 63611
+WebDriver BiDi listening on ws://127.0.0.1:63604
+Read port: 63611
+1695335253479	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:63604/devtools/browser/0d7263fd-9f25-416d-b87e-dcf4ae93cca1
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335264898	Marionette	INFO	Stopped listening on port 63611
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:691208
+55849/c</e.checkBait@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702935
+55849/c</e.check/this.config.loop<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702556
+
+Dynamically enable window occlusion 1
+1695335272146	geckodriver	INFO	Listening on 127.0.0.1:63675
+1695335275233	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 6" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileBhhmxh"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335275526	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335275639	Marionette	INFO	Listening on port 63683
+WebDriver BiDi listening on ws://127.0.0.1:63676
+Read port: 63683
+1695335275832	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:63676/devtools/browser/5c6842cc-c09b-4483-b9b1-861c9f1662be
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335283875	Marionette	INFO	Stopped listening on port 63683
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:691208
+98121/U</e.process@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:617279
+98121/be</e.loadUsingScanMode/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:648371
+
+Dynamically enable window occlusion 1
+1695335291713	geckodriver	INFO	Listening on 127.0.0.1:63750
+1695335294794	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 1" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileHFuQoz"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335295080	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335295197	Marionette	INFO	Listening on port 63758
+WebDriver BiDi listening on ws://127.0.0.1:63751
+Read port: 63758
+1695335295392	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:63751/devtools/browser/f2d984d8-e9ad-4f39-b6bb-5937933edb09
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335307712	Marionette	INFO	Stopped listening on port 63758
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:691208
+55849/c</e.checkBait@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702935
+55849/c</e.check/this.config.loop<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702556
+
+Dynamically enable window occlusion 1
+1695335315369	geckodriver	INFO	Listening on 127.0.0.1:63825
+1695335318454	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 6" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileZDNuMe"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335318753	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335318868	Marionette	INFO	Listening on port 63833
+WebDriver BiDi listening on ws://127.0.0.1:63826
+Read port: 63833
+1695335319062	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:63826/devtools/browser/6c0ff609-b286-49af-ae7b-7d77e218c824
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335332508	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 2199 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335333495	Marionette	INFO	Stopped listening on port 63833
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+JavaScript warning: https://tpc.googlesyndication.com/sodar/sodar2/225/runner.html, line 26: Script terminated by timeout at:
+ra/</<@https://tpc.googlesyndication.com/sodar/sodar2/225/runner.html:26:93
+
+Dynamically enable window occlusion 1
+1695335341055	geckodriver	INFO	Listening on 127.0.0.1:63961
+1695335344115	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 2" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofile4N49Kx"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335344400	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335344515	Marionette	INFO	Listening on port 63969
+WebDriver BiDi listening on ws://127.0.0.1:63962
+Read port: 63969
+1695335344710	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:63962/devtools/browser/a42d38ea-733d-4140-aed9-955feaba1046
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335353308	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335355909	Marionette	INFO	Stopped listening on port 63969
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+F5@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:752612
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642767
+
+Dynamically enable window occlusion 1
+1695335363373	geckodriver	INFO	Listening on 127.0.0.1:64085
+1695335366434	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 6" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileZsfbC7"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335366732	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335366846	Marionette	INFO	Listening on port 64093
+WebDriver BiDi listening on ws://127.0.0.1:64086
+Read port: 64093
+1695335367038	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:64086/devtools/browser/9843e072-358a-40d1-91b0-1bb987acc054
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335376880	Marionette	INFO	Stopped listening on port 64093
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+b@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:685286
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695335380364	geckodriver	INFO	Listening on 127.0.0.1:64149
+1695335383422	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 0" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileURaMLx"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335383723	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335383841	Marionette	INFO	Listening on port 64157
+WebDriver BiDi listening on ws://127.0.0.1:64150
+Read port: 64157
+1695335384033	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:64150/devtools/browser/3a8d6636-2f90-444a-a27e-0f2f094fb8fa
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335393445	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 5948 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335396515	Marionette	INFO	Stopped listening on port 64157
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695335399989	geckodriver	INFO	Listening on 127.0.0.1:64365
+1695335403075	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 6" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileaJeROx"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335403373	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335403492	Marionette	INFO	Listening on port 64373
+WebDriver BiDi listening on ws://127.0.0.1:64366
+Read port: 64373
+1695335403682	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:64366/devtools/browser/6a79558b-73b8-4f90-a68a-d9cfb7551d5f
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335412618	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 387 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335415448	Marionette	INFO	Stopped listening on port 64373
+JavaScript warning: https://secure.cdn.fastclick.net/js/cnvr-coreid/latest/coreid.min.js, line 2: Script terminated by timeout at:
+__webpack_require__.g<@https://secure.cdn.fastclick.net/js/cnvr-coreid/latest/coreid.min.js:2:172721
+@https://secure.cdn.fastclick.net/js/cnvr-coreid/latest/coreid.min.js:2:172722
+@https://secure.cdn.fastclick.net/js/cnvr-coreid/latest/coreid.min.js:2:228315
+
+Dynamically enable window occlusion 1
+1695335419163	geckodriver	INFO	Listening on 127.0.0.1:64587
+1695335422238	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 8" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileF4CrMI"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335422528	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335422648	Marionette	INFO	Listening on port 64595
+WebDriver BiDi listening on ws://127.0.0.1:64588
+Read port: 64595
+1695335422847	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:64588/devtools/browser/789beac9-cfea-49c4-ad1f-7e643db3db01
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335431059	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335434156	Marionette	INFO	Stopped listening on port 64595
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+F5@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:752604
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642767
+
+JavaScript warning: https://eus.rubiconproject.com/usync.js, line 4: Script terminated by timeout at:
+getConsentQS@https://eus.rubiconproject.com/usync.js:4:7973
+appendConsentQS@https://eus.rubiconproject.com/usync.js:4:8189
+firePixel/<@https://eus.rubiconproject.com/usync.js:4:4759
+
+Dynamically enable window occlusion 1
+1695335437776	geckodriver	INFO	Listening on 127.0.0.1:64784
+1695335440862	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 5" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileRN913e"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335441162	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335441274	Marionette	INFO	Listening on port 64792
+WebDriver BiDi listening on ws://127.0.0.1:64785
+Read port: 64792
+1695335441462	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:64785/devtools/browser/af2d37c0-7cbc-4dee-85d2-c99cfbd5cb44
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335450433	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 7549 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335452500	Marionette	INFO	Stopped listening on port 64792
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:691208
+98121/U</e.process@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:617279
+98121/be</e.loadUsingScanMode/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:648371
+
+Dynamically enable window occlusion 1
+1695335460045	geckodriver	INFO	Listening on 127.0.0.1:65016
+1695335463130	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 7" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileYgGhzZ"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335463422	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335463535	Marionette	INFO	Listening on port 65024
+WebDriver BiDi listening on ws://127.0.0.1:65017
+Read port: 65024
+1695335463725	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:65017/devtools/browser/95b02813-2fe3-4017-84e6-810a1acbb56c
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335472415	Marionette	INFO	Stopped listening on port 65024
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+Dynamically enable window occlusion 1
+1695335481790	geckodriver	INFO	Listening on 127.0.0.1:65090
+1695335484860	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 1" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofile6hk3K4"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335485144	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335485261	Marionette	INFO	Listening on port 65098
+WebDriver BiDi listening on ws://127.0.0.1:65091
+Read port: 65098
+1695335485457	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:65091/devtools/browser/abc990de-8655-426c-a465-2198b4591121
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335493370	Marionette	INFO	Stopped listening on port 65098
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+t@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701078
+t/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701154
+
+Dynamically enable window occlusion 1
+1695335501197	geckodriver	INFO	Listening on 127.0.0.1:65164
+1695335504266	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 5" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileOoLmZD"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335504554	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335504671	Marionette	INFO	Listening on port 65172
+WebDriver BiDi listening on ws://127.0.0.1:65165
+Read port: 65172
+1695335504867	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:65165/devtools/browser/ebeba01a-2652-4888-9715-7b5d5bf60f41
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335515417	Marionette	INFO	Stopped listening on port 65172
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+s@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:700677
+s@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:699716
+55849/c</e.tryFetching/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:704607
+a/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:699568
+a@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:699329
+55849/c</e.tryFetching@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:704565
+55849/c</e.checkBait@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702827
+55849/c</e.check/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702632
+
+Dynamically enable window occlusion 1
+1695335522893	geckodriver	INFO	Listening on 127.0.0.1:65230
+1695335525963	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 1" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileR1XgUS"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335526249	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335526364	Marionette	INFO	Listening on port 65239
+WebDriver BiDi listening on ws://127.0.0.1:65231
+Read port: 65239
+1695335526559	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:65231/devtools/browser/be6c6aab-fd5c-47b0-8b79-30c528f72eaf
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335540114	Marionette	INFO	Stopped listening on port 65239
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+85093/r</e.seg@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:684887
+85093/r</e.createGUID@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:684963
+e@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:975078
+22584/O</e.trackPageLoad@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:761828
+98121/be</e.renderPlacements/</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:636304
+98121/J</e.optionalLoad/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:621160
+98121/J</e.pollForReady@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:621349
+98121/J</e.pollForReady/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:621387
+
+Dynamically enable window occlusion 1
+1695335547601	geckodriver	INFO	Listening on 127.0.0.1:65303
+1695335550644	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 4" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileOmx5sb"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335550931	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335551048	Marionette	INFO	Listening on port 65311
+WebDriver BiDi listening on ws://127.0.0.1:65304
+Read port: 65311
+1695335551249	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:65304/devtools/browser/f7d87b2e-39b3-471b-8944-7e1bc14e674f
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335559994	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335560463	Marionette	INFO	Stopped listening on port 65311
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:691208
+98121/U</e.process@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:617279
+98121/be</e.loadUsingScanMode/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:648371
+
+Dynamically enable window occlusion 1
+1695335568068	geckodriver	INFO	Listening on 127.0.0.1:65427
+1695335571135	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 8" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilemHahKB"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335571432	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335571544	Marionette	INFO	Listening on port 65435
+WebDriver BiDi listening on ws://127.0.0.1:65428
+Read port: 65435
+1695335571737	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:65428/devtools/browser/be20b9f3-74fb-42e2-9f98-df304d764060
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335580762	Marionette	INFO	Stopped listening on port 65435
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:679878
+success@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:748672
+98899/</e.go/t.onload@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:652406
+
+Dynamically enable window occlusion 1
+1695335584317	geckodriver	INFO	Listening on 127.0.0.1:65488
+1695335587405	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 9" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileirsZ5p"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335587691	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335587806	Marionette	INFO	Listening on port 65496
+WebDriver BiDi listening on ws://127.0.0.1:65489
+Read port: 65496
+1695335588005	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:65489/devtools/browser/86fbc58c-9e34-4851-8b60-4bb3532c7a6c
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335597415	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 4583 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335599979	Marionette	INFO	Stopped listening on port 65496
+JavaScript warning: https://cadmus.script.ac/d1oykxszdrgjgl/script.js, line 1: Script terminated by timeout at:
+d@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:10845
+dB/</<@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:83877
+g@https://tpc.googlesyndication.com/sodar/sodar2.js:36:764
+
+Dynamically enable window occlusion 1
+1695335603984	geckodriver	INFO	Listening on 127.0.0.1:49336
+1695335607054	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 7" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilejhoPDu"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335607352	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335607470	Marionette	INFO	Listening on port 49344
+WebDriver BiDi listening on ws://127.0.0.1:49337
+Read port: 49344
+1695335607663	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:49337/devtools/browser/392568b6-43a7-4d60-900f-7d08f543451a
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335616350	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 1478 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335619155	Marionette	INFO	Stopped listening on port 49344
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:691208
+98121/U</e.process@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:617279
+98121/be</e.loadUsingScanMode/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:648371
+
+Dynamically enable window occlusion 1
+1695335622594	geckodriver	INFO	Listening on 127.0.0.1:49551
+1695335625679	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 2" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileaOTRiw"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335625966	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335626079	Marionette	INFO	Listening on port 49559
+WebDriver BiDi listening on ws://127.0.0.1:49552
+Read port: 49559
+1695335626284	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:49552/devtools/browser/6d0002b8-6eb9-45c9-99fa-5148078c2d47
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335634944	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 3074 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335637847	Marionette	INFO	Stopped listening on port 49559
+JavaScript warning: https://cadmus.script.ac/d1oykxszdrgjgl/script.js, line 1: Script terminated by timeout at:
+cR/this.bd@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:44550
+ey@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:84949
+
+Dynamically enable window occlusion 1
+1695335641625	geckodriver	INFO	Listening on 127.0.0.1:49790
+1695335644686	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 1" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilewktVW2"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335644991	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335645108	Marionette	INFO	Listening on port 49798
+WebDriver BiDi listening on ws://127.0.0.1:49791
+Read port: 49798
+1695335645261	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:49791/devtools/browser/c58ab198-2460-4ad3-9c98-6c668f2799b9
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335654126	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 7045 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335656975	Marionette	INFO	Stopped listening on port 49798
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695335664569	geckodriver	INFO	Listening on 127.0.0.1:50015
+1695335667615	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 6" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileGBdW9d"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335667903	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335668017	Marionette	INFO	Listening on port 50023
+WebDriver BiDi listening on ws://127.0.0.1:50016
+Read port: 50023
+1695335668215	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:50016/devtools/browser/19a1acb5-1c9a-441b-8c69-bef27b64abaf
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335676982	Marionette	INFO	Stopped listening on port 50023
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+t@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701078
+t/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701154
+
+Dynamically enable window occlusion 1
+1695335684505	geckodriver	INFO	Listening on 127.0.0.1:50088
+1695335687580	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 9" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilefVeHx4"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335687870	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335687984	Marionette	INFO	Listening on port 50096
+WebDriver BiDi listening on ws://127.0.0.1:50089
+Read port: 50096
+1695335688173	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:50089/devtools/browser/d7dfd070-31df-420f-b8e0-ccba7df855b2
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335697405	Marionette	INFO	Stopped listening on port 50096
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+t@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701078
+t/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701154
+
+Dynamically enable window occlusion 1
+1695335705206	geckodriver	INFO	Listening on 127.0.0.1:50161
+1695335708288	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 2" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofile7XoOvH"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335708577	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335708692	Marionette	INFO	Listening on port 50169
+WebDriver BiDi listening on ws://127.0.0.1:50162
+Read port: 50169
+1695335708897	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:50162/devtools/browser/c12eb694-d729-4eb1-8255-792f70094092
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335720705	Marionette	INFO	Stopped listening on port 50169
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+55849/c</e.check@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702653
+55849/c</e.init/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:701464
+
+Dynamically enable window occlusion 1
+1695335728333	geckodriver	INFO	Listening on 127.0.0.1:50232
+1695335731390	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 3" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileCQZ038"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335731690	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335731803	Marionette	INFO	Listening on port 50240
+WebDriver BiDi listening on ws://127.0.0.1:50233
+Read port: 50240
+1695335731986	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:50233/devtools/browser/2a74df9b-2fb3-49ef-88cb-a7114d1afdb8
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335745634	Marionette	INFO	Stopped listening on port 50240
+JavaScript warning: https://cadmus.script.ac/d1oykxszdrgjgl/script.js, line 1: Script terminated by timeout at:
+ey@https://cadmus.script.ac/d1oykxszdrgjgl/script.js:1:84934
+
+Dynamically enable window occlusion 1
+1695335752934	geckodriver	INFO	Listening on 127.0.0.1:50356
+1695335756002	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 7" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileUpmXou"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335756293	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335756405	Marionette	INFO	Listening on port 50364
+WebDriver BiDi listening on ws://127.0.0.1:50357
+Read port: 50364
+1695335756598	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:50357/devtools/browser/81e3ebe1-49d6-4660-9d87-ac113fca1e04
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335765025	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+1695335765060	Marionette	INFO	Stopped listening on port 50364
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+b@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:685278
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+JavaScript warning: chrome://global/content/certviewer/vendor/pkijs.js, line 841: Script terminated by timeout at:
+HexBlock@chrome://global/content/certviewer/vendor/pkijs.js:841:1
+@chrome://global/content/certviewer/vendor/pkijs.js:881:40
+
+JavaScript error: , line 0: uncaught exception: undefined
+Dynamically enable window occlusion 1
+1695335772620	geckodriver	INFO	Listening on 127.0.0.1:50477
+1695335775698	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 8" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofilezM2IlA"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335775986	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335776105	Marionette	INFO	Listening on port 50485
+WebDriver BiDi listening on ws://127.0.0.1:50478
+Read port: 50485
+1695335776261	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:50478/devtools/browser/3b17ca49-4216-4c04-92e8-8290b3b2a06b
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335785453	Marionette	INFO	Stopped listening on port 50485
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+b@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:685286
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695335788852	geckodriver	INFO	Listening on 127.0.0.1:50540
+1695335791925	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 1" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileENS3Ez"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335792225	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335792341	Marionette	INFO	Listening on port 50548
+WebDriver BiDi listening on ws://127.0.0.1:50541
+Read port: 50548
+1695335792504	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:50541/devtools/browser/846b7b07-ae5c-4371-9a1d-a344623202a1
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335801279	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 465 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335804384	Marionette	INFO	Stopped listening on port 50548
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.loadUsingScanMode/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:648362
+
+Dynamically enable window occlusion 1
+JavaScript error: resource://devtools/client/jsonview/Sniffer.sys.mjs, line 53: NS_ERROR_NOT_AVAILABLE: Component returned failure code: 0x80040111 (NS_ERROR_NOT_AVAILABLE) [nsIChannel.contentType]
+1695335808223	geckodriver	INFO	Listening on 127.0.0.1:50802
+1695335811303	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 3" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofile3U7mfE"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335811588	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335811702	Marionette	INFO	Listening on port 50810
+WebDriver BiDi listening on ws://127.0.0.1:50803
+Read port: 50810
+1695335811902	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:50803/devtools/browser/c7518a76-7020-4c3c-bde2-72873ee0627b
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335821199	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 4048 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335823171	Marionette	INFO	Stopped listening on port 50810
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+b@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:685278
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695335826834	geckodriver	INFO	Listening on 127.0.0.1:51015
+1695335829919	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 6" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileHdTcCS"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335830219	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335830334	Marionette	INFO	Listening on port 51023
+WebDriver BiDi listening on ws://127.0.0.1:51016
+Read port: 51023
+1695335830530	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:51016/devtools/browser/f2005f9d-d55b-4a4b-8b6d-e6e20bcafb2e
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335839766	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 5236 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335842049	Marionette	INFO	Stopped listening on port 51023
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+b@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:685278
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695335845803	geckodriver	INFO	Listening on 127.0.0.1:51237
+1695335848892	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 8" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileXdPWvU"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335849181	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335849301	Marionette	INFO	Listening on port 51245
+WebDriver BiDi listening on ws://127.0.0.1:51238
+Read port: 51245
+1695335849501	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:51238/devtools/browser/4cf360d5-1faf-4105-bdb4-9ebfe6a83212
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335858759	Marionette	WARN	Ignoring event 'pageshow' because document has an invalid readyState of 'uninitialized'.
+JavaScript warning: https://pagead2.googlesyndication.com/bg/tGcDLxZnxcZjneq6ZTfMhLSKmVRaNAcBIKHxIKG0fIc.js line 2 > eval line 7212 > eval line 1 > eval line 1 > eval, line 1: WEBGL_debug_renderer_info is deprecated in Firefox and will be removed. Please use RENDERER.
+1695335861533	Marionette	INFO	Stopped listening on port 51245
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695335869411	geckodriver	INFO	Listening on 127.0.0.1:51462
+1695335872472	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 3" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileF3Yetl"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335872759	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335872873	Marionette	INFO	Listening on port 51472
+WebDriver BiDi listening on ws://127.0.0.1:51463
+Read port: 51472
+1695335873070	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:51463/devtools/browser/f7eaafe1-8141-4819-ad03-502ced0d62dc
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335881909	Marionette	INFO	Stopped listening on port 51472
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:691208
+55849/c</e.checkBait@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702935
+55849/c</e.check/this.config.loop<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:702556
+
+Dynamically enable window occlusion 1
+1695335889613	geckodriver	INFO	Listening on 127.0.0.1:51537
+1695335892696	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 8" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofile1n0umT"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335892995	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335893108	Marionette	INFO	Listening on port 51545
+WebDriver BiDi listening on ws://127.0.0.1:51538
+Read port: 51545
+1695335893302	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:51538/devtools/browser/964d8bbd-36a3-41e3-a3da-451676c4804c
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335901240	Marionette	INFO	Stopped listening on port 51545
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+n@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:691208
+98121/U</e.process@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:617279
+98121/be</e.loadUsingScanMode/</</<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:648371
+
+Dynamically enable window occlusion 1
+1695335909074	geckodriver	INFO	Listening on 127.0.0.1:51608
+1695335912140	mozrunner::runner	INFO	Running command: "C:\\Users\\szmid\\.cache\\selenium\\firefox\\win64\\117.0.1\\firefox.exe" "--marionette" "--remote-debuggin ... 9" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "C:\\Users\\szmid\\AppData\\Local\\Temp\\rust_mozprofileBt7iCg"
+console.warn: services.settings: Ignoring preference override of remote settings server
+console.warn: services.settings: Allow by setting MOZ_REMOTE_SETTINGS_DEVTOOLS=1 in the environment
+1695335912426	Marionette	INFO	Marionette enabled
+Dynamically enable window occlusion 0
+1695335912541	Marionette	INFO	Listening on port 51616
+WebDriver BiDi listening on ws://127.0.0.1:51609
+Read port: 51616
+1695335912743	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+DevTools listening on ws://127.0.0.1:51609/devtools/browser/233edf83-89b5-4a1a-afa4-7c7cb83eceac
+JavaScript error: https://www.hltv.org/scripts/hltv.js?hash=7cf1da197018b67849987bd4949d8458, line 1: TypeError: o[(e - 1)] is undefined
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: unreachable code after return statement
+1695335922739	Marionette	INFO	Stopped listening on port 51616
+JavaScript warning: https://hb.vntsm.com/v3/live/ad-manager.min.js, line 2: Script terminated by timeout at:
+b@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:685286
+98121/be</e.startBackgroundProcesses/<@https://hb.vntsm.com/v3/live/ad-manager.min.js:2:642551
+
+Dynamically enable window occlusion 1
+1695335930322	geckodriver	INFO	Listening on 127.0.0.1:51672
