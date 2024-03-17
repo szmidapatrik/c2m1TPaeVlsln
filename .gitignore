@@ -1,9 +1,3 @@
-*/demo
-*/_demo/
-*/_/demo-parse-beta/_demo
-*/demo-parse
-*/demo-parser
-*/models/pts.csv
-*/demo-parser-old
-*/demo-parse-beta
+/data/demo-parsed
+/data/matches
 /model/data
