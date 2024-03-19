@@ -1,4 +1,3 @@
 /data/demo-parsed
 /data/matches
 /model/graph-dataset/*
-!/model/graph-dataset/_/_code
