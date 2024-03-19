@@ -1,0 +1,10 @@
+# Data
+pandas
+numpy
+# Model
+scikit-learn
+scipy
+torch_geometric
+# Visualization
+matplotlib
+seaborn
