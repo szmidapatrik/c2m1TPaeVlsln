@@ -1,4 +1,4 @@
 /data/demo-parsed
 /data/matches-raw
 /data/graph-dataset/*
-/model/graph-dataset/graph-dataset/_/*
+/proj/graph-dataset/datasets/_/*
