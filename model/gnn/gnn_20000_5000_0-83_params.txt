@@ -1,3 +1,6 @@
+loss: BCEWithLogitsLoss,
+optimizer: AdamW,
+learning-rate: 1e-4,
 [
     {
         "dropout": 0,
