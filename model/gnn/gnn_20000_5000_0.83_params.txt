@@ -1,0 +1,57 @@
+hidden_channels=15,
+conv_layers=10,
+loss: BCEWithLogitsLoss,
+optimizer: AdamW(lr=1e-4, weight_decay=0.01),
+[
+    {
+        "dropout": 0,
+        "num_of_layers": 2,
+        "neuron_num": 2048,
+        "input_neuron_num": 2048,
+        "activation_function": torch.nn.LeakyReLU()
+    },
+    {
+        "dropout": 0.4,
+    },
+    {
+        "dropout": 0,
+        "num_of_layers": 2,
+        "neuron_num": 512,
+        "input_neuron_num": 2048,
+        "activation_function": torch.nn.LeakyReLU()
+    },
+    {
+        "dropout": 0.4,
+    },
+    {
+        "dropout": 0,
+        "num_of_layers": 2,
+        "neuron_num": 64,
+        "input_neuron_num": 512,
+        "activation_function": torch.nn.LeakyReLU()
+    },
+    {
+        "dropout": 0.5,
+    },
+    {
+        "dropout": 0,
+        "num_of_layers": 1,
+        "neuron_num": 16,
+        "input_neuron_num": 64,
+        "activation_function": torch.nn.LeakyReLU()
+    },
+    {
+        "dropout": 0,
+        "num_of_layers": 1,
+        "neuron_num": 4,
+        "input_neuron_num": 16,
+        "activation_function": torch.nn.LeakyReLU()
+    },
+    {
+        "dropout": 0,
+        "num_of_layers": 1,
+        "neuron_num": 1,
+        "input_neuron_num": 4,
+        "activation_function": None
+    },
+]
