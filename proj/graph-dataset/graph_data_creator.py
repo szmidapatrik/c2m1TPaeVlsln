@@ -14,11 +14,6 @@ class TabularDataCreator:
     PLAYER_STATS_DATA_PATH = None
     MISSING_PLAYER_STATS_DATA_PATH = None
 
-
-    # OUTPUT
-    # Folder path constants
-    OUTPUT_FOLDER_PATH = None
-
     
     # Optional variables
     tick_number = 1
@@ -29,19 +24,25 @@ class TabularDataCreator:
 
     # --------------------------------------------------------------------------------------------
 
-    def __init__(
-        self, 
+    def __init__(self):
+        pass
+
+
+
+    # --------------------------------------------------------------------------------------------
+
+    def format_match_data(
+        self,
         match_file_name: str,
         tabular_data_folder_path: str, 
         player_stats_data_path: str, 
-        output_folder_path: str,
         tick_number: int = 1,
         missing_player_stats_data_path: str = None,
         add_numerical_match_id: bool = False,
         numerical_match_id: int = None,
     ):
         """
-        Parameters:
+        Formats the match data and creates the tabular game-snapshot dataset. Parameters:
             - match_file_name: name of the match file,
             - tabular_data_folder_path: folder path of the parsed data,
             - player_stats_data_path: path of the player statistics data,
@@ -49,14 +50,12 @@ class TabularDataCreator:
             - missing_player_stats_data_path (optional): path of the missing player statistics data,
             - tick_number (optional): parse tick rate.
         """
+
         # INPUT
         self.MATCH_FILE_ID = match_file_name
         self.TABULAR_DATA_FOLDER_PATH = tabular_data_folder_path
         self.PLAYER_STATS_DATA_PATH = player_stats_data_path
         self.MISSING_PLAYER_STATS_DATA_PATH = missing_player_stats_data_path
-
-        # OUTPUT
-        self.OUTPUT_FOLDER_PATH = output_folder_path
 
         # Other variables
         self.tick_number = tick_number
@@ -64,13 +63,6 @@ class TabularDataCreator:
         self.numerical_match_id = numerical_match_id
 
 
-
-    # --------------------------------------------------------------------------------------------
-
-    def format_match_data(self):
-        """
-        Formats the match data and creates the tabular game-snapshot dataset.
-        """
         # 1.
         pf, kills, rounds, bombEvents, damages = self.__INIT_get_needed_dataframes__()
         # 2.
@@ -98,10 +90,13 @@ class TabularDataCreator:
 
 
 
-    def create_missing_player_stats_data(self):
+    def create_missing_player_stats_data(self, player_stats_data_path):
         """
         Creates a dataset filled with fictive players with average statistics. Useful for missing data imputation.
         """
+
+        self.PLAYER_STATS_DATA_PATH = player_stats_data_path
+
         mpdf = pd.read_csv(self.PLAYER_STATS_DATA_PATH)
         mpdf = mpdf.drop_duplicates()
 
@@ -111,7 +106,7 @@ class TabularDataCreator:
         # Create a dictionary to store the min and max values of the numerical columns
         dist_values = {}
         for col in numerical_cols:
-            dist_values[col] = [mpdf[col].mode(), mpdf[col].max() - mpdf[col].min() / 20]
+            dist_values[col] = [mpdf[col].mode().min(), (mpdf[col].max() - mpdf[col].min()) / 150]
 
         # Create a fictive player with average statistics
         fictive_player = {}
@@ -125,7 +120,14 @@ class TabularDataCreator:
 
         # Create a DataFrame with the fictive player repeated 1000 times and with random values
         for col in numerical_cols:
-            fictive_player_df[col] = np.random.normal(dist_values[col][0], dist_values[col][1], size=(1000,))
+            fictive_player_df[col] = np.random.normal(dist_values[col][0], dist_values[col][1], size=1000)
+            if col not in ['KD_ratio', 'KD_diff']:
+                fictive_player_df[col] = fictive_player_df[col].abs()
+            if col in ['total_deaths', 'maps_played', 'rounds_played', 'rounds_with_kils', 'KD_diff', 'total_opening_kills', 'total_opening_deaths', 
+                       '0_kill_rounds', '1_kill_rounds', '2_kill_rounds', '3_kill_rounds', '4_kill_rounds', '5_kill_rounds',
+                       'rifle_kills', 'sniper_kills', 'smg_kills', 'pistol_kills', 'grenade_kills', 'other_kills', 'rating_2.0_1+', 'rating_2.0_1+_streak', 
+                       'clutches_won_1on1', 'clutches_lost_1on1', 'clutches_won_1on2', 'clutches_won_1on3', 'clutches_won_1on4', 'clutches_won_1on5']:
+                fictive_player_df[col] = fictive_player_df[col].apply(lambda x: int(x))
 
         return fictive_player_df
 
@@ -289,7 +291,15 @@ class TabularDataCreator:
         'opening_kill_in_W_rounds', 'rating_1.0_all_Career', 'clutches_1on1_ratio', 'clutches_won_1on1', 'clutches_won_1on2', 'clutches_won_1on3', 'clutches_won_1on4', 'clutches_won_1on5']
         
         stats = pd.read_csv(self.PLAYER_STATS_DATA_PATH).drop_duplicates()
-        stats = stats[needed_stats]
+
+        try:
+            stats = stats[needed_stats]
+
+        # If clutches_1on1_ratio column is missing, calculate it here
+        except:
+            stats['clutches_1on1_ratio'] = stats['clutches_won_1on1'] / stats['clutches_lost_1on1']
+            stats['clutches_1on1_ratio'] = stats['clutches_1on1_ratio'].fillna(0)
+            stats = stats[needed_stats]
 
         # Stats dataframe basic formatting
         for col in stats.columns:
