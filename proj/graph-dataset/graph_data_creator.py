@@ -90,7 +90,7 @@ class TabularDataCreator:
 
 
 
-    def create_missing_player_stats_data(self, player_stats_data_path):
+    def create_missing_player_stats_data(self, player_stats_data_path, length=1000):
         """
         Creates a dataset filled with fictive players with average statistics. Useful for missing data imputation.
         """
@@ -116,11 +116,11 @@ class TabularDataCreator:
         # Create a DataFrame with the fictive player
         fictive_player_df = pd.DataFrame(fictive_player, index=[0])
         fictive_player_df['player_name'] = 'anonim_pro'
-        fictive_player_df = pd.concat([fictive_player_df]*1000, ignore_index=True)
+        fictive_player_df = pd.concat([fictive_player_df]*length, ignore_index=True)
 
-        # Create a DataFrame with the fictive player repeated 1000 times and with random values
+        # Create a DataFrame with the fictive player repeated *length* times and with random values
         for col in numerical_cols:
-            fictive_player_df[col] = np.random.normal(dist_values[col][0], dist_values[col][1], size=1000)
+            fictive_player_df[col] = np.random.normal(dist_values[col][0], dist_values[col][1], size=length)
             if col not in ['KD_ratio', 'KD_diff']:
                 fictive_player_df[col] = fictive_player_df[col].abs()
             if col in ['total_deaths', 'maps_played', 'rounds_played', 'rounds_with_kils', 'KD_diff', 'total_opening_kills', 'total_opening_deaths', 
