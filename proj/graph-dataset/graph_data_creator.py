@@ -129,6 +129,8 @@ class TabularDataCreator:
                        'clutches_won_1on1', 'clutches_lost_1on1', 'clutches_won_1on2', 'clutches_won_1on3', 'clutches_won_1on4', 'clutches_won_1on5']:
                 fictive_player_df[col] = fictive_player_df[col].apply(lambda x: int(x))
 
+        fictive_player_df['clutches_1on1_ratio'] = fictive_player_df['clutches_won_1on1'] / fictive_player_df['clutches_lost_1on1']
+
         return fictive_player_df
 
 
@@ -160,6 +162,9 @@ class TabularDataCreator:
     
         # Merge playerFrames with rounds
         pf = pf.merge(rounds, on='roundNum')
+
+        # Format CT information
+        pf['isCT'] = pf.apply(lambda x: 1 if x['side'] == 'CT' else 0, axis=1)
 
         # Kill stats
         pf['stat_kills'] = 0
@@ -315,8 +320,18 @@ class TabularDataCreator:
 
             # If the stats dataframe does not contain the player related informations, check if the missing_players_df contains the player
             else:
+
                 mpdf = pd.read_csv(self.MISSING_PLAYER_STATS_DATA_PATH)
-                mpdf = mpdf[needed_stats]
+                
+                try:
+                    mpdf = mpdf[needed_stats]
+                    
+                # If clutches_1on1_ratio column is missing, calculate it here
+                except:
+                    mpdf['clutches_1on1_ratio'] = mpdf['clutches_won_1on1'] / mpdf['clutches_lost_1on1']
+                    mpdf['clutches_1on1_ratio'] = mpdf['clutches_1on1_ratio'].fillna(0)
+                    mpdf = mpdf[needed_stats]
+                
                 for col in mpdf.columns:
                     if col != 'player_name':
                         mpdf[col] = mpdf[col].astype('float32')
@@ -330,8 +345,15 @@ class TabularDataCreator:
                 else:
                     first_anonim_pro_index = mpdf.index[mpdf['player_name'] == 'anonim_pro'].min()
                     mpdf.at[first_anonim_pro_index, 'player_name'] = players[idx]['name'].iloc[0]
-                    mpdf.to_csv(self.MISSING_PLAYER_STATS_DATA_PATH, index=False)
                     players[idx] = self.__EXT_insert_columns_into_player_dataframes__(mpdf, players[idx])
+                    
+                    # Reverse the column renaming - remove the 'overall_' prefix
+                    for col in mpdf.columns:
+                        if col.startswith('overall_'):
+                            new_col = col[len('overall_'):]
+                            mpdf.rename(columns={col: new_col}, inplace=True)
+
+                    mpdf.to_csv(self.MISSING_PLAYER_STATS_DATA_PATH, index=False)
             
         return players
     
@@ -421,6 +443,17 @@ class TabularDataCreator:
         del graph_data['player8_equi_val_alive']
         del graph_data['player9_equi_val_alive']
 
+        del graph_data['player0_side']
+        del graph_data['player1_side']
+        del graph_data['player2_side']
+        del graph_data['player3_side']
+        del graph_data['player4_side']
+        del graph_data['player5_side']
+        del graph_data['player6_side']
+        del graph_data['player7_side']
+        del graph_data['player8_side']
+        del graph_data['player9_side']
+
         # Create a DataFrame with a single column for match_id
         match_id_df = pd.DataFrame({'match_id': str(match_id)}, index=graph_data.index)
         graph_data_concatenated = pd.concat([graph_data, match_id_df], axis=1)
@@ -430,15 +463,29 @@ class TabularDataCreator:
 
     # 7. Add bomb information to the dataset
     def __TABULAR_add_bomb_info_to_dataset__(self, tabular_df, bombdf):
+        
+        # Poor performance
+        # tabular_df['is_bomb_being_planted'] = 0
+        # tabular_df['is_bomb_being_defused'] = 0
+        # tabular_df['is_bomb_defused'] = 0
+        # tabular_df['is_bomb_planted_at_A_site'] = 0
+        # tabular_df['is_bomb_planted_at_B_site'] = 0
+        # tabular_df['bomb_X'] = 0.0
+        # tabular_df['bomb_Y'] = 0.0
+        # tabular_df['bomb_Z'] = 0.0
 
-        tabular_df['is_bomb_being_planted'] = 0
-        tabular_df['is_bomb_being_defused'] = 0
-        tabular_df['is_bomb_defused'] = 0
-        tabular_df['is_bomb_planted_at_A_site'] = 0
-        tabular_df['is_bomb_planted_at_B_site'] = 0
-        tabular_df['bomb_X'] = 0.0
-        tabular_df['bomb_Y'] = 0.0
-        tabular_df['bomb_Z'] = 0.0
+        new_columns = pd.DataFrame({
+            'is_bomb_being_planted': 0,
+            'is_bomb_being_defused': 0,
+            'is_bomb_defused': 0,
+            'is_bomb_planted_at_A_site': 0,
+            'is_bomb_planted_at_B_site': 0,
+            'bomb_X': 0.0,
+            'bomb_Y': 0.0,
+            'bomb_Z': 0.0
+        }, index=tabular_df.index)
+
+        tabular_df = pd.concat([tabular_df, new_columns], axis=1)
 
         for _, row in bombdf.iterrows():
             if (row['bombAction'] == 'plant_begin'):
@@ -474,8 +521,16 @@ class TabularDataCreator:
         # Get round start tick and use it to calculate the time remaining in the round
         roundStartTick = tabular_df[['match_id', 'roundNum', 'tick']].drop_duplicates(subset=['match_id', 'roundNum']).rename(columns={"tick": "roundStartTick"}).copy()
         tabular_df = tabular_df.merge(roundStartTick, on=['match_id', 'roundNum'])
-        tabular_df['sec'] = (tabular_df['tick'] - tabular_df['roundStartTick']) / 128
-        tabular_df['time_remaining'] = 115 - tabular_df['sec']
+        # Poor performance
+        # tabular_df['sec'] = (tabular_df['tick'] - tabular_df['roundStartTick']) / 128
+        # tabular_df['time_remaining'] = 115 - tabular_df['sec']
+
+        new_columns = pd.DataFrame({
+            'sec': (tabular_df['tick'] - tabular_df['roundStartTick']) / 128,
+            'time_remaining': 115 - (tabular_df['tick'] - tabular_df['roundStartTick']) / 128,
+        }, index=tabular_df.index)
+
+        tabular_df = pd.concat([tabular_df, new_columns], axis=1)
 
         # Drop unnecessary columns
         del tabular_df['roundStartTick']
@@ -501,7 +556,11 @@ class TabularDataCreator:
             elif type(self.numerical_match_id) is not int:
                 raise ValueError("Numerical match id must be an integer.")
             
-            tabular_df['numerical_match_id'] = self.numerical_match_id
+            new_columns = pd.DataFrame({
+                'numerical_match_id': self.numerical_match_id
+            }, index=tabular_df.index)
+            tabular_df = pd.concat([tabular_df, new_columns], axis=1)
+
             return tabular_df
         else:
             return tabular_df
@@ -583,20 +642,39 @@ class TabularDataCreator:
 
     def __TABULAR_bombsite_3x3_matrix_split_for_bomb_pos_feature__(self, df):
             
-        df['bomb_mx_pos'] = 0
+        new_columns = pd.DataFrame({
+            'bomb_mx_pos': 0
+        }, index=df.index)
+
+        df = pd.concat([df, new_columns], axis=1)
         
         df.loc[(df['is_bomb_planted_at_A_site'] == 1) | (df['is_bomb_planted_at_B_site'] == 1), 'bomb_mx_pos'] = df.apply(self.__EXT_get_bomb_mx_coordinate__, axis=1)
 
         # Dummify the bomb_mx_pos column and drop the original column
-        df['bomb_mx_pos1'] = 0
-        df['bomb_mx_pos2'] = 0
-        df['bomb_mx_pos3'] = 0
-        df['bomb_mx_pos4'] = 0
-        df['bomb_mx_pos5'] = 0
-        df['bomb_mx_pos6'] = 0
-        df['bomb_mx_pos7'] = 0
-        df['bomb_mx_pos8'] = 0
-        df['bomb_mx_pos9'] = 0
+        # Poor performance
+        # df['bomb_mx_pos1'] = 0
+        # df['bomb_mx_pos2'] = 0
+        # df['bomb_mx_pos3'] = 0
+        # df['bomb_mx_pos4'] = 0
+        # df['bomb_mx_pos5'] = 0
+        # df['bomb_mx_pos6'] = 0
+        # df['bomb_mx_pos7'] = 0
+        # df['bomb_mx_pos8'] = 0
+        # df['bomb_mx_pos9'] = 0
+
+        new_columns = pd.DataFrame({
+            'bomb_mx_pos1': 0,
+            'bomb_mx_pos2': 0,
+            'bomb_mx_pos3': 0,
+            'bomb_mx_pos4': 0,
+            'bomb_mx_pos5': 0,
+            'bomb_mx_pos6': 0,
+            'bomb_mx_pos7': 0,
+            'bomb_mx_pos8': 0,
+            'bomb_mx_pos9': 0
+        }, index=df.index)
+
+        df = pd.concat([df, new_columns], axis=1)
 
         df.loc[df['bomb_mx_pos'] == 1, 'bomb_mx_pos1'] = 1
         df.loc[df['bomb_mx_pos'] == 2, 'bomb_mx_pos2'] = 1
