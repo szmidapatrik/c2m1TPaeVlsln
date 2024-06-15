@@ -167,7 +167,6 @@ class TabularGraphDataNormalization:
 
         # Get the min-max values of all datasets
         player_min_max_values, overall_min_max_values = self.__build_scaling_dictionary__(match_dataset)
-        print('Player and Overall min-max values are calculated.')
 
         # Create new variable for the same dataset
         df = match_dataset
@@ -223,7 +222,6 @@ class TabularGraphDataNormalization:
 
         # Get the min-max values of all datasets
         player_min_max_values, overall_min_max_values = self.__build_scaling_dictionary__(match_dataset)
-        print('Player and Overall min-max values are calculated.')
 
         # Create new variable for the same dataset
         df = match_dataset
