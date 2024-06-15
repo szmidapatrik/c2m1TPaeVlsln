@@ -442,6 +442,17 @@ class TabularGraphDataCreator:
         del graph_data['player7_equi_val_alive']
         del graph_data['player8_equi_val_alive']
         del graph_data['player9_equi_val_alive']
+        
+        del graph_data['player0_activeWeapon']
+        del graph_data['player1_activeWeapon']
+        del graph_data['player2_activeWeapon']
+        del graph_data['player3_activeWeapon']
+        del graph_data['player4_activeWeapon']
+        del graph_data['player5_activeWeapon']
+        del graph_data['player6_activeWeapon']
+        del graph_data['player7_activeWeapon']
+        del graph_data['player8_activeWeapon']
+        del graph_data['player9_activeWeapon']
 
         del graph_data['player0_side']
         del graph_data['player1_side']
