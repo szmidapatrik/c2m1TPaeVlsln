@@ -21,6 +21,7 @@ class TabularGraphDataCreator:
     numerical_match_id = None
     group_players_by_side = True
     vary_player_permutation = False
+    num_permutations_per_round = 1
 
 
 
@@ -43,6 +44,7 @@ class TabularGraphDataCreator:
         add_numerical_match_id: bool = False,
         numerical_match_id: int = None,
         vary_player_permutation: bool = False,
+        num_permutations_per_round: int = 1,
         group_players_by_side: bool = True,
     ):
         """
@@ -68,6 +70,7 @@ class TabularGraphDataCreator:
         self.add_numerical_match_id = add_numerical_match_id
         self.numerical_match_id = numerical_match_id
         self.vary_player_permutation = vary_player_permutation
+        self.num_permutations_per_round = num_permutations_per_round
         self.group_players_by_side = group_players_by_side
 
 
@@ -93,7 +96,7 @@ class TabularGraphDataCreator:
         tabular_df = self.__TABULAR_bombsite_3x3_matrix_split_for_bomb_pos_feature__(tabular_df)
         # 11.
         if vary_player_permutation:
-            tabular_df = self.__TABULAR_vary_player_permutation__(tabular_df)
+            tabular_df = self.__TABULAR_vary_player_permutation__(tabular_df, self.num_permutations_per_round)
         # 12.
         if group_players_by_side:
             tabular_df = self.__TABULAR_refactor_player_columns_to_CT_T__(tabular_df)
