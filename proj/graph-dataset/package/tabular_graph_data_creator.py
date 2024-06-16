@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-
+import random
 
 
 class TabularGraphDataCreator:
@@ -19,7 +19,8 @@ class TabularGraphDataCreator:
     tick_number = 1
     add_numerical_match_id = False
     numerical_match_id = None
-    group_players_by_side = False
+    group_players_by_side = True
+    vary_player_permutation = False
 
 
 
@@ -37,11 +38,12 @@ class TabularGraphDataCreator:
         match_file_name: str,
         tabular_data_folder_path: str, 
         player_stats_data_path: str, 
+        missing_player_stats_data_path: str,
         tick_number: int = 1,
-        missing_player_stats_data_path: str = None,
         add_numerical_match_id: bool = False,
         numerical_match_id: int = None,
-        group_players_by_side: bool = True
+        vary_player_permutation: bool = False,
+        group_players_by_side: bool = True,
     ):
         """
         Formats the match data and creates the tabular game-snapshot dataset. Parameters:
@@ -51,6 +53,7 @@ class TabularGraphDataCreator:
             - output_folder_path: folder path of the output,
             - missing_player_stats_data_path (optional): path of the missing player statistics data,
             - tick_number (optional): parse tick rate.
+            - vary_player_permutation (optional): increases dataset size by creating copies of the rounds with varied player permutation. Default is False.
             - group_players_by_side (optional): group players by side. Default is True.
         """
 
@@ -64,6 +67,7 @@ class TabularGraphDataCreator:
         self.tick_number = tick_number
         self.add_numerical_match_id = add_numerical_match_id
         self.numerical_match_id = numerical_match_id
+        self.vary_player_permutation = vary_player_permutation
         self.group_players_by_side = group_players_by_side
 
 
@@ -88,6 +92,9 @@ class TabularGraphDataCreator:
         # 10.
         tabular_df = self.__TABULAR_bombsite_3x3_matrix_split_for_bomb_pos_feature__(tabular_df)
         # 11.
+        if vary_player_permutation:
+            tabular_df = self.__TABULAR_vary_player_permutation__(tabular_df)
+        # 12.
         if group_players_by_side:
             tabular_df = self.__TABULAR_refactor_player_columns_to_CT_T__(tabular_df)
 
@@ -710,7 +717,76 @@ class TabularGraphDataCreator:
     
 
 
-    # 11. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
+    # 11. Function to extend the dataframe with copies of the rounds with varied player permutations
+    def __TABULAR_vary_player_permutation__(self, df, num_permutations_per_round=3):
+        """
+        Function to extend the dataframe with copies of the rounds with varied player permutations
+        """
+
+        # Get the unique rounds and store team 1 and two player numbers
+        team_1_indicies = [0, 1, 2, 3, 4]
+        team_2_indicies = [5, 6, 7, 8, 9]
+        rounds = df['roundNum'].unique()
+
+        for rnd in rounds:
+            for _permutation in range(num_permutations_per_round):
+                # Get the round dataframe
+                round_df = df[df['roundNum'] == rnd].copy()
+                round_df = round_df.reset_index(drop=True)
+
+                # Rename all columns starting with 'player' to start with 'playerPERM'
+                player_cols = [col for col in round_df.columns if col.startswith('player')]
+                for col in player_cols:
+                    round_df.rename(columns={col: 'playerPERM' + col[6:]}, inplace=True)
+
+                # Get random permutations for both teams
+                random.shuffle(team_1_indicies)
+                random.shuffle(team_1_indicies)
+
+                # Player columns
+                player_0_cols = [col for col in round_df.columns if col.startswith('playerPERM0')]
+                player_1_cols = [col for col in round_df.columns if col.startswith('playerPERM1')]
+                player_2_cols = [col for col in round_df.columns if col.startswith('playerPERM2')]
+                player_3_cols = [col for col in round_df.columns if col.startswith('playerPERM3')]
+                player_4_cols = [col for col in round_df.columns if col.startswith('playerPERM4')]
+
+                player_5_cols = [col for col in round_df.columns if col.startswith('playerPERM5')]
+                player_6_cols = [col for col in round_df.columns if col.startswith('playerPERM6')]
+                player_7_cols = [col for col in round_df.columns if col.startswith('playerPERM7')]
+                player_8_cols = [col for col in round_df.columns if col.startswith('playerPERM8')]
+                player_9_cols = [col for col in round_df.columns if col.startswith('playerPERM9')]
+
+                # Rewrite the player columns with the new permutations
+                for col in player_0_cols:
+                    round_df.rename(columns={col: 'player' + str(team_1_indicies[0]) + col[11:]}, inplace=True)
+                for col in player_1_cols:
+                    round_df.rename(columns={col: 'player' + str(team_1_indicies[1]) + col[11:]}, inplace=True)
+                for col in player_2_cols:
+                    round_df.rename(columns={col: 'player' + str(team_1_indicies[2]) + col[11:]}, inplace=True)
+                for col in player_3_cols:
+                    round_df.rename(columns={col: 'player' + str(team_1_indicies[3]) + col[11:]}, inplace=True)
+                for col in player_4_cols:
+                    round_df.rename(columns={col: 'player' + str(team_1_indicies[4]) + col[11:]}, inplace=True)
+
+                for col in player_5_cols:
+                    round_df.rename(columns={col: 'player' + str(team_2_indicies[0]) + col[11:]}, inplace=True)
+                for col in player_6_cols:
+                    round_df.rename(columns={col: 'player' + str(team_2_indicies[1]) + col[11:]}, inplace=True)
+                for col in player_7_cols:
+                    round_df.rename(columns={col: 'player' + str(team_2_indicies[2]) + col[11:]}, inplace=True)
+                for col in player_8_cols:
+                    round_df.rename(columns={col: 'player' + str(team_2_indicies[3]) + col[11:]}, inplace=True)
+                for col in player_9_cols:
+                    round_df.rename(columns={col: 'player' + str(team_2_indicies[4]) + col[11:]}, inplace=True)
+
+                # Append the new round to the dataframe
+                df = pd.concat([df, round_df])
+
+        return df
+
+
+
+    # 12. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
     def __TABULAR_refactor_player_columns_to_CT_T__(self, df):
 
         # Separate the CT and T halves
@@ -888,6 +964,3 @@ class TabularGraphDataCreator:
         renamed_df = pd.concat([team_1_ct, team_2_ct])
 
         return renamed_df
-
-
-        
