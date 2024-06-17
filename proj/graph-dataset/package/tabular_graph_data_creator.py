@@ -17,10 +17,8 @@ class TabularGraphDataCreator:
     
     # Optional variables
     tick_number = 1
-    add_numerical_match_id = False
     numerical_match_id = None
     group_players_by_side = True
-    vary_player_permutation = False
     num_permutations_per_round = 1
 
 
@@ -40,10 +38,9 @@ class TabularGraphDataCreator:
         tabular_data_folder_path: str, 
         player_stats_data_path: str, 
         missing_player_stats_data_path: str,
+
         tick_number: int = 1,
-        add_numerical_match_id: bool = False,
         numerical_match_id: int = None,
-        vary_player_permutation: bool = False,
         num_permutations_per_round: int = 1,
         group_players_by_side: bool = True,
     ):
@@ -52,10 +49,11 @@ class TabularGraphDataCreator:
             - match_file_name: name of the match file,
             - tabular_data_folder_path: folder path of the parsed data,
             - player_stats_data_path: path of the player statistics data,
-            - output_folder_path: folder path of the output,
-            - missing_player_stats_data_path (optional): path of the missing player statistics data,
+            - missing_player_stats_data_path: path of the missing player statistics data,
+
             - tick_number (optional): parse tick rate.
-            - vary_player_permutation (optional): increases dataset size by creating copies of the rounds with varied player permutation. Default is False.
+            - numerical_match_id (optional): numerical match id to add to the dataset. If value is None, no numerical match id will be added. Default is None.
+            - num_permutations_per_round (optional): number of different player permutations to create for the snapshots per round. Default is 1.
             - group_players_by_side (optional): group players by side. Default is True.
         """
 
@@ -67,36 +65,46 @@ class TabularGraphDataCreator:
 
         # Other variables
         self.tick_number = tick_number
-        self.add_numerical_match_id = add_numerical_match_id
         self.numerical_match_id = numerical_match_id
-        self.vary_player_permutation = vary_player_permutation
         self.num_permutations_per_round = num_permutations_per_round
         self.group_players_by_side = group_players_by_side
 
 
         # 1.
         pf, kills, rounds, bombEvents, damages = self.__INIT_get_needed_dataframes__()
+
         # 2.
         pf, kills, rounds = self.__PLAYER_calculate_ingame_features_from_needed_dataframes__(pf, kills, rounds, damages)
+
         # 3.
         pf = self.__PLAYER_get_activeWeapon_dummies__(pf)
+
         # 4.
         players = self.__PLAYER_player_dataset_create__(pf, self.tick_number)
+
         # 5.
-        players = self.__PLAYER_get_player_overall_statistics_without_inferno__(players)
+        players = self.__PLAYER_get_player_overall_statistics__(players)
+
         # 6.
         tabular_df = self.__TABULAR_create_overall_and_player_tabular_dataset__(players, rounds, self.MATCH_FILE_ID)
+
         # 7.
         tabular_df = self.__TABULAR_add_bomb_info_to_dataset__(tabular_df, bombEvents)
+
         # 8.
         tabular_df = self.__TABULAR_calculate_time_from_tick__(tabular_df)
+
         # 9.
-        tabular_df = self.__TABULAR_add_numerical_match_id__(tabular_df)
+        if self.numerical_match_id is not None:
+            tabular_df = self.__TABULAR_add_numerical_match_id__(tabular_df)
+
         # 10.
         tabular_df = self.__TABULAR_bombsite_3x3_matrix_split_for_bomb_pos_feature__(tabular_df)
+
         # 11.
-        if vary_player_permutation:
+        if num_permutations_per_round > 1:
             tabular_df = self.__TABULAR_vary_player_permutation__(tabular_df, self.num_permutations_per_round)
+            
         # 12.
         if group_players_by_side:
             tabular_df = self.__TABULAR_refactor_player_columns_to_CT_T__(tabular_df)
@@ -306,7 +314,7 @@ class TabularGraphDataCreator:
                 players_df[col] = stat_df.loc[stat_df['player_name'] == players_df['name'].iloc[0]][col].iloc[0]
         return players_df
 
-    def __PLAYER_get_player_overall_statistics_without_inferno__(self, players):
+    def __PLAYER_get_player_overall_statistics__(self, players):
         # Needed columns
         needed_stats = ['player_name', 'rating_2.0', 'DPR', 'KAST', 'Impact', 'ADR', 'KPR','total_kills', 'HS%', 'total_deaths', 'KD_ratio', 'dmgPR',
         'grenade_dmgPR', 'maps_played', 'saved_by_teammatePR', 'saved_teammatesPR','opening_kill_rating', 'team_W%_after_opening',
@@ -388,18 +396,6 @@ class TabularGraphDataCreator:
         else:
             return row[['player5_equi_val_alive', 'player6_equi_val_alive', 'player7_equi_val_alive', 'player8_equi_val_alive', 'player9_equi_val_alive']].sum()
 
-    def __EXT_calculate_ct_total_hp__(self, row):
-        if row['player0_isCT']:
-            return row[['player0_equi_val_alive', 'player1_equi_val_alive', 'player2_equi_val_alive', 'player3_equi_val_alive', 'player4_equi_val_alive']].sum()
-        else:
-            return row[['player5_equi_val_alive', 'player6_equi_val_alive', 'player7_equi_val_alive', 'player8_equi_val_alive', 'player9_equi_val_alive']].sum()
-
-    def __EXT_calculate_t_total_hp__(self, row):
-        if row['player0_isCT'] == False:
-            return row[['player0_hp', 'player1_hp', 'player2_hp', 'player3_hp', 'player4_hp']].sum()
-        else:
-            return row[['player5_hp', 'player6_hp', 'player7_hp', 'player8_hp', 'player9_hp']].sum()
-
     def __TABULAR_create_overall_and_player_tabular_dataset__(self, players, rounds, match_id):
         """
         Creates the first version of the dataset for the graph model.
@@ -442,12 +438,12 @@ class TabularGraphDataCreator:
 
         graph_data['CT_aliveNum'] = graph_data[['player0_isAlive','player1_isAlive','player2_isAlive','player3_isAlive','player4_isAlive']].sum(axis=1)
         graph_data['T_aliveNum'] = graph_data[['player5_isAlive','player6_isAlive','player7_isAlive','player8_isAlive','player9_isAlive']].sum(axis=1)
+        
+        graph_data['CT_totalHP'] = graph_data[['player0_hp','player1_hp','player2_hp','player3_hp','player4_hp']].sum(axis=1)
+        graph_data['T_totalHP'] = graph_data[['player5_hp','player6_hp','player7_hp','player8_hp','player9_hp']].sum(axis=1)
 
         graph_data['CT_equipmentValue'] = graph_data.apply(self.__EXT_calculate_ct_equipment_value__, axis=1)
         graph_data['T_equipmentValue'] = graph_data.apply(self.__EXT_calculate_t_equipment_value__, axis=1)
-        
-        graph_data['CT_totalHP'] = graph_data.apply(self.__EXT_calculate_ct_equipment_value__, axis=1)
-        graph_data['T_totalHP'] = graph_data.apply(self.__EXT_calculate_t_equipment_value__, axis=1)
 
         del graph_data['player0_equi_val_alive']
         del graph_data['player1_equi_val_alive']
@@ -577,21 +573,15 @@ class TabularGraphDataCreator:
     # 9. Add numerical match id
     def __TABULAR_add_numerical_match_id__(self, tabular_df):
 
-        if self.add_numerical_match_id:
+        if type(self.numerical_match_id) is not int:
+            raise ValueError("Numerical match id must be an integer.")
+        
+        new_columns = pd.DataFrame({
+            'numerical_match_id': self.numerical_match_id
+        }, index=tabular_df.index)
+        tabular_df = pd.concat([tabular_df, new_columns], axis=1)
 
-            if self.numerical_match_id is None:
-                raise ValueError("Numerical match id is not provided.")
-            elif type(self.numerical_match_id) is not int:
-                raise ValueError("Numerical match id must be an integer.")
-            
-            new_columns = pd.DataFrame({
-                'numerical_match_id': self.numerical_match_id
-            }, index=tabular_df.index)
-            tabular_df = pd.concat([tabular_df, new_columns], axis=1)
-
-            return tabular_df
-        else:
-            return tabular_df
+        return tabular_df
 
 
     # 10. Split the bombsites by 3x3 matrix for bomb position feature
