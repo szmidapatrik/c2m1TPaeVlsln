@@ -71,7 +71,7 @@ class TabularGraphDataCreator:
 
 
         # 1.
-        pf, kills, rounds, bombEvents, damages = self.__INIT_get_needed_dataframes__()
+        pf, kills, rounds, bombEvents, damages, grenades = self.__INIT_get_needed_dataframes__()
 
         # 2.
         pf, kills, rounds = self.__PLAYER_calculate_ingame_features_from_needed_dataframes__(pf, kills, rounds, damages)
@@ -172,6 +172,7 @@ class TabularGraphDataCreator:
         rounds = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH +'/rounds/' + self.MATCH_FILE_ID)
         bombEvents = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH + '/bombEvents/' + self.MATCH_FILE_ID)
         damages = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH + '/damages/' + self.MATCH_FILE_ID)
+        grenades = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH + '/grenades/' + self.MATCH_FILE_ID)
 
         # Filter columns
         rounds = rounds[['roundNum', 'tScore', "ctScore" ,'endTScore', 'endCTScore']]
@@ -179,7 +180,7 @@ class TabularGraphDataCreator:
             'hp', 'armor', 'activeWeapon','flashGrenades', 'smokeGrenades', 'heGrenades', 'totalUtility', 'isAlive', 'isReloading', 'isBlinded', 'isDucking',
             'isDefusing', 'isPlanting', 'isUnknown', 'isScoped', 'equipmentValue', 'equipmentValueRoundStart', 'hasHelmet','hasDefuse', 'hasBomb']]
         
-        return pf, kills, rounds, bombEvents, damages
+        return pf, kills, rounds, bombEvents, damages, grenades
 
 
     # 2. Calculate ingame player statistics
@@ -709,6 +710,28 @@ class TabularGraphDataCreator:
         return df
     
 
+
+    # 11. Handle smoke and molotov grenades
+    def __TABULAR_handle_smoke_and_molotov_grenades__(self, df, grenades):
+        
+        # Smokes dataframe
+        smokes = grenades.loc[grenades['grenadeType'] == 'Smoke Grenade'].copy()
+        infernos = grenades.loc[(grenades['grenadeType'] == 'Molotov') | (grenades['grenadeType'] == 'Incendiary Grenade')].copy()
+
+        # Create new columns for smokes and infernos in the tabular dataframe
+        new_columns = pd.DataFrame({
+            'smokes_active': 0,
+            'infernos_active': 0
+        }, index=df.index)
+
+        df = pd.concat([df, new_columns], axis=1)
+
+        # Handle smokes
+        for _, row in smokes.iterrows():
+            if row['grenadeAction'] == 'throw':
+                df.loc[(df['roundNum'] == row['roundNum']) & (df['tick'] >= row['tick']), 'smokes_active'] += 1
+            if row['grenadeAction'] == 'detonate':
+                df.loc[(df['roundNum'] == row['roundNum']) & (df['tick'] >= row['tick']), 'smokes_active'] -= 1
 
     # 11. Function to extend the dataframe with copies of the rounds with varied player permutations
     def __TABULAR_vary_player_permutation__(self, df, num_permutations_per_round=3):
