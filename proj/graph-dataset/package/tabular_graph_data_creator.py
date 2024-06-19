@@ -102,10 +102,13 @@ class TabularGraphDataCreator:
         tabular_df = self.__TABULAR_bombsite_3x3_matrix_split_for_bomb_pos_feature__(tabular_df)
 
         # 11.
+        tabular_df = self.__TABULAR_handle_smoke_and_molotov_grenades__(tabular_df, grenades)
+
+        # 12.
         if num_permutations_per_round > 1:
             tabular_df = self.__TABULAR_vary_player_permutation__(tabular_df, self.num_permutations_per_round)
             
-        # 12.
+        # 13.
         if group_players_by_side:
             tabular_df = self.__TABULAR_refactor_player_columns_to_CT_T__(tabular_df)
 
@@ -720,20 +723,30 @@ class TabularGraphDataCreator:
 
         # Create new columns for smokes and infernos in the tabular dataframe
         new_columns = pd.DataFrame({
-            'smokes_active': 0,
-            'infernos_active': 0
+            'smokes_active': [[] for _ in range(len(df))],
+            'infernos_active': [[] for _ in range(len(df))]
         }, index=df.index)
 
         df = pd.concat([df, new_columns], axis=1)
 
         # Handle smokes
         for _, row in smokes.iterrows():
-            if row['grenadeAction'] == 'throw':
-                df.loc[(df['roundNum'] == row['roundNum']) & (df['tick'] >= row['tick']), 'smokes_active'] += 1
-            if row['grenadeAction'] == 'detonate':
-                df.loc[(df['roundNum'] == row['roundNum']) & (df['tick'] >= row['tick']), 'smokes_active'] -= 1
+            startTick = row['destroyTick'] - 18*128
+            endTick = row['destroyTick']
 
-    # 11. Function to extend the dataframe with copies of the rounds with varied player permutations
+            df.loc[(df['roundNum'] == row['roundNum']) & (df['tick'] >= startTick) & (df['tick'] <= endTick), 'smokes_active'].apply(lambda x: x.append([row['grenadeX'], row['grenadeY'], row['grenadeZ']]))
+        
+        for _, row in infernos.iterrows():
+            startTick = row['destroyTick'] - 7*128
+            endTick = row['destroyTick']
+
+            df.loc[(df['roundNum'] == row['roundNum']) & (df['tick'] >= startTick) & (df['tick'] <= endTick), 'smokes_active'].apply(lambda x: x.append([row['grenadeX'], row['grenadeY'], row['grenadeZ']]))
+
+        return df
+
+
+
+    # 12. Function to extend the dataframe with copies of the rounds with varied player permutations
     def __TABULAR_vary_player_permutation__(self, df, num_permutations_per_round=3):
         """
         Function to extend the dataframe with copies of the rounds with varied player permutations
@@ -802,7 +815,7 @@ class TabularGraphDataCreator:
 
 
 
-    # 12. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
+    # 13. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
     def __TABULAR_refactor_player_columns_to_CT_T__(self, df):
 
         # Separate the CT and T halves
@@ -825,10 +838,6 @@ class TabularGraphDataCreator:
 
         # Column order
         col_order = [
-            'tick',
-            'roundNum',
-
-
             'CT0_name', 'CT0_x', 'CT0_y', 'CT0_z', 'CT0_eyeX', 'CT0_eyeY', 'CT0_eyeZ', 'CT0_velocityX',
                 'CT0_velocityY', 'CT0_velocityZ', 'CT0_hp', 'CT0_armor', 'CT0_flashGrenades', 'CT0_smokeGrenades', 'CT0_heGrenades', 'CT0_totalUtility', 'CT0_isAlive',
                 'CT0_isReloading', 'CT0_isBlinded', 'CT0_isDucking', 'CT0_isDefusing', 'CT0_isPlanting', 'CT0_isUnknown', 'CT0_isScoped', 'CT0_equipmentValue',
@@ -962,8 +971,8 @@ class TabularGraphDataCreator:
                 'T9_overall_opening_kill_in_W_rounds', 'T9_overall_rating_1.0_all_Career', 'T9_overall_clutches_1on1_ratio', 'T9_overall_clutches_won_1on1', 'T9_overall_clutches_won_1on2', 'T9_overall_clutches_won_1on3', 'T9_overall_clutches_won_1on4', 'T9_overall_clutches_won_1on5', 
 
 
-            'tScore', 'ctScore', 'endTScore', 'endCTScore', 'CT_winsRound', 'CT_aliveNum', 'T_aliveNum', 
-                'CT_equipmentValue', 'T_equipmentValue', 'CT_totalHP', 'T_totalHP',
+            'tick', 'roundNum', 'tScore', 'ctScore', 'endTScore', 'endCTScore', 'CT_winsRound', 'CT_aliveNum', 'T_aliveNum', 
+                'CT_equipmentValue', 'T_equipmentValue', 'CT_totalHP', 'T_totalHP', 'smokes_active', 'infernos_active',
                 'match_id', 'is_bomb_being_planted', 'is_bomb_being_defused',
                 'is_bomb_defused', 'is_bomb_planted_at_A_site',
                 'is_bomb_planted_at_B_site', 'bomb_X', 'bomb_Y', 'bomb_Z',
