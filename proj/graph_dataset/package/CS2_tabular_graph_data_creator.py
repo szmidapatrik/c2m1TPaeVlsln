@@ -1,3 +1,4 @@
+from awpy import Demo
 import pandas as pd
 import numpy as np
 import random
@@ -71,10 +72,10 @@ class CS2TabularGraphDataCreator:
 
 
         # 1.
-        pf, kills, rounds, bombEvents, damages, grenades = self.__INIT_get_needed_dataframes__()
+        ticks, kills, rounds, bomb, damages, smokes, infernos = self.__INIT_get_needed_dataframes__()
 
         # 2.
-        pf, kills, rounds = self.__PLAYER_calculate_ingame_features_from_needed_dataframes__(pf, kills, rounds, damages)
+        pf = self.__PLAYER_calculate_ingame_features_from_needed_dataframes__(ticks, kills, rounds, damages)
 
         # 3.
         pf = self.__PLAYER_get_activeWeapon_dummies__(pf)
@@ -89,7 +90,7 @@ class CS2TabularGraphDataCreator:
         tabular_df = self.__TABULAR_create_overall_and_player_tabular_dataset__(players, rounds, self.MATCH_FILE_ID)
 
         # 7.
-        tabular_df = self.__TABULAR_add_bomb_info_to_dataset__(tabular_df, bombEvents)
+        tabular_df = self.__TABULAR_add_bomb_info_to_dataset__(tabular_df, bomb)
 
         # 8.
         tabular_df = self.__TABULAR_calculate_time_from_tick__(tabular_df)
@@ -169,28 +170,31 @@ class CS2TabularGraphDataCreator:
     # 1. Get needed dataframes
     def __INIT_get_needed_dataframes__(self):
 
+        match = Demo(self.TABULAR_DATA_FOLDER_PATH + self.MATCH_FILE_ID)
+
         # Read dataframes
-        playerFrames = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH + '/playerFrames/' + self.MATCH_FILE_ID)
-        kills = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH +'/kills/' + self.MATCH_FILE_ID)
-        rounds = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH +'/rounds/' + self.MATCH_FILE_ID)
-        bombEvents = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH + '/bombEvents/' + self.MATCH_FILE_ID)
-        damages = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH + '/damages/' + self.MATCH_FILE_ID)
-        grenades = pd.read_csv(self.TABULAR_DATA_FOLDER_PATH + '/grenades/' + self.MATCH_FILE_ID)
+        ticks = match.ticks
+        kills = match.kills
+        rounds = match.events['round_end']
+        bomb = match.bomb
+        damages = match.damages
+        smokes = match.smokes
+        infernos = match.infernos
 
         # Filter columns
-        rounds = rounds[['roundNum', 'tScore', "ctScore" ,'endTScore', 'endCTScore']]
-        pf = playerFrames[['tick', 'roundNum', 'seconds', 'side', 'name', 'x', 'y', 'z','eyeX', 'eyeY', 'eyeZ', 'velocityX', 'velocityY', 'velocityZ',
+        rounds = rounds[['t_team_clan_name', 'ct_team_clan_name', "winner", 'message']]
+        ticks = ticks[['tick', 'roundNum', 'seconds', 'side', 'name', 'x', 'y', 'z','eyeX', 'eyeY', 'eyeZ', 'velocityX', 'velocityY', 'velocityZ',
             'hp', 'armor', 'activeWeapon','flashGrenades', 'smokeGrenades', 'heGrenades', 'totalUtility', 'isAlive', 'isReloading', 'isBlinded', 'isDucking',
             'isDefusing', 'isPlanting', 'isUnknown', 'isScoped', 'equipmentValue', 'equipmentValueRoundStart', 'hasHelmet','hasDefuse', 'hasBomb']]
         
-        return pf, kills, rounds, bombEvents, damages, grenades
+        return ticks, kills, rounds, bomb, damages, smokes, infernos
 
 
     # 2. Calculate ingame player statistics
-    def __PLAYER_calculate_ingame_features_from_needed_dataframes__(self, pf, kills, rounds, damages):
+    def __PLAYER_calculate_ingame_features_from_needed_dataframes__(self, ticks, kills, rounds, damages):
     
         # Merge playerFrames with rounds
-        pf = pf.merge(rounds, on='roundNum')
+        pf = ticks.merge(rounds, on='roundNum')
 
         # Format CT information
         pf['isCT'] = pf.apply(lambda x: 1 if x['side'] == 'CT' else 0, axis=1)
@@ -250,7 +254,7 @@ class CS2TabularGraphDataCreator:
             if (row['isFriendlyFire'] == False) and (row['weaponClass'] == "Grenade"):
                 pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attackerName']), 'stat_nadeDamage'] += row['hpDamageTaken']
             
-        return pf, kills, rounds
+        return pf
     
 
     # 3. Handle active weapon column

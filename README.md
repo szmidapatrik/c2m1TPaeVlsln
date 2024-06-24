@@ -6,7 +6,7 @@
 
 ---
 
-### 2. Parsed table comparison
+### 2. Parsed match tables comparison
 
 <table>
   <tr>
@@ -64,5 +64,26 @@
   <tr>
     <td>weaponFires</td>
     <td>weapon_fires</td>
+  </tr>
+</table>
+
+---
+
+### 3. Round win informations
+
+Winning team by number:
+
+<table>
+  <tr>
+    <th style="min-width: 200px">Winning team number</th>
+    <th style="min-width: 200px">Meaning</th>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>T - Terrorists</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>CT - Counter-Terrorists</td>
   </tr>
 </table>
