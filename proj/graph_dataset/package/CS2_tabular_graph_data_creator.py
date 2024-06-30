@@ -10,14 +10,12 @@ class CS2TabularGraphDataCreator:
 
     # INPUT
     # Folder path constants
-    MATCH_FILE_ID = None
-    TABULAR_DATA_FOLDER_PATH = None
+    MATCH_PATH = None
     PLAYER_STATS_DATA_PATH = None
     MISSING_PLAYER_STATS_DATA_PATH = None
 
     
     # Optional variables
-    tick_number = 1
     numerical_match_id = None
     group_players_by_side = True
     num_permutations_per_round = 1
@@ -35,37 +33,31 @@ class CS2TabularGraphDataCreator:
 
     def format_match_data(
         self,
-        match_file_name: str,
-        tabular_data_folder_path: str, 
+        match_path: str,
         player_stats_data_path: str, 
         missing_player_stats_data_path: str,
 
-        tick_number: int = 1,
         numerical_match_id: int = None,
         num_permutations_per_round: int = 1,
         group_players_by_side: bool = True,
     ):
         """
         Formats the match data and creates the tabular game-snapshot dataset. Parameters:
-            - match_file_name: name of the match file,
-            - tabular_data_folder_path: folder path of the parsed data,
+            - match_path: name of the match file,
             - player_stats_data_path: path of the player statistics data,
             - missing_player_stats_data_path: path of the missing player statistics data,
 
-            - tick_number (optional): parse tick rate.
             - numerical_match_id (optional): numerical match id to add to the dataset. If value is None, no numerical match id will be added. Default is None.
             - num_permutations_per_round (optional): number of different player permutations to create for the snapshots per round. Default is 1.
             - group_players_by_side (optional): group players by side. Default is True.
         """
 
         # INPUT
-        self.MATCH_FILE_ID = match_file_name
-        self.TABULAR_DATA_FOLDER_PATH = tabular_data_folder_path
+        self.MATCH_PATH = match_path
         self.PLAYER_STATS_DATA_PATH = player_stats_data_path
         self.MISSING_PLAYER_STATS_DATA_PATH = missing_player_stats_data_path
 
         # Other variables
-        self.tick_number = tick_number
         self.numerical_match_id = numerical_match_id
         self.num_permutations_per_round = num_permutations_per_round
         self.group_players_by_side = group_players_by_side
@@ -87,7 +79,7 @@ class CS2TabularGraphDataCreator:
         players = self.__PLAYER_get_player_overall_statistics__(players)
 
         # 6.
-        tabular_df = self.__TABULAR_create_overall_and_player_tabular_dataset__(players, rounds, self.MATCH_FILE_ID)
+        tabular_df = self.__TABULAR_create_overall_and_player_tabular_dataset__(players, rounds, self.MATCH_PATH)
 
         # 7.
         tabular_df = self.__TABULAR_add_bomb_info_to_dataset__(tabular_df, bomb)
@@ -103,7 +95,7 @@ class CS2TabularGraphDataCreator:
         tabular_df = self.__TABULAR_bombsite_3x3_matrix_split_for_bomb_pos_feature__(tabular_df)
 
         # 11.
-        tabular_df = self.__TABULAR_handle_smoke_and_molotov_grenades__(tabular_df, grenades)
+        tabular_df = self.__TABULAR_handle_smoke_and_molotov_grenades__(tabular_df, smokes, infernos)
 
         # 12.
         if num_permutations_per_round > 1:
@@ -168,97 +160,188 @@ class CS2TabularGraphDataCreator:
     # --------------------------------------------------------------------------------------------
 
     # 1. Get needed dataframes
-    def __INIT_get_needed_dataframes__(self):
+    def _INIT_get_needed_dataframes(self):
 
-        match = Demo(self.TABULAR_DATA_FOLDER_PATH + self.MATCH_FILE_ID)
+        player_cols = [
+            'X',
+            'Y',
+            'Z',
+            'health',
+            'score',
+            'mvps',
+            'is_alive',
+            'balance',
+            'inventory',
+            'life_state',
+            'pitch',
+            'yaw',
+            'armor',
+            'has_defuser',
+            'has_helmet',
+            'player_name',
+            'start_balance',
+            'total_cash_spent',
+            'cash_spent_this_round',
+            'move_collide',
+            'move_type',
+            'team_num',
+            'active_weapon',
+            'jump_velo',
+            'fall_velo',
+            'in_crouch',
+            'crouch_state',
+            'ducked',
+            'ducking',
+            'in_duck_jump',
+            'spotted',
+            'approximate_spotted_by',
+            'time_last_injury',
+            'player_state',
+            'passive_items',
+            'is_scoped',
+            'is_walking',
+            'resume_zoom',
+            'is_defusing',
+            'in_bomb_zone',
+            'move_state',
+            'which_bomb_zone',
+            'in_hostage_rescue_zone',
+            'stamina',
+            'direction',
+            'armor_value',
+            'velo_modifier',
+            'flash_duration',
+            'flash_max_alpha',
+            'round_start_equip_value',
+            'current_equip_value',
+            'velocity',
+            'velocity_X',
+            'velocity_Y',
+            'velocity_Z',
+        ]
+        other_cols = [
+            'num_player_alive_ct',
+            'num_player_alive_t',
+            'ct_losing_streak',
+            't_losing_streak',
+            'active_weapon_name',
+            'active_weapon_ammo',
+            'total_ammo_left',
+            'is_in_reload',
+            'alive_time_total',
+            'is_bomb_dropped'
+        ]
+
+        match = Demo(path=self.MATCH_PATH, player_props=player_cols, other_props=other_cols)
 
         # Read dataframes
         ticks = match.ticks
         kills = match.kills
-        rounds = match.events['round_end']
+        rounds = match.rounds
         bomb = match.bomb
         damages = match.damages
         smokes = match.smokes
         infernos = match.infernos
 
         # Filter columns
-        rounds = rounds[['t_team_clan_name', 'ct_team_clan_name', "winner", 'message']]
-        ticks = ticks[['tick', 'roundNum', 'seconds', 'side', 'name', 'x', 'y', 'z','eyeX', 'eyeY', 'eyeZ', 'velocityX', 'velocityY', 'velocityZ',
-            'hp', 'armor', 'activeWeapon','flashGrenades', 'smokeGrenades', 'heGrenades', 'totalUtility', 'isAlive', 'isReloading', 'isBlinded', 'isDucking',
-            'isDefusing', 'isPlanting', 'isUnknown', 'isScoped', 'equipmentValue', 'equipmentValueRoundStart', 'hasHelmet','hasDefuse', 'hasBomb']]
+        rounds = rounds[['round', 'freeze_end', 'end', 'winner']]
+        ticks = ticks[['tick', 'round', 'game_time', 'team_name', 'name',
+                       'X', 'Y', 'Z', 'pitch', 'yaw', 'velocity_X', 'velocity_Y', 'velocity_Z',
+                       'health', 'armor_value', 'active_weapon_name', 'active_weapon_ammo', 'total_ammo_left',
+                       'is_alive', 'in_crouch', 'ducking', 'in_duck_jump', 'is_walking', 'spotted', 'is_scoped', 'is_defusing', 'is_in_reload',
+                       'flash_duration', 'in_bomb_zone', 'balance', 'current_equip_value', 'round_start_equip_value',
+                       'ct_losing_streak', 't_losing_streak', 'is_bomb_dropped',
+                ]]
         
         return ticks, kills, rounds, bomb, damages, smokes, infernos
 
 
+
     # 2. Calculate ingame player statistics
-    def __PLAYER_calculate_ingame_features_from_needed_dataframes__(self, ticks, kills, rounds, damages):
+    def _PLAYER_calculate_ingame_features_from_needed_dataframes(self, ticks, kills, rounds, damages):
     
         # Merge playerFrames with rounds
-        pf = ticks.merge(rounds, on='roundNum')
+        pf = ticks.merge(rounds, on='round')
 
         # Format CT information
-        pf['isCT'] = pf.apply(lambda x: 1 if x['side'] == 'CT' else 0, axis=1)
+        pf['is_CT'] = pf.apply(lambda x: 1 if x['team_name'] == 3 else 0, axis=1)
 
         # Kill stats
         pf['stat_kills'] = 0
-        pf['stat_HSK'] = 0
-        pf['stat_openKills'] = 0
-        pf['stat_tradeKills'] = 0
+        pf['stat_HS_kills'] = 0
+        pf['stat_opening_kills'] = 0
+
         # Death stats
         pf['stat_deaths'] = 0
-        pf['stat_openDeaths'] = 0
+        pf['stat_opening_deaths'] = 0
+
         # Assist stats
         pf['stat_assists'] = 0
-        pf['stat_flashAssists'] = 0
+        pf['stat_flash_assists'] = 0
+
         # Damage stats
         pf['stat_damage'] = 0
-        pf['stat_weaponDamage'] = 0
-        pf['stat_nadeDamage'] = 0
+        pf['stat_weapon_damage'] = 0
+        pf['stat_nade_damage'] = 0
 
         # Setting kill-stats
         for _, row in kills.iterrows():
 
             # Kills
-            pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attackerName']), 'stat_kills'] += 1
+            pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_kills'] += 1
             # HS-kills
-            if row['isHeadshot']:
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attackerName']), 'stat_HSK'] += 1
+            if row['headshot']:
+                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_HS_kills'] += 1
             # Opening-kills
-            if row['isFirstKill']:
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attackerName']), 'stat_openKills'] += 1
-            # Trading-kills
-            if row['isTrade']:
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attackerName']), 'stat_tradeKills'] += 1
+            if row['tick'] == kills.loc[kills['round'] == row['round']].iloc[0]['tick']:
+                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_opening_kills'] += 1
+
+
             # Deaths
-            pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['victimName']), 'stat_deaths'] += 1
+            pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['victim_name']), 'stat_deaths'] += 1
             # Opening deaths
-            if row['isFirstKill']:
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['victimName']), 'stat_openDeaths'] += 1
+            if row['tick'] == kills.loc[kills['round'] == row['round']].iloc[0]['tick']:
+                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['victim_name']), 'stat_opening_deaths'] += 1
+
+
             # Assists
-            if pd.notna(row['assisterName']):
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['assisterName']), 'stat_assists'] += 1
+            if pd.notna(row['assister_name']):
+                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['assister_name']), 'stat_assists'] += 1
+
             # Flash assists
-            if row['victimBlinded'] and row['flashThrowerTeam'] != row['victimTeam']:
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['flashThrowerTeam']), 'stat_flashAssists'] += 1
+            if row['assistedflash']:
+                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['assister_name']), 'stat_flash_assists'] += 1
+
 
         # Setting damage-stats
         for _, row in damages.iterrows():
 
             # All Damage
-            if (row['isFriendlyFire'] == False):
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attackerName']), 'stat_damage'] += row['hpDamageTaken']
+            if (row['attacker_team_name'] != row['victim_team_name']):
+                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_damage'] += row['dmg_health_real']
+
             # Weapon Damage
-            if (row['isFriendlyFire'] == False) and (row['weaponClass'] != "Grenade" and row['weaponClass'] != "Equipment"):
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attackerName']), 'stat_weaponDamage'] += row['hpDamageTaken']
+            if (row['attacker_team_name'] != row['victim_team_name']) and (row['weapon'] not in ['inferno', 'molotov', 'hegrenade', 'flashbang', 'smokegrenade']):
+                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_weapon_damage'] += row['dmg_health_real']
+
             # Nade Damage
-            if (row['isFriendlyFire'] == False) and (row['weaponClass'] == "Grenade"):
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attackerName']), 'stat_nadeDamage'] += row['hpDamageTaken']
+            if (row['attacker_team_name'] != row['victim_team_name']) and (row['weapon'] in ['inferno', 'molotov', 'hegrenade', 'flashbang', 'smokegrenade']):
+                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_nade_damage'] += row['dmg_health_real']
+
+        # Calculate other stats
+        pf['stat_survives'] = pf['round'] - pf['stat_deaths']
+        pf['stat_KPR'] = pf['stat_kills'] / pf['round']
+        pf['stat_ADR'] = pf['stat_damage'] / pf['round']
+        pf['stat_DPR'] = pf['stat_deaths'] / pf['round']
+        pf['stat_HS%'] = pf['stat_HS_kills'] / pf['stat_kills']
+        pf['stat_SPR'] = pf['stat_survives'] / pf['round']
             
         return pf
     
 
+
     # 3. Handle active weapon column
-    def __PLAYER_get_activeWeapon_dummies__(self, pf):
+    def _PLAYER_get_activeWeapon_dummies(self, pf):
     
         # Active weapons
         active_weapons = [
@@ -291,6 +374,7 @@ class CS2TabularGraphDataCreator:
         return pf
     
 
+
     # 4. Create player dataset
     def __PLAYER_player_dataset_create__(self, pf, tick_number = 1):
     
@@ -314,6 +398,7 @@ class CS2TabularGraphDataCreator:
         
         return players
     
+
 
     # 5. Insert universal player statistics into player dataset
     def __EXT_insert_columns_into_player_dataframes__(self, stat_df, players_df):
@@ -390,6 +475,7 @@ class CS2TabularGraphDataCreator:
             
         return players
     
+
 
     # 6. Create tabular dataset - first version (1 row - 1 graph)
     def __EXT_calculate_ct_equipment_value__(self, row):
@@ -493,6 +579,7 @@ class CS2TabularGraphDataCreator:
         return graph_data_concatenated
 
 
+
     # 7. Add bomb information to the dataset
     def __TABULAR_add_bomb_info_to_dataset__(self, tabular_df, bombdf):
         
@@ -547,6 +634,7 @@ class CS2TabularGraphDataCreator:
         return tabular_df
     
 
+
     # 8. Calculate accurate time feature
     def __TABULAR_calculate_time_from_tick__(self, tabular_df):
 
@@ -578,6 +666,7 @@ class CS2TabularGraphDataCreator:
         return tabular_df
     
 
+
     # 9. Add numerical match id
     def __TABULAR_add_numerical_match_id__(self, tabular_df):
 
@@ -590,6 +679,7 @@ class CS2TabularGraphDataCreator:
         tabular_df = pd.concat([tabular_df, new_columns], axis=1)
 
         return tabular_df
+
 
 
     # 10. Split the bombsites by 3x3 matrix for bomb position feature
