@@ -111,52 +111,6 @@ class CS2TabularGraphDataCreator:
 
 
 
-    def create_missing_player_stats_data(self, player_stats_data_path, length=1000):
-        """
-        Creates a dataset filled with fictive players with average statistics. Useful for missing data imputation.
-        """
-
-        self.PLAYER_STATS_DATA_PATH = player_stats_data_path
-
-        mpdf = pd.read_csv(self.PLAYER_STATS_DATA_PATH)
-        mpdf = mpdf.drop_duplicates()
-
-        # Store the numerical columns in an array
-        numerical_cols = mpdf.select_dtypes(include=[np.number]).columns.tolist()
-
-        # Create a dictionary to store the min and max values of the numerical columns
-        dist_values = {}
-        for col in numerical_cols:
-            dist_values[col] = [mpdf[col].mode().min(), (mpdf[col].max() - mpdf[col].min()) / 150]
-
-        # Create a fictive player with average statistics
-        fictive_player = {}
-        for col in numerical_cols:
-            fictive_player[col] = mpdf[col].mode()
-
-        # Create a DataFrame with the fictive player
-        fictive_player_df = pd.DataFrame(fictive_player, index=[0])
-        fictive_player_df['player_name'] = 'anonim_pro'
-        fictive_player_df = pd.concat([fictive_player_df]*length, ignore_index=True)
-
-        # Create a DataFrame with the fictive player repeated *length* times and with random values
-        for col in numerical_cols:
-            fictive_player_df[col] = np.random.normal(dist_values[col][0], dist_values[col][1], size=length)
-            if col not in ['KD_ratio', 'KD_diff']:
-                fictive_player_df[col] = fictive_player_df[col].abs()
-            if col in ['total_deaths', 'maps_played', 'rounds_played', 'rounds_with_kils', 'KD_diff', 'total_opening_kills', 'total_opening_deaths', 
-                       '0_kill_rounds', '1_kill_rounds', '2_kill_rounds', '3_kill_rounds', '4_kill_rounds', '5_kill_rounds',
-                       'rifle_kills', 'sniper_kills', 'smg_kills', 'pistol_kills', 'grenade_kills', 'other_kills', 'rating_2.0_1+', 'rating_2.0_1+_streak', 
-                       'clutches_won_1on1', 'clutches_lost_1on1', 'clutches_won_1on2', 'clutches_won_1on3', 'clutches_won_1on4', 'clutches_won_1on5']:
-                fictive_player_df[col] = fictive_player_df[col].apply(lambda x: int(x))
-
-        fictive_player_df['clutches_1on1_ratio'] = fictive_player_df['clutches_won_1on1'] / fictive_player_df['clutches_lost_1on1']
-
-        return fictive_player_df
-
-
-
-
     # --------------------------------------------------------------------------------------------
 
     # 1. Get needed dataframes
@@ -185,7 +139,6 @@ class CS2TabularGraphDataCreator:
             'move_collide',
             'move_type',
             'team_num',
-            'active_weapon',
             'jump_velo',
             'fall_velo',
             'in_crouch',
@@ -342,6 +295,10 @@ class CS2TabularGraphDataCreator:
 
     # 3. Handle active weapon column
     def _PLAYER_get_activeWeapon_dummies(self, pf):
+
+        # If the actifWeapon column value contains the word knife, set the activeWeapon column to 'Knife'
+        pf['active_weapon_name'] = pf['active_weapon_name'].fillna('')
+        pf['active_weapon_name'] = pf['active_weapon_name'].apply(lambda x: 'Knife' if 'knife' in str.lower(x) else x)
     
         # Active weapons
         active_weapons = [
@@ -360,7 +317,7 @@ class CS2TabularGraphDataCreator:
         ]
 
         # Create dummie cols
-        df_dummies = pd.get_dummies(pf['activeWeapon'], prefix="activeWeapon",drop_first=False)
+        df_dummies = pd.get_dummies(pf['active_weapon_name'], prefix="activeWeapon",drop_first=False)
         dummies = pd.DataFrame()
         for col in active_weapons:
             if col not in df_dummies.columns:
