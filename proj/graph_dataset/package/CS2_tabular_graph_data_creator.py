@@ -303,21 +303,21 @@ class CS2TabularGraphDataCreator:
         # Active weapons
         active_weapons = [
             # Other
-            'activeWeapon_C4', 'activeWeapon_Knife', 'activeWeapon_Taser',
+            'active_weapon_C4', 'active_weapon_Knife', 'active_weapon_Taser',
             # Pistols
-            'activeWeapon_USP-S', 'activeWeapon_P2000', 'activeWeapon_Glock-18', 'activeWeapon_Dual Berettas', 'activeWeapon_P250', 'activeWeapon_Tec-9', 'activeWeapon_CZ75 Auto', 'activeWeapon_Five-SeveN', 'activeWeapon_Desert Eagle',
+            'active_weapon_USP-S', 'active_weapon_P2000', 'active_weapon_Glock-18', 'active_weapon_Dual Berettas', 'active_weapon_P250', 'active_weapon_Tec-9', 'active_weapon_CZ75 Auto', 'active_weapon_Five-SeveN', 'active_weapon_Desert Eagle',
             # SMGs
-            'activeWeapon_MAC-10', 'activeWeapon_MP9', 'activeWeapon_MP7', 'activeWeapon_MP5-SD', 'activeWeapon_UMP-45', 'activeWeapon_PP-Bizon', 'activeWeapon_P90',
+            'active_weapon_MAC-10', 'active_weapon_MP9', 'active_weapon_MP7', 'active_weapon_MP5-SD', 'active_weapon_UMP-45', 'active_weapon_PP-Bizon', 'active_weapon_P90',
             # Heavy
-            'activeWeapon_Nova', 'activeWeapon_XM1014', 'activeWeapon_Sawed-Off', 'activeWeapon_MAG-7', 'activeWeapon_M249', 'activeWeapon_Negev',
+            'active_weapon_Nova', 'active_weapon_XM1014', 'active_weapon_Sawed-Off', 'active_weapon_MAG-7', 'active_weapon_M249', 'active_weapon_Negev',
             # Rifles
-            'activeWeapon_FAMAS', 'activeWeapon_Galil AR', 'activeWeapon_AK-47', 'activeWeapon_M4A4', 'activeWeapon_M4A1', 'activeWeapon_SG 553', 'activeWeapon_AUG', 'activeWeapon_SSG 08', 'activeWeapon_AWP', 'activeWeapon_G3SG1', 'activeWeapon_SCAR-20',
+            'active_weapon_FAMAS', 'active_weapon_Galil AR', 'active_weapon_AK-47', 'active_weapon_M4A4', 'active_weapon_M4A1', 'active_weapon_SG 553', 'active_weapon_AUG', 'active_weapon_SSG 08', 'active_weapon_AWP', 'active_weapon_G3SG1', 'active_weapon_SCAR-20',
             # Grenades
-            'activeWeapon_HE Grenade', 'activeWeapon_Flashbang', 'activeWeapon_Smoke Grenade', 'activeWeapon_Incendiary Grenade', 'activeWeapon_Molotov', 'activeWeapon_Decoy Grenade'
+            'active_weapon_HE Grenade', 'active_weapon_Flashbang', 'active_weapon_Smoke Grenade', 'active_weapon_Incendiary Grenade', 'active_weapon_Molotov', 'active_weapon_Decoy Grenade'
         ]
 
         # Create dummie cols
-        df_dummies = pd.get_dummies(pf['active_weapon_name'], prefix="activeWeapon",drop_first=False)
+        df_dummies = pd.get_dummies(pf['active_weapon_name'], prefix="active_weapon",drop_first=False)
         dummies = pd.DataFrame()
         for col in active_weapons:
             if col not in df_dummies.columns:
@@ -333,25 +333,25 @@ class CS2TabularGraphDataCreator:
 
 
     # 4. Create player dataset
-    def __PLAYER_player_dataset_create__(self, pf, tick_number = 1):
+    def __PLAYER_player_dataset_create__(self, pf):
     
-        startAsCTPlayerNames = pf[(pf['side'] == 'CT') & (pf['roundNum'] == 1)]['name'].unique()
-        startAsTPlayerNames = pf[(pf['side'] == 'T') & (pf['roundNum'] == 1)]['name'].unique()
+        startAsCTPlayerNames = pf[(pf['is_CT'] == True) & (pf['round'] == 1)]['name'].unique()
+        startAsTPlayerNames = pf[(pf['is_CT'] == False) & (pf['round'] == 1)]['name'].unique()
         players = {}
 
         # Team 1: start on CT side
-        players[0] = pf[pf['name'] == startAsCTPlayerNames[0]].iloc[::tick_number].copy()
-        players[1] = pf[pf['name'] == startAsCTPlayerNames[1]].iloc[::tick_number].copy()
-        players[2] = pf[pf['name'] == startAsCTPlayerNames[2]].iloc[::tick_number].copy()
-        players[3] = pf[pf['name'] == startAsCTPlayerNames[3]].iloc[::tick_number].copy()
-        players[4] = pf[pf['name'] == startAsCTPlayerNames[4]].iloc[::tick_number].copy()
+        players[0] = pf[pf['name'] == startAsCTPlayerNames[0]].copy()
+        players[1] = pf[pf['name'] == startAsCTPlayerNames[1]].copy()
+        players[2] = pf[pf['name'] == startAsCTPlayerNames[2]].copy()
+        players[3] = pf[pf['name'] == startAsCTPlayerNames[3]].copy()
+        players[4] = pf[pf['name'] == startAsCTPlayerNames[4]].copy()
 
         # Team 2: start on T side
-        players[5] = pf[pf['name'] == startAsTPlayerNames[0]].iloc[::tick_number].copy()
-        players[6] = pf[pf['name'] == startAsTPlayerNames[1]].iloc[::tick_number].copy()
-        players[7] = pf[pf['name'] == startAsTPlayerNames[2]].iloc[::tick_number].copy()
-        players[8] = pf[pf['name'] == startAsTPlayerNames[3]].iloc[::tick_number].copy()
-        players[9] = pf[pf['name'] == startAsTPlayerNames[4]].iloc[::tick_number].copy()
+        players[5] = pf[pf['name'] == startAsTPlayerNames[0]].copy()
+        players[6] = pf[pf['name'] == startAsTPlayerNames[1]].copy()
+        players[7] = pf[pf['name'] == startAsTPlayerNames[2]].copy()
+        players[8] = pf[pf['name'] == startAsTPlayerNames[3]].copy()
+        players[9] = pf[pf['name'] == startAsTPlayerNames[4]].copy()
         
         return players
     
@@ -447,6 +447,31 @@ class CS2TabularGraphDataCreator:
         else:
             return row[['player5_equi_val_alive', 'player6_equi_val_alive', 'player7_equi_val_alive', 'player8_equi_val_alive', 'player9_equi_val_alive']].sum()
 
+    def __EXT_calculate_ct_total_hp__(self, row):
+        if row['player0_isCT']:
+            return row[['player0_health','player1_health','player2_health','player3_health','player4_health']].sum(axis=1)
+        else:
+            return row[['player5_health','player6_health','player7_health','player8_health','player9_health']].sum(axis=1)
+
+    def __EXT_calculate_t_total_hp__(self, row):
+        if row['player0_isCT'] == False:
+            return row[['player0_health','player1_health','player2_health','player3_health','player4_health']].sum(axis=1)
+        else:
+            return row[['player5_health','player6_health','player7_health','player8_health','player9_health']].sum(axis=1)
+
+    def __EXT_calculate_ct_alive_num__(self, row):
+        if row['player0_isCT']:
+            return row[['player0_is_alive','player1_is_alive','player2_is_alive','player3_is_alive','player4_is_alive']].sum(axis=1)
+        else:
+            return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum(axis=1)
+
+    def __EXT_calculate_t_alive_num__(self, row):
+        if row['player0_isCT'] == False:
+            return row[['player0_is_alive','player1_is_alive','player2_is_alive','player3_is_alive','player4_is_alive']].sum(axis=1)
+        else:
+            return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum(axis=1)
+
+
     def __TABULAR_create_overall_and_player_tabular_dataset__(self, players, rounds, match_id):
         """
         Creates the first version of the dataset for the graph model.
@@ -457,7 +482,7 @@ class CS2TabularGraphDataCreator:
         for idx in range(0,len(players)):
             graph_players[idx] = players[idx].copy()
 
-        colsNotToRename = ['tick', 'roundNum', 'seconds']
+        colsNotToRename = ['tick', 'round']
 
         # Rename columns except for tick, roundNum, seconds, floorSec
         for idx in range(0,len(graph_players)):
@@ -473,28 +498,28 @@ class CS2TabularGraphDataCreator:
         for i in range(1, len(graph_players)):
             graph_data = graph_data.merge(graph_players[i], on=colsNotToRename)
 
-        graph_data = graph_data.merge(rounds, on=['roundNum'])
-        graph_data['CT_winsRound'] = graph_data.apply(lambda x: 1 if (x['endCTScore'] > x['ctScore']) else 0, axis=1)
+        graph_data = graph_data.merge(rounds, on=['round'])
+        graph_data['CT_wins'] = graph_data.apply(lambda x: 1 if (x['winner'] == 'CT') else 0, axis=1)
 
-        graph_data['player0_equi_val_alive'] = graph_data['player0_equipmentValue'] * graph_data['player0_isAlive']
-        graph_data['player1_equi_val_alive'] = graph_data['player1_equipmentValue'] * graph_data['player1_isAlive']
-        graph_data['player2_equi_val_alive'] = graph_data['player2_equipmentValue'] * graph_data['player2_isAlive']
-        graph_data['player3_equi_val_alive'] = graph_data['player3_equipmentValue'] * graph_data['player3_isAlive']
-        graph_data['player4_equi_val_alive'] = graph_data['player4_equipmentValue'] * graph_data['player4_isAlive']
-        graph_data['player5_equi_val_alive'] = graph_data['player5_equipmentValue'] * graph_data['player5_isAlive']
-        graph_data['player6_equi_val_alive'] = graph_data['player6_equipmentValue'] * graph_data['player6_isAlive']
-        graph_data['player7_equi_val_alive'] = graph_data['player7_equipmentValue'] * graph_data['player7_isAlive']
-        graph_data['player8_equi_val_alive'] = graph_data['player8_equipmentValue'] * graph_data['player8_isAlive']
-        graph_data['player9_equi_val_alive'] = graph_data['player9_equipmentValue'] * graph_data['player9_isAlive']
+        graph_data['player0_equi_val_alive'] = graph_data['player0_current_equip_value'] * graph_data['player0_is_alive']
+        graph_data['player1_equi_val_alive'] = graph_data['player1_current_equip_value'] * graph_data['player1_is_alive']
+        graph_data['player2_equi_val_alive'] = graph_data['player2_current_equip_value'] * graph_data['player2_is_alive']
+        graph_data['player3_equi_val_alive'] = graph_data['player3_current_equip_value'] * graph_data['player3_is_alive']
+        graph_data['player4_equi_val_alive'] = graph_data['player4_current_equip_value'] * graph_data['player4_is_alive']
+        graph_data['player5_equi_val_alive'] = graph_data['player5_current_equip_value'] * graph_data['player5_is_alive']
+        graph_data['player6_equi_val_alive'] = graph_data['player6_current_equip_value'] * graph_data['player6_is_alive']
+        graph_data['player7_equi_val_alive'] = graph_data['player7_current_equip_value'] * graph_data['player7_is_alive']
+        graph_data['player8_equi_val_alive'] = graph_data['player8_current_equip_value'] * graph_data['player8_is_alive']
+        graph_data['player9_equi_val_alive'] = graph_data['player9_current_equip_value'] * graph_data['player9_is_alive']
 
-        graph_data['CT_aliveNum'] = graph_data[['player0_isAlive','player1_isAlive','player2_isAlive','player3_isAlive','player4_isAlive']].sum(axis=1)
-        graph_data['T_aliveNum'] = graph_data[['player5_isAlive','player6_isAlive','player7_isAlive','player8_isAlive','player9_isAlive']].sum(axis=1)
+        graph_data['CT_alive_num'] = graph_data.apply(self.__EXT_calculate_ct_alive_num__, axis=1)
+        graph_data['T_alive_num']  = graph_data.apply(self.__EXT_calculate_t_equipment_value__, axis=1)
         
-        graph_data['CT_totalHP'] = graph_data[['player0_hp','player1_hp','player2_hp','player3_hp','player4_hp']].sum(axis=1)
-        graph_data['T_totalHP'] = graph_data[['player5_hp','player6_hp','player7_hp','player8_hp','player9_hp']].sum(axis=1)
+        graph_data['CT_total_hp'] = graph_data.apply(self.__EXT_calculate_ct_total_hp__, axis=1)
+        graph_data['T_total_hp']  = graph_data.apply(self.__EXT_calculate_t_total_hp__, axis=1)
 
-        graph_data['CT_equipmentValue'] = graph_data.apply(self.__EXT_calculate_ct_equipment_value__, axis=1)
-        graph_data['T_equipmentValue'] = graph_data.apply(self.__EXT_calculate_t_equipment_value__, axis=1)
+        graph_data['CT_equipment_alue'] = graph_data.apply(self.__EXT_calculate_ct_equipment_value__, axis=1)
+        graph_data['T_equipment_value'] = graph_data.apply(self.__EXT_calculate_t_equipment_value__, axis=1)
 
         del graph_data['player0_equi_val_alive']
         del graph_data['player1_equi_val_alive']
@@ -507,27 +532,16 @@ class CS2TabularGraphDataCreator:
         del graph_data['player8_equi_val_alive']
         del graph_data['player9_equi_val_alive']
         
-        del graph_data['player0_activeWeapon']
-        del graph_data['player1_activeWeapon']
-        del graph_data['player2_activeWeapon']
-        del graph_data['player3_activeWeapon']
-        del graph_data['player4_activeWeapon']
-        del graph_data['player5_activeWeapon']
-        del graph_data['player6_activeWeapon']
-        del graph_data['player7_activeWeapon']
-        del graph_data['player8_activeWeapon']
-        del graph_data['player9_activeWeapon']
-
-        del graph_data['player0_side']
-        del graph_data['player1_side']
-        del graph_data['player2_side']
-        del graph_data['player3_side']
-        del graph_data['player4_side']
-        del graph_data['player5_side']
-        del graph_data['player6_side']
-        del graph_data['player7_side']
-        del graph_data['player8_side']
-        del graph_data['player9_side']
+        del graph_data['player0_active_weapon']
+        del graph_data['player1_active_weapon']
+        del graph_data['player2_active_weapon']
+        del graph_data['player3_active_weapon']
+        del graph_data['player4_active_weapon']
+        del graph_data['player5_active_weapon']
+        del graph_data['player6_active_weapon']
+        del graph_data['player7_active_weapon']
+        del graph_data['player8_active_weapon']
+        del graph_data['player9_active_weapon']
 
         # Create a DataFrame with a single column for match_id
         match_id_df = pd.DataFrame({'match_id': str(match_id)}, index=graph_data.index)
