@@ -16,6 +16,7 @@ class CS2TabularGraphDataCreator:
 
     
     # Optional variables
+    tick_number = None
     numerical_match_id = None
     group_players_by_side = True
     num_permutations_per_round = 1
@@ -37,6 +38,7 @@ class CS2TabularGraphDataCreator:
         player_stats_data_path: str, 
         missing_player_stats_data_path: str,
 
+        tick_number: int = 16,
         numerical_match_id: int = None,
         num_permutations_per_round: int = 1,
         group_players_by_side: bool = True,
@@ -58,6 +60,7 @@ class CS2TabularGraphDataCreator:
         self.MISSING_PLAYER_STATS_DATA_PATH = missing_player_stats_data_path
 
         # Other variables
+        self.tick_number = tick_number
         self.numerical_match_id = numerical_match_id
         self.num_permutations_per_round = num_permutations_per_round
         self.group_players_by_side = group_players_by_side
@@ -217,7 +220,7 @@ class CS2TabularGraphDataCreator:
         pf = ticks.merge(rounds, on='round')
 
         # Format CT information
-        pf['is_CT'] = pf.apply(lambda x: 1 if x['team_name'] == 3 else 0, axis=1)
+        pf['is_CT'] = pf.apply(lambda x: 1 if x['team_name'] == 'CT' else 0, axis=1)
 
         # Kill stats
         pf['stat_kills'] = 0
@@ -333,25 +336,26 @@ class CS2TabularGraphDataCreator:
 
 
     # 4. Create player dataset
-    def __PLAYER_player_dataset_create__(self, pf):
+    def _PLAYER_player_dataset_create(self, pf):
     
-        startAsCTPlayerNames = pf[(pf['is_CT'] == True) & (pf['round'] == 1)]['name'].unique()
-        startAsTPlayerNames = pf[(pf['is_CT'] == False) & (pf['round'] == 1)]['name'].unique()
+        startAsCTPlayerNames = pf[(pf['is_CT'] == True)  & (pf['round'] == 1)]['name'].drop_duplicates().tolist()
+        startAsTPlayerNames  = pf[(pf['is_CT'] == False) & (pf['round'] == 1)]['name'].drop_duplicates().tolist()
+
         players = {}
 
         # Team 1: start on CT side
-        players[0] = pf[pf['name'] == startAsCTPlayerNames[0]].copy()
-        players[1] = pf[pf['name'] == startAsCTPlayerNames[1]].copy()
-        players[2] = pf[pf['name'] == startAsCTPlayerNames[2]].copy()
-        players[3] = pf[pf['name'] == startAsCTPlayerNames[3]].copy()
-        players[4] = pf[pf['name'] == startAsCTPlayerNames[4]].copy()
+        players[0] = pf[pf['name'] == startAsCTPlayerNames[0]].iloc[::self.tick_number].copy()
+        players[1] = pf[pf['name'] == startAsCTPlayerNames[1]].iloc[::self.tick_number].copy()
+        players[2] = pf[pf['name'] == startAsCTPlayerNames[2]].iloc[::self.tick_number].copy()
+        players[3] = pf[pf['name'] == startAsCTPlayerNames[3]].iloc[::self.tick_number].copy()
+        players[4] = pf[pf['name'] == startAsCTPlayerNames[4]].iloc[::self.tick_number].copy()
 
         # Team 2: start on T side
-        players[5] = pf[pf['name'] == startAsTPlayerNames[0]].copy()
-        players[6] = pf[pf['name'] == startAsTPlayerNames[1]].copy()
-        players[7] = pf[pf['name'] == startAsTPlayerNames[2]].copy()
-        players[8] = pf[pf['name'] == startAsTPlayerNames[3]].copy()
-        players[9] = pf[pf['name'] == startAsTPlayerNames[4]].copy()
+        players[5] = pf[pf['name'] == startAsTPlayerNames[0]].iloc[::self.tick_number].copy()
+        players[6] = pf[pf['name'] == startAsTPlayerNames[1]].iloc[::self.tick_number].copy()
+        players[7] = pf[pf['name'] == startAsTPlayerNames[2]].iloc[::self.tick_number].copy()
+        players[8] = pf[pf['name'] == startAsTPlayerNames[3]].iloc[::self.tick_number].copy()
+        players[9] = pf[pf['name'] == startAsTPlayerNames[4]].iloc[::self.tick_number].copy()
         
         return players
     
@@ -364,7 +368,7 @@ class CS2TabularGraphDataCreator:
                 players_df[col] = stat_df.loc[stat_df['player_name'] == players_df['name'].iloc[0]][col].iloc[0]
         return players_df
 
-    def __PLAYER_get_player_overall_statistics__(self, players):
+    def _PLAYER_get_player_overall_statistics(self, players):
         # Needed columns
         needed_stats = ['player_name', 'rating_2.0', 'DPR', 'KAST', 'Impact', 'ADR', 'KPR','total_kills', 'HS%', 'total_deaths', 'KD_ratio', 'dmgPR',
         'grenade_dmgPR', 'maps_played', 'saved_by_teammatePR', 'saved_teammatesPR','opening_kill_rating', 'team_W%_after_opening',
@@ -436,43 +440,42 @@ class CS2TabularGraphDataCreator:
 
     # 6. Create tabular dataset - first version (1 row - 1 graph)
     def __EXT_calculate_ct_equipment_value__(self, row):
-        if row['player0_isCT']:
+        if row['player0_is_CT']:
             return row[['player0_equi_val_alive', 'player1_equi_val_alive', 'player2_equi_val_alive', 'player3_equi_val_alive', 'player4_equi_val_alive']].sum()
         else:
             return row[['player5_equi_val_alive', 'player6_equi_val_alive', 'player7_equi_val_alive', 'player8_equi_val_alive', 'player9_equi_val_alive']].sum()
 
     def __EXT_calculate_t_equipment_value__(self, row):
-        if row['player0_isCT'] == False:
+        if row['player0_is_CT'] == False:
             return row[['player0_equi_val_alive', 'player1_equi_val_alive', 'player2_equi_val_alive', 'player3_equi_val_alive', 'player4_equi_val_alive']].sum()
         else:
             return row[['player5_equi_val_alive', 'player6_equi_val_alive', 'player7_equi_val_alive', 'player8_equi_val_alive', 'player9_equi_val_alive']].sum()
 
     def __EXT_calculate_ct_total_hp__(self, row):
-        if row['player0_isCT']:
-            return row[['player0_health','player1_health','player2_health','player3_health','player4_health']].sum(axis=1)
+        if row['player0_is_CT']:
+            return row[['player0_health','player1_health','player2_health','player3_health','player4_health']].sum()
         else:
-            return row[['player5_health','player6_health','player7_health','player8_health','player9_health']].sum(axis=1)
+            return row[['player5_health','player6_health','player7_health','player8_health','player9_health']].sum()
 
     def __EXT_calculate_t_total_hp__(self, row):
-        if row['player0_isCT'] == False:
-            return row[['player0_health','player1_health','player2_health','player3_health','player4_health']].sum(axis=1)
+        if row['player0_is_CT'] == False:
+            return row[['player0_health','player1_health','player2_health','player3_health','player4_health']].sum()
         else:
-            return row[['player5_health','player6_health','player7_health','player8_health','player9_health']].sum(axis=1)
+            return row[['player5_health','player6_health','player7_health','player8_health','player9_health']].sum()
 
     def __EXT_calculate_ct_alive_num__(self, row):
-        if row['player0_isCT']:
-            return row[['player0_is_alive','player1_is_alive','player2_is_alive','player3_is_alive','player4_is_alive']].sum(axis=1)
+        if row['player0_is_CT']:
+            return row[['player0_is_alive','player1_is_alive','player2_is_alive','player3_is_alive','player4_is_alive']].sum()
         else:
-            return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum(axis=1)
+            return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum()
 
     def __EXT_calculate_t_alive_num__(self, row):
-        if row['player0_isCT'] == False:
-            return row[['player0_is_alive','player1_is_alive','player2_is_alive','player3_is_alive','player4_is_alive']].sum(axis=1)
+        if row['player0_is_CT'] == False:
+            return row[['player0_is_alive','player1_is_alive','player2_is_alive','player3_is_alive','player4_is_alive']].sum()
         else:
-            return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum(axis=1)
+            return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum()
 
-
-    def __TABULAR_create_overall_and_player_tabular_dataset__(self, players, rounds, match_id):
+    def _TABULAR_create_initial_graph_tabular_dataset(self, players, rounds, match_id):
         """
         Creates the first version of the dataset for the graph model.
         """
@@ -531,17 +534,6 @@ class CS2TabularGraphDataCreator:
         del graph_data['player7_equi_val_alive']
         del graph_data['player8_equi_val_alive']
         del graph_data['player9_equi_val_alive']
-        
-        del graph_data['player0_active_weapon']
-        del graph_data['player1_active_weapon']
-        del graph_data['player2_active_weapon']
-        del graph_data['player3_active_weapon']
-        del graph_data['player4_active_weapon']
-        del graph_data['player5_active_weapon']
-        del graph_data['player6_active_weapon']
-        del graph_data['player7_active_weapon']
-        del graph_data['player8_active_weapon']
-        del graph_data['player9_active_weapon']
 
         # Create a DataFrame with a single column for match_id
         match_id_df = pd.DataFrame({'match_id': str(match_id)}, index=graph_data.index)
