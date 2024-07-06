@@ -174,6 +174,7 @@ class CS2TabularGraphDataCreator:
             'velocity_X',
             'velocity_Y',
             'velocity_Z',
+            'FIRE',
         ]
         other_cols = [
             'num_player_alive_ct',
@@ -206,7 +207,7 @@ class CS2TabularGraphDataCreator:
                        'health', 'armor_value', 'active_weapon_name', 'active_weapon_ammo', 'total_ammo_left',
                        'is_alive', 'in_crouch', 'ducking', 'in_duck_jump', 'is_walking', 'spotted', 'is_scoped', 'is_defusing', 'is_in_reload',
                        'flash_duration', 'in_bomb_zone', 'balance', 'current_equip_value', 'round_start_equip_value',
-                       'ct_losing_streak', 't_losing_streak', 'is_bomb_dropped',
+                       'ct_losing_streak', 't_losing_streak', 'is_bomb_dropped', 'FIRE'
                 ]]
         
         return ticks, kills, rounds, bomb, damages, smokes, infernos
@@ -544,17 +545,19 @@ class CS2TabularGraphDataCreator:
 
 
     # 7. Add bomb information to the dataset
-    def __TABULAR_add_bomb_info_to_dataset__(self, tabular_df, bombdf):
-        
-        # Poor performance
-        # tabular_df['is_bomb_being_planted'] = 0
-        # tabular_df['is_bomb_being_defused'] = 0
-        # tabular_df['is_bomb_defused'] = 0
-        # tabular_df['is_bomb_planted_at_A_site'] = 0
-        # tabular_df['is_bomb_planted_at_B_site'] = 0
-        # tabular_df['bomb_X'] = 0.0
-        # tabular_df['bomb_Y'] = 0.0
-        # tabular_df['bomb_Z'] = 0.0
+    def __EXT_calculate_is_bomb_being_planted__(self, row):
+        for i in range(0,10):
+            if row['player{}_active_weapon_C4'.format(i)] == 1:
+                if row['player{}_in_bomb_zone'.format(i)] == 1:
+                    if row['player{}_FIRE'.format(i)] == 1:
+                        return 1
+        return 0
+    
+    def __EXT_calculate_is_bomb_being_defused__(self, row):
+        return row['player0_is_defusing'] + row['player1_is_defusing'] + row['player2_is_defusing'] + row['player3_is_defusing'] + row['player4_is_defusing'] + \
+               row['player5_is_defusing'] + row['player6_is_defusing'] + row['player7_is_defusing'] + row['player8_is_defusing'] + row['player9_is_defusing']
+
+    def _TABULAR_add_bomb_info_to_dataset(self, tabular_df, bombdf):
 
         new_columns = pd.DataFrame({
             'is_bomb_being_planted': 0,
@@ -569,30 +572,21 @@ class CS2TabularGraphDataCreator:
 
         tabular_df = pd.concat([tabular_df, new_columns], axis=1)
 
+        tabular_df['is_bomb_being_planted'] = tabular_df.apply(self.__EXT_calculate_is_bomb_being_planted__, axis=1)
+        tabular_df['is_bomb_being_defused'] = tabular_df.apply(self.__EXT_calculate_is_bomb_being_defused__, axis=1)
+
         for _, row in bombdf.iterrows():
-            if (row['bombAction'] == 'plant_begin'):
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_being_planted'] = 1
 
-            if (row['bombAction'] == 'plant_abort'):
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_being_planted'] = 0
+            if (row['event'] == 'planted'):
+                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_planted_at_A_site'] = 1 if row['site'] == 'BombsiteA' else 0
+                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_planted_at_B_site'] = 1 if row['site'] == 'BombsiteB' else 0
+                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'bomb_X'] = row['X']
+                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'bomb_Y'] = row['Y']
+                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'bomb_Z'] = row['Z']
 
-            if (row['bombAction'] == 'plant'):
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_being_planted'] = 0
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_planted_at_A_site'] = 1 if row['bombSite'] == 'A' else 0
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_planted_at_B_site'] = 1 if row['bombSite'] == 'B' else 0
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'bomb_X'] = row['playerX']
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'bomb_Y'] = row['playerY']
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'bomb_Z'] = row['playerZ']
-
-            if (row['bombAction'] == 'defuse_start'):
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_being_defused'] = 1
-
-            if (row['bombAction'] == 'defuse_aborted'):
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_being_defused'] = 0
-
-            if (row['bombAction'] == 'defuse'):
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_being_defused'] = 0
-                tabular_df.loc[(tabular_df['roundNum'] == row['roundNum']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_defused'] = 1
+            if (row['event'] == 'defused'):
+                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_being_defused'] = 0
+                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_defused'] = 1
 
         return tabular_df
     
@@ -602,11 +596,8 @@ class CS2TabularGraphDataCreator:
     def __TABULAR_calculate_time_from_tick__(self, tabular_df):
 
         # Get round start tick and use it to calculate the time remaining in the round
-        roundStartTick = tabular_df[['match_id', 'roundNum', 'tick']].drop_duplicates(subset=['match_id', 'roundNum']).rename(columns={"tick": "roundStartTick"}).copy()
+        roundStartTick = tabular_df[['match_id', 'roundNum', 'tick']].drop_duplicates(subset=['match_id', 'round']).rename(columns={"tick": "roundStartTick"}).copy()
         tabular_df = tabular_df.merge(roundStartTick, on=['match_id', 'roundNum'])
-        # Poor performance
-        # tabular_df['sec'] = (tabular_df['tick'] - tabular_df['roundStartTick']) / 128
-        # tabular_df['time_remaining'] = 115 - tabular_df['sec']
 
         new_columns = pd.DataFrame({
             'sec': (tabular_df['tick'] - tabular_df['roundStartTick']) / 128,
