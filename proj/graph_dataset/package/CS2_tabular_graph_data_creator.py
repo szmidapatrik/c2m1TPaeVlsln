@@ -202,13 +202,24 @@ class CS2TabularGraphDataCreator:
 
         # Filter columns
         rounds = rounds[['round', 'freeze_end', 'end', 'winner']]
-        ticks = ticks[['tick', 'round', 'game_time', 'team_name', 'name',
+        ticks = ticks[['tick', 'round', 'team_name', 'name',
                        'X', 'Y', 'Z', 'pitch', 'yaw', 'velocity_X', 'velocity_Y', 'velocity_Z',
                        'health', 'armor_value', 'active_weapon_name', 'active_weapon_ammo', 'total_ammo_left',
                        'is_alive', 'in_crouch', 'ducking', 'in_duck_jump', 'is_walking', 'spotted', 'is_scoped', 'is_defusing', 'is_in_reload',
                        'flash_duration', 'in_bomb_zone', 'balance', 'current_equip_value', 'round_start_equip_value',
                        'ct_losing_streak', 't_losing_streak', 'is_bomb_dropped', 'FIRE'
                 ]]
+        
+        ticks = ticks.rename(columns={
+            'in_crouch'     : 'is_crouchign',
+            'ducking'       : 'is_ducking',
+            'in_duck_jump'  : 'is_duck_jumping',
+            'is_walking'    : 'is_walking',
+            'spotted'       : 'is_spotted',
+            'is_in_reload'  : 'is_reloading',
+            'in_bomb_zone'  : 'is_in_bombsite',
+            'FIRE'          : 'is_shooting'
+        })
         
         return ticks, kills, rounds, bomb, damages, smokes, infernos
 
@@ -476,6 +487,87 @@ class CS2TabularGraphDataCreator:
         else:
             return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum()
 
+    def __EXT_delete_useless_columns__(self, graph_data):
+
+        del graph_data['player0_equi_val_alive']
+        del graph_data['player1_equi_val_alive']
+        del graph_data['player2_equi_val_alive']
+        del graph_data['player3_equi_val_alive']
+        del graph_data['player4_equi_val_alive']
+        del graph_data['player5_equi_val_alive']
+        del graph_data['player6_equi_val_alive']
+        del graph_data['player7_equi_val_alive']
+        del graph_data['player8_equi_val_alive']
+        del graph_data['player9_equi_val_alive']
+        
+        del graph_data['player0_freeze_end']
+        del graph_data['player1_freeze_end']
+        del graph_data['player2_freeze_end']
+        del graph_data['player3_freeze_end']
+        del graph_data['player4_freeze_end']
+        del graph_data['player5_freeze_end']
+        del graph_data['player6_freeze_end']
+        del graph_data['player7_freeze_end']
+        del graph_data['player8_freeze_end']
+        del graph_data['player9_freeze_end']
+        
+        del graph_data['player0_end']
+        del graph_data['player1_end']
+        del graph_data['player2_end']
+        del graph_data['player3_end']
+        del graph_data['player4_end']
+        del graph_data['player5_end']
+        del graph_data['player6_end']
+        del graph_data['player7_end']
+        del graph_data['player8_end']
+        del graph_data['player9_end']
+        
+        del graph_data['player0_winner']
+        del graph_data['player1_winner']
+        del graph_data['player2_winner']
+        del graph_data['player3_winner']
+        del graph_data['player4_winner']
+        del graph_data['player5_winner']
+        del graph_data['player6_winner']
+        del graph_data['player7_winner']
+        del graph_data['player8_winner']
+        del graph_data['player9_winner']
+
+        del graph_data['player1_ct_losing_streak']
+        del graph_data['player2_ct_losing_streak']
+        del graph_data['player3_ct_losing_streak']
+        del graph_data['player4_ct_losing_streak']
+        del graph_data['player5_ct_losing_streak']
+        del graph_data['player6_ct_losing_streak']
+        del graph_data['player7_ct_losing_streak']
+        del graph_data['player8_ct_losing_streak']
+        del graph_data['player9_ct_losing_streak']
+
+        del graph_data['player1_t_losing_streak']
+        del graph_data['player2_t_losing_streak']
+        del graph_data['player3_t_losing_streak']
+        del graph_data['player4_t_losing_streak']
+        del graph_data['player5_t_losing_streak']
+        del graph_data['player6_t_losing_streak']
+        del graph_data['player7_t_losing_streak']
+        del graph_data['player8_t_losing_streak']
+        del graph_data['player9_t_losing_streak']
+
+        del graph_data['player1_is_bomb_dropped']
+        del graph_data['player2_is_bomb_dropped']
+        del graph_data['player3_is_bomb_dropped']
+        del graph_data['player4_is_bomb_dropped']
+        del graph_data['player5_is_bomb_dropped']
+        del graph_data['player6_is_bomb_dropped']
+        del graph_data['player7_is_bomb_dropped']
+        del graph_data['player8_is_bomb_dropped']
+        del graph_data['player9_is_bomb_dropped']
+
+        return graph_data
+
+    def __EXT_calculate_time_remaining__(self, row):
+        return 115.0 - ((row['tick'] - row['freeze_end']) / 64.0)
+
     def _TABULAR_create_initial_graph_tabular_dataset(self, players, rounds, match_id):
         """
         Creates the first version of the dataset for the graph model.
@@ -525,16 +617,16 @@ class CS2TabularGraphDataCreator:
         graph_data['CT_equipment_alue'] = graph_data.apply(self.__EXT_calculate_ct_equipment_value__, axis=1)
         graph_data['T_equipment_value'] = graph_data.apply(self.__EXT_calculate_t_equipment_value__, axis=1)
 
-        del graph_data['player0_equi_val_alive']
-        del graph_data['player1_equi_val_alive']
-        del graph_data['player2_equi_val_alive']
-        del graph_data['player3_equi_val_alive']
-        del graph_data['player4_equi_val_alive']
-        del graph_data['player5_equi_val_alive']
-        del graph_data['player6_equi_val_alive']
-        del graph_data['player7_equi_val_alive']
-        del graph_data['player8_equi_val_alive']
-        del graph_data['player9_equi_val_alive']
+        graph_data = graph_data.rename(columns={
+            'player0_ct_losing_streak': 'CT_losing_streak', 
+            'player0_t_losing_streak': 'T_losing_streak', 
+            'player0_is_bomb_dropped': 'is_bomb_dropped',
+        })
+
+        graph_data = self.__EXT_delete_useless_columns__(graph_data)
+
+        # Add time remaining column
+        graph_data['remaining_time'] = graph_data.apply(self.__EXT_calculate_time_remaining__, axis=1)
 
         # Create a DataFrame with a single column for match_id
         match_id_df = pd.DataFrame({'match_id': str(match_id)}, index=graph_data.index)
@@ -543,13 +635,12 @@ class CS2TabularGraphDataCreator:
         return graph_data_concatenated
 
 
-
     # 7. Add bomb information to the dataset
     def __EXT_calculate_is_bomb_being_planted__(self, row):
         for i in range(0,10):
             if row['player{}_active_weapon_C4'.format(i)] == 1:
-                if row['player{}_in_bomb_zone'.format(i)] == 1:
-                    if row['player{}_FIRE'.format(i)] == 1:
+                if row['player{}_is_in_bombsite'.format(i)] == 1:
+                    if row['player{}_is_shooting'.format(i)] == 1:
                         return 1
         return 0
     
@@ -592,35 +683,6 @@ class CS2TabularGraphDataCreator:
     
 
 
-    # 8. Calculate accurate time feature
-    def __TABULAR_calculate_time_from_tick__(self, tabular_df):
-
-        # Get round start tick and use it to calculate the time remaining in the round
-        roundStartTick = tabular_df[['match_id', 'roundNum', 'tick']].drop_duplicates(subset=['match_id', 'round']).rename(columns={"tick": "roundStartTick"}).copy()
-        tabular_df = tabular_df.merge(roundStartTick, on=['match_id', 'roundNum'])
-
-        new_columns = pd.DataFrame({
-            'sec': (tabular_df['tick'] - tabular_df['roundStartTick']) / 128,
-            'time_remaining': 115 - (tabular_df['tick'] - tabular_df['roundStartTick']) / 128,
-        }, index=tabular_df.index)
-
-        tabular_df = pd.concat([tabular_df, new_columns], axis=1)
-
-        # Drop unnecessary columns
-        del tabular_df['roundStartTick']
-        del tabular_df['sec']           # Stored in remaining time feature
-        del tabular_df['seconds']       # Stored in remaining time feature
-
-        for i in range(0,10):
-            del tabular_df['player{}_tScore'.format(i)]
-            del tabular_df['player{}_ctScore'.format(i)]
-            del tabular_df['player{}_endTScore'.format(i)]
-            del tabular_df['player{}_endCTScore'.format(i)]
-
-        return tabular_df
-    
-
-
     # 9. Add numerical match id
     def __TABULAR_add_numerical_match_id__(self, tabular_df):
 
@@ -637,7 +699,7 @@ class CS2TabularGraphDataCreator:
 
 
     # 10. Split the bombsites by 3x3 matrix for bomb position feature
-    def __EXT_get_bomb_mx_coordinate__(self, row):
+    def __EXT_INFERNO_get_bomb_mx_coordinate__(self, row):
         # If bomb is planted on A
         if row['is_bomb_planted_at_A_site'] == 1:
                 # 1st row
@@ -710,7 +772,7 @@ class CS2TabularGraphDataCreator:
                     if row['bomb_X'] >= 400:
                         return 9
 
-    def __TABULAR_bombsite_3x3_matrix_split_for_bomb_pos_feature__(self, df):
+    def __TABULAR_INFERNO_bombsite_3x3_matrix_split_for_bomb_pos_feature__(self, df):
             
         new_columns = pd.DataFrame({
             'bomb_mx_pos': 0
@@ -763,11 +825,7 @@ class CS2TabularGraphDataCreator:
 
 
     # 11. Handle smoke and molotov grenades
-    def __TABULAR_handle_smoke_and_molotov_grenades__(self, df, grenades):
-        
-        # Smokes dataframe
-        smokes = grenades.loc[grenades['grenadeType'] == 'Smoke Grenade'].copy()
-        infernos = grenades.loc[(grenades['grenadeType'] == 'Molotov') | (grenades['grenadeType'] == 'Incendiary Grenade')].copy()
+    def __TABULAR_handle_smoke_and_molotov_grenades__(self, df, smokes, infernos):
 
         # Create new columns for smokes and infernos in the tabular dataframe
         new_columns = pd.DataFrame({
