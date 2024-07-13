@@ -626,6 +626,10 @@ class CS2TabularGraphDataCreator:
         graph_data = self.__EXT_delete_useless_columns__(graph_data)
 
         # Add time remaining column
+        new_columns = pd.DataFrame({
+            'remaining_time': 0.0,
+        }, index=graph_data.index)
+        graph_data = pd.concat([graph_data, new_columns], axis=1)
         graph_data['remaining_time'] = graph_data.apply(self.__EXT_calculate_time_remaining__, axis=1)
 
         # Create a DataFrame with a single column for match_id
@@ -684,7 +688,7 @@ class CS2TabularGraphDataCreator:
 
 
     # 9. Add numerical match id
-    def __TABULAR_add_numerical_match_id__(self, tabular_df):
+    def _TABULAR_add_numerical_match_id(self, tabular_df):
 
         if type(self.numerical_match_id) is not int:
             raise ValueError("Numerical match id must be an integer.")
@@ -772,7 +776,7 @@ class CS2TabularGraphDataCreator:
                     if row['bomb_X'] >= 400:
                         return 9
 
-    def __TABULAR_INFERNO_bombsite_3x3_matrix_split_for_bomb_pos_feature__(self, df):
+    def _TABULAR_INFERNO_bombsite_3x3_matrix_split_for_bomb_pos_feature(self, df):
             
         new_columns = pd.DataFrame({
             'bomb_mx_pos': 0
@@ -780,7 +784,7 @@ class CS2TabularGraphDataCreator:
 
         df = pd.concat([df, new_columns], axis=1)
         
-        df.loc[(df['is_bomb_planted_at_A_site'] == 1) | (df['is_bomb_planted_at_B_site'] == 1), 'bomb_mx_pos'] = df.apply(self.__EXT_get_bomb_mx_coordinate__, axis=1)
+        df.loc[(df['is_bomb_planted_at_A_site'] == 1) | (df['is_bomb_planted_at_B_site'] == 1), 'bomb_mx_pos'] = df.apply(self.__EXT_INFERNO_get_bomb_mx_coordinate__, axis=1)
 
         # Dummify the bomb_mx_pos column and drop the original column
         # Poor performance
@@ -825,7 +829,7 @@ class CS2TabularGraphDataCreator:
 
 
     # 11. Handle smoke and molotov grenades
-    def __TABULAR_handle_smoke_and_molotov_grenades__(self, df, smokes, infernos):
+    def _TABULAR_handle_smoke_and_molotov_grenades(self, df, smokes, infernos):
 
         # Create new columns for smokes and infernos in the tabular dataframe
         new_columns = pd.DataFrame({
@@ -853,7 +857,7 @@ class CS2TabularGraphDataCreator:
 
 
     # 12. Function to extend the dataframe with copies of the rounds with varied player permutations
-    def __TABULAR_vary_player_permutation__(self, df, num_permutations_per_round=3):
+    def _TABULAR_vary_player_permutation(self, df, num_permutations_per_round=3):
         """
         Function to extend the dataframe with copies of the rounds with varied player permutations
         """
@@ -922,7 +926,7 @@ class CS2TabularGraphDataCreator:
 
 
     # 13. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
-    def __TABULAR_refactor_player_columns_to_CT_T__(self, df):
+    def _TABULAR_refactor_player_columns_to_CT_T(self, df):
 
         # Separate the CT and T halves
         team_1_ct = df.loc[df['player0_isCT'] == True].copy()
