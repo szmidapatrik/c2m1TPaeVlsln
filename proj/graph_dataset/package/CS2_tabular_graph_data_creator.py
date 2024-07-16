@@ -32,7 +32,7 @@ class CS2TabularGraphDataCreator:
 
     # --------------------------------------------------------------------------------------------
 
-    def format_match_data(
+    def create_graph_base(
         self,
         match_path: str,
         player_stats_data_path: str, 
@@ -67,46 +67,46 @@ class CS2TabularGraphDataCreator:
 
 
         # 1.
-        ticks, kills, rounds, bomb, damages, smokes, infernos = self.__INIT_get_needed_dataframes__()
+        ticks, kills, rounds, bomb, damages, smokes, infernos = self._INIT_dataframes()
 
         # 2.
-        pf = self.__PLAYER_calculate_ingame_features_from_needed_dataframes__(ticks, kills, rounds, damages)
+        pf = self._PLAYER_ingame_stats(ticks, kills, rounds, damages)
 
         # 3.
-        pf = self.__PLAYER_get_activeWeapon_dummies__(pf)
-
+        pf = self._PLAYER_inventory(pf)
+        
         # 4.
-        players = self.__PLAYER_player_dataset_create__(pf, self.tick_number)
+        pf = self._PLAYER_active_weapons(pf)
 
         # 5.
-        players = self.__PLAYER_get_player_overall_statistics__(players)
+        players = self._PLAYER_player_datasets(pf)
 
         # 6.
-        tabular_df = self.__TABULAR_create_overall_and_player_tabular_dataset__(players, rounds, self.MATCH_PATH)
+        players = self._PLAYER_overall_statistics(players)
 
         # 7.
-        tabular_df = self.__TABULAR_add_bomb_info_to_dataset__(tabular_df, bomb)
+        tabular_df = self._TABULAR_initial_dataset(players, rounds, self.MATCH_PATH)
 
         # 8.
-        tabular_df = self.__TABULAR_calculate_time_from_tick__(tabular_df)
+        tabular_df = self._TABULAR_bomb_info(tabular_df, bomb)
 
         # 9.
-        if self.numerical_match_id is not None:
-            tabular_df = self.__TABULAR_add_numerical_match_id__(tabular_df)
+        tabular_df = self._TABULAR_INFERNO_bombsite_3x3_split(tabular_df)
 
         # 10.
-        tabular_df = self.__TABULAR_bombsite_3x3_matrix_split_for_bomb_pos_feature__(tabular_df)
+        tabular_df = self._TABULAR_smokes_and_molotovs(tabular_df, smokes, infernos)
 
         # 11.
-        tabular_df = self.__TABULAR_handle_smoke_and_molotov_grenades__(tabular_df, smokes, infernos)
+        if self.numerical_match_id is not None:
+            tabular_df = self._TABULAR_numerical_match_id(tabular_df)
 
         # 12.
         if num_permutations_per_round > 1:
-            tabular_df = self.__TABULAR_vary_player_permutation__(tabular_df, self.num_permutations_per_round)
+            tabular_df = self._TABULAR_player_permutation(tabular_df, self.num_permutations_per_round)
             
         # 13.
         if group_players_by_side:
-            tabular_df = self.__TABULAR_refactor_player_columns_to_CT_T__(tabular_df)
+            tabular_df = self._TABULAR_refactor_player_columns(tabular_df)
 
         return tabular_df
 
@@ -117,7 +117,7 @@ class CS2TabularGraphDataCreator:
     # --------------------------------------------------------------------------------------------
 
     # 1. Get needed dataframes
-    def _INIT_get_needed_dataframes(self):
+    def _INIT_dataframes(self):
 
         player_cols = [
             'X',
@@ -226,7 +226,7 @@ class CS2TabularGraphDataCreator:
 
 
     # 2. Calculate ingame player statistics
-    def _PLAYER_calculate_ingame_features_from_needed_dataframes(self, ticks, kills, rounds, damages):
+    def _PLAYER_ingame_stats(self, ticks, kills, rounds, damages):
     
         # Merge playerFrames with rounds
         pf = ticks.merge(rounds, on='round')
@@ -308,8 +308,39 @@ class CS2TabularGraphDataCreator:
     
 
 
-    # 3. Handle active weapon column
-    def _PLAYER_get_activeWeapon_dummies(self, pf):
+        # 3. Handle active weapon column
+    
+    
+    
+    # 3. Inventory
+    def _PLAYER_inventory(self, pf):
+
+        # Inventory weapons
+        inventory_weapons = [
+            # Other
+            'inventory_C4', 'inventory_Taser',
+            # Pistols
+            'inventory_USP-S', 'inventory_P2000', 'inventory_Glock-18', 'inventory_Dual Berettas', 'inventory_P250', 'inventory_Tec-9', 'inventory_CZ75 Auto', 'inventory_Five-SeveN', 'inventory_Desert Eagle',
+            # SMGs
+            'inventory_MAC-10', 'inventory_MP9', 'inventory_MP7', 'inventory_MP5-SD', 'inventory_UMP-45', 'inventory_PP-Bizon', 'inventory_P90',
+            # Heavy
+            'inventory_Nova', 'inventory_XM1014', 'inventory_Sawed-Off', 'inventory_MAG-7', 'inventory_M249', 'inventory_Negev',
+            # Rifles
+            'inventory_FAMAS', 'inventory_Galil AR', 'inventory_AK-47', 'inventory_M4A4', 'inventory_M4A1-S', 'inventory_SG 553', 'inventory_AUG', 'inventory_SSG 08', 'inventory_AWP', 'inventory_G3SG1', 'inventory_SCAR-20',
+            # Grenades
+            'inventory_HE Grenade', 'inventory_Flashbang', 'inventory_Smoke Grenade', 'inventory_Incendiary Grenade', 'inventory_Molotov', 'inventory_Decoy Grenade'
+        ]
+
+        # Create dummie cols
+        for col in inventory_weapons:
+            pf[col] = pf['inventory'].apply(lambda x: 1 if col.replace('inventory_', '') in x else 0)
+
+        return pf
+
+
+
+    # 4. Handle active weapon column
+    def _PLAYER_active_weapons(self, pf):
 
         # If the actifWeapon column value contains the word knife, set the activeWeapon column to 'Knife'
         pf['active_weapon_name'] = pf['active_weapon_name'].fillna('')
@@ -326,7 +357,7 @@ class CS2TabularGraphDataCreator:
             # Heavy
             'active_weapon_Nova', 'active_weapon_XM1014', 'active_weapon_Sawed-Off', 'active_weapon_MAG-7', 'active_weapon_M249', 'active_weapon_Negev',
             # Rifles
-            'active_weapon_FAMAS', 'active_weapon_Galil AR', 'active_weapon_AK-47', 'active_weapon_M4A4', 'active_weapon_M4A1', 'active_weapon_SG 553', 'active_weapon_AUG', 'active_weapon_SSG 08', 'active_weapon_AWP', 'active_weapon_G3SG1', 'active_weapon_SCAR-20',
+            'active_weapon_FAMAS', 'active_weapon_Galil AR', 'active_weapon_AK-47', 'active_weapon_M4A4', 'active_weapon_M4A1-S', 'active_weapon_SG 553', 'active_weapon_AUG', 'active_weapon_SSG 08', 'active_weapon_AWP', 'active_weapon_G3SG1', 'active_weapon_SCAR-20',
             # Grenades
             'active_weapon_HE Grenade', 'active_weapon_Flashbang', 'active_weapon_Smoke Grenade', 'active_weapon_Incendiary Grenade', 'active_weapon_Molotov', 'active_weapon_Decoy Grenade'
         ]
@@ -347,8 +378,8 @@ class CS2TabularGraphDataCreator:
     
 
 
-    # 4. Create player dataset
-    def _PLAYER_player_dataset_create(self, pf):
+    # 5. Create player dataset
+    def _PLAYER_player_datasets(self, pf):
     
         startAsCTPlayerNames = pf[(pf['is_CT'] == True)  & (pf['round'] == 1)]['name'].drop_duplicates().tolist()
         startAsTPlayerNames  = pf[(pf['is_CT'] == False) & (pf['round'] == 1)]['name'].drop_duplicates().tolist()
@@ -373,14 +404,14 @@ class CS2TabularGraphDataCreator:
     
 
 
-    # 5. Insert universal player statistics into player dataset
+    # 6. Insert universal player statistics into player dataset
     def __EXT_insert_columns_into_player_dataframes__(self, stat_df, players_df):
         for col in stat_df.columns:
             if col != 'player_name':
                 players_df[col] = stat_df.loc[stat_df['player_name'] == players_df['name'].iloc[0]][col].iloc[0]
         return players_df
 
-    def _PLAYER_get_player_overall_statistics(self, players):
+    def _PLAYER_overall_statistics(self, players):
         # Needed columns
         needed_stats = ['player_name', 'rating_2.0', 'DPR', 'KAST', 'Impact', 'ADR', 'KPR','total_kills', 'HS%', 'total_deaths', 'KD_ratio', 'dmgPR',
         'grenade_dmgPR', 'maps_played', 'saved_by_teammatePR', 'saved_teammatesPR','opening_kill_rating', 'team_W%_after_opening',
@@ -450,7 +481,7 @@ class CS2TabularGraphDataCreator:
     
 
 
-    # 6. Create tabular dataset - first version (1 row - 1 graph)
+    # 7. Create tabular dataset - first version (1 row - 1 graph)
     def __EXT_calculate_ct_equipment_value__(self, row):
         if row['player0_is_CT']:
             return row[['player0_equi_val_alive', 'player1_equi_val_alive', 'player2_equi_val_alive', 'player3_equi_val_alive', 'player4_equi_val_alive']].sum()
@@ -568,7 +599,7 @@ class CS2TabularGraphDataCreator:
     def __EXT_calculate_time_remaining__(self, row):
         return 115.0 - ((row['tick'] - row['freeze_end']) / 64.0)
 
-    def _TABULAR_create_initial_graph_tabular_dataset(self, players, rounds, match_id):
+    def _TABULAR_initial_dataset(self, players, rounds, match_id):
         """
         Creates the first version of the dataset for the graph model.
         """
@@ -614,7 +645,7 @@ class CS2TabularGraphDataCreator:
         graph_data['CT_total_hp'] = graph_data.apply(self.__EXT_calculate_ct_total_hp__, axis=1)
         graph_data['T_total_hp']  = graph_data.apply(self.__EXT_calculate_t_total_hp__, axis=1)
 
-        graph_data['CT_equipment_alue'] = graph_data.apply(self.__EXT_calculate_ct_equipment_value__, axis=1)
+        graph_data['CT_equipment_value'] = graph_data.apply(self.__EXT_calculate_ct_equipment_value__, axis=1)
         graph_data['T_equipment_value'] = graph_data.apply(self.__EXT_calculate_t_equipment_value__, axis=1)
 
         graph_data = graph_data.rename(columns={
@@ -639,7 +670,7 @@ class CS2TabularGraphDataCreator:
         return graph_data_concatenated
 
 
-    # 7. Add bomb information to the dataset
+    # 8. Add bomb information to the dataset
     def __EXT_calculate_is_bomb_being_planted__(self, row):
         for i in range(0,10):
             if row['player{}_active_weapon_C4'.format(i)] == 1:
@@ -652,7 +683,7 @@ class CS2TabularGraphDataCreator:
         return row['player0_is_defusing'] + row['player1_is_defusing'] + row['player2_is_defusing'] + row['player3_is_defusing'] + row['player4_is_defusing'] + \
                row['player5_is_defusing'] + row['player6_is_defusing'] + row['player7_is_defusing'] + row['player8_is_defusing'] + row['player9_is_defusing']
 
-    def _TABULAR_add_bomb_info_to_dataset(self, tabular_df, bombdf):
+    def _TABULAR_bomb_info(self, tabular_df, bombdf):
 
         new_columns = pd.DataFrame({
             'is_bomb_being_planted': 0,
@@ -684,25 +715,10 @@ class CS2TabularGraphDataCreator:
                 tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_defused'] = 1
 
         return tabular_df
-    
-
-
-    # 9. Add numerical match id
-    def _TABULAR_add_numerical_match_id(self, tabular_df):
-
-        if type(self.numerical_match_id) is not int:
-            raise ValueError("Numerical match id must be an integer.")
-        
-        new_columns = pd.DataFrame({
-            'numerical_match_id': self.numerical_match_id
-        }, index=tabular_df.index)
-        tabular_df = pd.concat([tabular_df, new_columns], axis=1)
-
-        return tabular_df
 
 
 
-    # 10. Split the bombsites by 3x3 matrix for bomb position feature
+    # 9. Split the bombsites by 3x3 matrix for bomb position feature
     def __EXT_INFERNO_get_bomb_mx_coordinate__(self, row):
         # If bomb is planted on A
         if row['is_bomb_planted_at_A_site'] == 1:
@@ -776,7 +792,7 @@ class CS2TabularGraphDataCreator:
                     if row['bomb_X'] >= 400:
                         return 9
 
-    def _TABULAR_INFERNO_bombsite_3x3_matrix_split_for_bomb_pos_feature(self, df):
+    def _TABULAR_INFERNO_bombsite_3x3_split(self, df):
             
         new_columns = pd.DataFrame({
             'bomb_mx_pos': 0
@@ -828,8 +844,8 @@ class CS2TabularGraphDataCreator:
     
 
 
-    # 11. Handle smoke and molotov grenades
-    def _TABULAR_handle_smoke_and_molotov_grenades(self, df, smokes, infernos):
+    # 10. Handle smoke and molotov grenades
+    def _TABULAR_smokes_and_molotovs(self, df, smokes, infernos):
 
         # Create new columns for smokes and infernos in the tabular dataframe
         new_columns = pd.DataFrame({
@@ -856,8 +872,23 @@ class CS2TabularGraphDataCreator:
 
 
 
+    # 11. Add numerical match id
+    def _TABULAR_numerical_match_id(self, tabular_df):
+
+        if type(self.numerical_match_id) is not int:
+            raise ValueError("Numerical match id must be an integer.")
+        
+        new_columns = pd.DataFrame({
+            'numerical_match_id': self.numerical_match_id
+        }, index=tabular_df.index)
+        tabular_df = pd.concat([tabular_df, new_columns], axis=1)
+
+        return tabular_df
+
+
+
     # 12. Function to extend the dataframe with copies of the rounds with varied player permutations
-    def _TABULAR_vary_player_permutation(self, df, num_permutations_per_round=3):
+    def _TABULAR_player_permutation(self, df, num_permutations_per_round=3):
         """
         Function to extend the dataframe with copies of the rounds with varied player permutations
         """
@@ -926,7 +957,7 @@ class CS2TabularGraphDataCreator:
 
 
     # 13. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
-    def _TABULAR_refactor_player_columns_to_CT_T(self, df):
+    def _TABULAR_refactor_player_columns(self, df):
 
         # Separate the CT and T halves
         team_1_ct = df.loc[df['player0_is_CT'] == True].copy()
@@ -948,79 +979,99 @@ class CS2TabularGraphDataCreator:
 
         # Column order
         col_order = [
-            'CT0_team_name', 'CT0_name', 'CT0_X', 'CT0_Y', 'CT0_Z', 'CT0_pitch', 'CT0_yaw', 'CT0_velocity_X', 'CT0_velocity_Y', 'CT0_velocity_Z', 'CT0_health', 'CT0_armor_value', 'CT0_inventory', 'CT0_active_weapon_name', 'CT0_active_weapon_ammo', 'CT0_total_ammo_left', 'CT0_is_alive',
+            'CT0_team_name', 'CT0_name', 'CT0_X', 'CT0_Y', 'CT0_Z', 'CT0_pitch', 'CT0_yaw', 'CT0_velocity_X', 'CT0_velocity_Y', 'CT0_velocity_Z', 'CT0_health', 'CT0_armor_value', 'CT0_active_weapon_ammo', 'CT0_total_ammo_left', 'CT0_is_alive',
             'CT0_is_crouching', 'CT0_is_ducking', 'CT0_is_duck_jumping', 'CT0_is_walking', 'CT0_is_spotted', 'CT0_is_scoped', 'CT0_is_defusing', 'CT0_is_reloading', 'CT0_flash_duration', 'CT0_is_in_bombsite', 'CT0_balance',
             'CT0_current_equip_value', 'CT0_round_start_equip_value', 'CT0_is_shooting', 'CT0_is_CT', 'CT0_stat_kills', 'CT0_stat_HS_kills', 'CT0_stat_opening_kills', 'CT0_stat_deaths', 'CT0_stat_opening_deaths', 'CT0_stat_assists', 'CT0_stat_flash_assists', 'CT0_stat_damage', 'CT0_stat_weapon_damage', 'CT0_stat_nade_damage', 'CT0_stat_survives', 'CT0_stat_KPR', 'CT0_stat_ADR', 'CT0_stat_DPR', 'CT0_stat_HS%', 'CT0_stat_SPR', 'CT0_active_weapon_C4',
+            'CT0_inventory_C4', 'CT0_inventory_Taser', 'CT0_inventory_USP-S', 'CT0_inventory_P2000', 'CT0_inventory_Glock-18', 'CT0_inventory_Dual Berettas', 'CT0_inventory_P250', 'CT0_inventory_Tec-9', 'CT0_inventory_CZ75 Auto', 'CT0_inventory_Five-SeveN', 'CT0_inventory_Desert Eagle', 'CT0_inventory_MAC-10', 'CT0_inventory_MP9', 'CT0_inventory_MP7', 'CT0_inventory_MP5-SD', 'CT0_inventory_UMP-45', 'CT0_inventory_PP-Bizon', 'CT0_inventory_P90', 'CT0_inventory_Nova', 'CT0_inventory_XM1014', 'CT0_inventory_Sawed-Off', 'CT0_inventory_MAG-7', 'CT0_inventory_M249', 'CT0_inventory_Negev', 'CT0_inventory_FAMAS', 'CT0_inventory_Galil AR', 'CT0_inventory_AK-47', 'CT0_inventory_M4A4', 'CT0_inventory_M4A1-S',
+            'CT0_inventory_SG 553', 'CT0_inventory_AUG', 'CT0_inventory_SSG 08', 'CT0_inventory_AWP', 'CT0_inventory_G3SG1', 'CT0_inventory_SCAR-20', 'CT0_inventory_HE Grenade', 'CT0_inventory_Flashbang', 'CT0_inventory_Smoke Grenade', 'CT0_inventory_Incendiary Grenade', 'CT0_inventory_Molotov', 'CT0_inventory_Decoy Grenade',
             'CT0_active_weapon_Knife', 'CT0_active_weapon_Taser', 'CT0_active_weapon_USP-S', 'CT0_active_weapon_P2000', 'CT0_active_weapon_Glock-18', 'CT0_active_weapon_Dual Berettas', 'CT0_active_weapon_P250', 'CT0_active_weapon_Tec-9', 'CT0_active_weapon_CZ75 Auto', 'CT0_active_weapon_Five-SeveN', 'CT0_active_weapon_Desert Eagle', 'CT0_active_weapon_MAC-10', 'CT0_active_weapon_MP9', 'CT0_active_weapon_MP7', 'CT0_active_weapon_MP5-SD', 'CT0_active_weapon_UMP-45', 'CT0_active_weapon_PP-Bizon', 'CT0_active_weapon_P90', 'CT0_active_weapon_Nova', 'CT0_active_weapon_XM1014', 'CT0_active_weapon_Sawed-Off', 'CT0_active_weapon_MAG-7', 'CT0_active_weapon_M249', 'CT0_active_weapon_Negev', 'CT0_active_weapon_FAMAS',
-            'CT0_active_weapon_Galil AR', 'CT0_active_weapon_AK-47', 'CT0_active_weapon_M4A4', 'CT0_active_weapon_M4A1', 'CT0_active_weapon_SG 553', 'CT0_active_weapon_AUG', 'CT0_active_weapon_SSG 08', 'CT0_active_weapon_AWP', 'CT0_active_weapon_G3SG1', 'CT0_active_weapon_SCAR-20', 'CT0_active_weapon_HE Grenade', 'CT0_active_weapon_Flashbang', 'CT0_active_weapon_Smoke Grenade', 'CT0_active_weapon_Incendiary Grenade', 'CT0_active_weapon_Molotov', 'CT0_active_weapon_Decoy Grenade', 'CT0_overall_rating_2.0',
-            'CT0_overall_DPR', 'CT0_overall_KAST', 'CT0_overall_Impact', 'CT0_overall_ADR', 'CT0_overall_KPR', 'CT0_overall_total_kills', 'CT0_overall_HS%', 'CT0_overall_total_deaths', 'CT0_overall_KD_ratio', 'CT0_overall_dmgPR', 'CT0_overall_grenade_dmgPR', 'CT0_overall_maps_played', 'CT0_overall_saved_by_teammatePR', 'CT0_overall_saved_teammatesPR', 'CT0_overall_opening_kill_rating', 'CT0_overall_team_W%_after_opening', 'CT0_overall_opening_kill_in_W_rounds', 'CT0_overall_rating_1.0_all_Career', 'CT0_overall_clutches_1on1_ratio', 'CT0_overall_clutches_won_1on1', 'CT0_overall_clutches_won_1on2', 'CT0_overall_clutches_won_1on3', 'CT0_overall_clutches_won_1on4', 'CT0_overall_clutches_won_1on5' 
+            'CT0_active_weapon_Galil AR', 'CT0_active_weapon_AK-47', 'CT0_active_weapon_M4A4', 'CT0_active_weapon_M4A1-S', 'CT0_active_weapon_SG 553', 'CT0_active_weapon_AUG', 'CT0_active_weapon_SSG 08', 'CT0_active_weapon_AWP', 'CT0_active_weapon_G3SG1', 'CT0_active_weapon_SCAR-20', 'CT0_active_weapon_HE Grenade', 'CT0_active_weapon_Flashbang', 'CT0_active_weapon_Smoke Grenade', 'CT0_active_weapon_Incendiary Grenade', 'CT0_active_weapon_Molotov', 'CT0_active_weapon_Decoy Grenade', 'CT0_overall_rating_2.0',
+            'CT0_overall_DPR', 'CT0_overall_KAST', 'CT0_overall_Impact', 'CT0_overall_ADR', 'CT0_overall_KPR', 'CT0_overall_total_kills', 'CT0_overall_HS%', 'CT0_overall_total_deaths', 'CT0_overall_KD_ratio', 'CT0_overall_dmgPR', 'CT0_overall_grenade_dmgPR', 'CT0_overall_maps_played', 'CT0_overall_saved_by_teammatePR', 'CT0_overall_saved_teammatesPR', 'CT0_overall_opening_kill_rating', 'CT0_overall_team_W%_after_opening', 'CT0_overall_opening_kill_in_W_rounds', 'CT0_overall_rating_1.0_all_Career', 'CT0_overall_clutches_1on1_ratio', 'CT0_overall_clutches_won_1on1', 'CT0_overall_clutches_won_1on2', 'CT0_overall_clutches_won_1on3', 'CT0_overall_clutches_won_1on4', 'CT0_overall_clutches_won_1on5', 
                 
-            'CT1_team_name', 'CT1_name', 'CT1_X', 'CT1_Y', 'CT1_Z', 'CT1_pitch', 'CT1_yaw', 'CT1_velocity_X', 'CT1_velocity_Y', 'CT1_velocity_Z', 'CT1_health', 'CT1_armor_value', 'CT1_inventory', 'CT1_active_weapon_name', 'CT1_active_weapon_ammo', 'CT1_total_ammo_left', 'CT1_is_alive',
+            'CT1_team_name', 'CT1_name', 'CT1_X', 'CT1_Y', 'CT1_Z', 'CT1_pitch', 'CT1_yaw', 'CT1_velocity_X', 'CT1_velocity_Y', 'CT1_velocity_Z', 'CT1_health', 'CT1_armor_value', 'CT1_active_weapon_ammo', 'CT1_total_ammo_left', 'CT1_is_alive',
             'CT1_is_crouching', 'CT1_is_ducking', 'CT1_is_duck_jumping', 'CT1_is_walking', 'CT1_is_spotted', 'CT1_is_scoped', 'CT1_is_defusing', 'CT1_is_reloading', 'CT1_flash_duration', 'CT1_is_in_bombsite', 'CT1_balance',
             'CT1_current_equip_value', 'CT1_round_start_equip_value', 'CT1_is_shooting', 'CT1_is_CT', 'CT1_stat_kills', 'CT1_stat_HS_kills', 'CT1_stat_opening_kills', 'CT1_stat_deaths', 'CT1_stat_opening_deaths', 'CT1_stat_assists', 'CT1_stat_flash_assists', 'CT1_stat_damage', 'CT1_stat_weapon_damage', 'CT1_stat_nade_damage', 'CT1_stat_survives', 'CT1_stat_KPR', 'CT1_stat_ADR', 'CT1_stat_DPR', 'CT1_stat_HS%', 'CT1_stat_SPR', 'CT1_active_weapon_C4',
+            'CT1_inventory_C4', 'CT1_inventory_Taser', 'CT1_inventory_USP-S', 'CT1_inventory_P2000', 'CT1_inventory_Glock-18', 'CT1_inventory_Dual Berettas', 'CT1_inventory_P250', 'CT1_inventory_Tec-9', 'CT1_inventory_CZ75 Auto', 'CT1_inventory_Five-SeveN', 'CT1_inventory_Desert Eagle', 'CT1_inventory_MAC-10', 'CT1_inventory_MP9', 'CT1_inventory_MP7', 'CT1_inventory_MP5-SD', 'CT1_inventory_UMP-45', 'CT1_inventory_PP-Bizon', 'CT1_inventory_P90', 'CT1_inventory_Nova', 'CT1_inventory_XM1014', 'CT1_inventory_Sawed-Off', 'CT1_inventory_MAG-7', 'CT1_inventory_M249', 'CT1_inventory_Negev', 'CT1_inventory_FAMAS', 'CT1_inventory_Galil AR', 'CT1_inventory_AK-47', 'CT1_inventory_M4A4', 'CT1_inventory_M4A1-S',
+            'CT1_inventory_SG 553', 'CT1_inventory_AUG', 'CT1_inventory_SSG 08', 'CT1_inventory_AWP', 'CT1_inventory_G3SG1', 'CT1_inventory_SCAR-20', 'CT1_inventory_HE Grenade', 'CT1_inventory_Flashbang', 'CT1_inventory_Smoke Grenade', 'CT1_inventory_Incendiary Grenade', 'CT1_inventory_Molotov', 'CT1_inventory_Decoy Grenade',
             'CT1_active_weapon_Knife', 'CT1_active_weapon_Taser', 'CT1_active_weapon_USP-S', 'CT1_active_weapon_P2000', 'CT1_active_weapon_Glock-18', 'CT1_active_weapon_Dual Berettas', 'CT1_active_weapon_P250', 'CT1_active_weapon_Tec-9', 'CT1_active_weapon_CZ75 Auto', 'CT1_active_weapon_Five-SeveN', 'CT1_active_weapon_Desert Eagle', 'CT1_active_weapon_MAC-10', 'CT1_active_weapon_MP9', 'CT1_active_weapon_MP7', 'CT1_active_weapon_MP5-SD', 'CT1_active_weapon_UMP-45', 'CT1_active_weapon_PP-Bizon', 'CT1_active_weapon_P90', 'CT1_active_weapon_Nova', 'CT1_active_weapon_XM1014', 'CT1_active_weapon_Sawed-Off', 'CT1_active_weapon_MAG-7', 'CT1_active_weapon_M249', 'CT1_active_weapon_Negev', 'CT1_active_weapon_FAMAS',
-            'CT1_active_weapon_Galil AR', 'CT1_active_weapon_AK-47', 'CT1_active_weapon_M4A4', 'CT1_active_weapon_M4A1', 'CT1_active_weapon_SG 553', 'CT1_active_weapon_AUG', 'CT1_active_weapon_SSG 08', 'CT1_active_weapon_AWP', 'CT1_active_weapon_G3SG1', 'CT1_active_weapon_SCAR-20', 'CT1_active_weapon_HE Grenade', 'CT1_active_weapon_Flashbang', 'CT1_active_weapon_Smoke Grenade', 'CT1_active_weapon_Incendiary Grenade', 'CT1_active_weapon_Molotov', 'CT1_active_weapon_Decoy Grenade', 'CT1_overall_rating_2.0',
-            'CT1_overall_DPR', 'CT1_overall_KAST', 'CT1_overall_Impact', 'CT1_overall_ADR', 'CT1_overall_KPR', 'CT1_overall_total_kills', 'CT1_overall_HS%', 'CT1_overall_total_deaths', 'CT1_overall_KD_ratio', 'CT1_overall_dmgPR', 'CT1_overall_grenade_dmgPR', 'CT1_overall_maps_played', 'CT1_overall_saved_by_teammatePR', 'CT1_overall_saved_teammatesPR', 'CT1_overall_opening_kill_rating', 'CT1_overall_team_W%_after_opening', 'CT1_overall_opening_kill_in_W_rounds', 'CT1_overall_rating_1.0_all_Career', 'CT1_overall_clutches_1on1_ratio', 'CT1_overall_clutches_won_1on1', 'CT1_overall_clutches_won_1on2', 'CT1_overall_clutches_won_1on3', 'CT1_overall_clutches_won_1on4', 'CT1_overall_clutches_won_1on5' 
+            'CT1_active_weapon_Galil AR', 'CT1_active_weapon_AK-47', 'CT1_active_weapon_M4A4', 'CT1_active_weapon_M4A1-S', 'CT1_active_weapon_SG 553', 'CT1_active_weapon_AUG', 'CT1_active_weapon_SSG 08', 'CT1_active_weapon_AWP', 'CT1_active_weapon_G3SG1', 'CT1_active_weapon_SCAR-20', 'CT1_active_weapon_HE Grenade', 'CT1_active_weapon_Flashbang', 'CT1_active_weapon_Smoke Grenade', 'CT1_active_weapon_Incendiary Grenade', 'CT1_active_weapon_Molotov', 'CT1_active_weapon_Decoy Grenade', 'CT1_overall_rating_2.0',
+            'CT1_overall_DPR', 'CT1_overall_KAST', 'CT1_overall_Impact', 'CT1_overall_ADR', 'CT1_overall_KPR', 'CT1_overall_total_kills', 'CT1_overall_HS%', 'CT1_overall_total_deaths', 'CT1_overall_KD_ratio', 'CT1_overall_dmgPR', 'CT1_overall_grenade_dmgPR', 'CT1_overall_maps_played', 'CT1_overall_saved_by_teammatePR', 'CT1_overall_saved_teammatesPR', 'CT1_overall_opening_kill_rating', 'CT1_overall_team_W%_after_opening', 'CT1_overall_opening_kill_in_W_rounds', 'CT1_overall_rating_1.0_all_Career', 'CT1_overall_clutches_1on1_ratio', 'CT1_overall_clutches_won_1on1', 'CT1_overall_clutches_won_1on2', 'CT1_overall_clutches_won_1on3', 'CT1_overall_clutches_won_1on4', 'CT1_overall_clutches_won_1on5',
 
-            'CT2_team_name', 'CT2_name', 'CT2_X', 'CT2_Y', 'CT2_Z', 'CT2_pitch', 'CT2_yaw', 'CT2_velocity_X', 'CT2_velocity_Y', 'CT2_velocity_Z', 'CT2_health', 'CT2_armor_value', 'CT2_inventory', 'CT2_active_weapon_name', 'CT2_active_weapon_ammo', 'CT2_total_ammo_left', 'CT2_is_alive',
+            'CT2_team_name', 'CT2_name', 'CT2_X', 'CT2_Y', 'CT2_Z', 'CT2_pitch', 'CT2_yaw', 'CT2_velocity_X', 'CT2_velocity_Y', 'CT2_velocity_Z', 'CT2_health', 'CT2_armor_value', 'CT2_active_weapon_ammo', 'CT2_total_ammo_left', 'CT2_is_alive',
             'CT2_is_crouching', 'CT2_is_ducking', 'CT2_is_duck_jumping', 'CT2_is_walking', 'CT2_is_spotted', 'CT2_is_scoped', 'CT2_is_defusing', 'CT2_is_reloading', 'CT2_flash_duration', 'CT2_is_in_bombsite', 'CT2_balance',
             'CT2_current_equip_value', 'CT2_round_start_equip_value', 'CT2_is_shooting', 'CT2_is_CT', 'CT2_stat_kills', 'CT2_stat_HS_kills', 'CT2_stat_opening_kills', 'CT2_stat_deaths', 'CT2_stat_opening_deaths', 'CT2_stat_assists', 'CT2_stat_flash_assists', 'CT2_stat_damage', 'CT2_stat_weapon_damage', 'CT2_stat_nade_damage', 'CT2_stat_survives', 'CT2_stat_KPR', 'CT2_stat_ADR', 'CT2_stat_DPR', 'CT2_stat_HS%', 'CT2_stat_SPR', 'CT2_active_weapon_C4',
+            'CT2_inventory_C4', 'CT2_inventory_Taser', 'CT2_inventory_USP-S', 'CT2_inventory_P2000', 'CT2_inventory_Glock-18', 'CT2_inventory_Dual Berettas', 'CT2_inventory_P250', 'CT2_inventory_Tec-9', 'CT2_inventory_CZ75 Auto', 'CT2_inventory_Five-SeveN', 'CT2_inventory_Desert Eagle', 'CT2_inventory_MAC-10', 'CT2_inventory_MP9', 'CT2_inventory_MP7', 'CT2_inventory_MP5-SD', 'CT2_inventory_UMP-45', 'CT2_inventory_PP-Bizon', 'CT2_inventory_P90', 'CT2_inventory_Nova', 'CT2_inventory_XM1014', 'CT2_inventory_Sawed-Off', 'CT2_inventory_MAG-7', 'CT2_inventory_M249', 'CT2_inventory_Negev', 'CT2_inventory_FAMAS', 'CT2_inventory_Galil AR', 'CT2_inventory_AK-47', 'CT2_inventory_M4A4', 'CT2_inventory_M4A1-S',
+            'CT2_inventory_SG 553', 'CT2_inventory_AUG', 'CT2_inventory_SSG 08', 'CT2_inventory_AWP', 'CT2_inventory_G3SG1', 'CT2_inventory_SCAR-20', 'CT2_inventory_HE Grenade', 'CT2_inventory_Flashbang', 'CT2_inventory_Smoke Grenade', 'CT2_inventory_Incendiary Grenade', 'CT2_inventory_Molotov', 'CT2_inventory_Decoy Grenade',
             'CT2_active_weapon_Knife', 'CT2_active_weapon_Taser', 'CT2_active_weapon_USP-S', 'CT2_active_weapon_P2000', 'CT2_active_weapon_Glock-18', 'CT2_active_weapon_Dual Berettas', 'CT2_active_weapon_P250', 'CT2_active_weapon_Tec-9', 'CT2_active_weapon_CZ75 Auto', 'CT2_active_weapon_Five-SeveN', 'CT2_active_weapon_Desert Eagle', 'CT2_active_weapon_MAC-10', 'CT2_active_weapon_MP9', 'CT2_active_weapon_MP7', 'CT2_active_weapon_MP5-SD', 'CT2_active_weapon_UMP-45', 'CT2_active_weapon_PP-Bizon', 'CT2_active_weapon_P90', 'CT2_active_weapon_Nova', 'CT2_active_weapon_XM1014', 'CT2_active_weapon_Sawed-Off', 'CT2_active_weapon_MAG-7', 'CT2_active_weapon_M249', 'CT2_active_weapon_Negev', 'CT2_active_weapon_FAMAS',
-            'CT2_active_weapon_Galil AR', 'CT2_active_weapon_AK-47', 'CT2_active_weapon_M4A4', 'CT2_active_weapon_M4A1', 'CT2_active_weapon_SG 553', 'CT2_active_weapon_AUG', 'CT2_active_weapon_SSG 08', 'CT2_active_weapon_AWP', 'CT2_active_weapon_G3SG1', 'CT2_active_weapon_SCAR-20', 'CT2_active_weapon_HE Grenade', 'CT2_active_weapon_Flashbang', 'CT2_active_weapon_Smoke Grenade', 'CT2_active_weapon_Incendiary Grenade', 'CT2_active_weapon_Molotov', 'CT2_active_weapon_Decoy Grenade', 'CT2_overall_rating_2.0',
-            'CT2_overall_DPR', 'CT2_overall_KAST', 'CT2_overall_Impact', 'CT2_overall_ADR', 'CT2_overall_KPR', 'CT2_overall_total_kills', 'CT2_overall_HS%', 'CT2_overall_total_deaths', 'CT2_overall_KD_ratio', 'CT2_overall_dmgPR', 'CT2_overall_grenade_dmgPR', 'CT2_overall_maps_played', 'CT2_overall_saved_by_teammatePR', 'CT2_overall_saved_teammatesPR', 'CT2_overall_opening_kill_rating', 'CT2_overall_team_W%_after_opening', 'CT2_overall_opening_kill_in_W_rounds', 'CT2_overall_rating_1.0_all_Career', 'CT2_overall_clutches_1on1_ratio', 'CT2_overall_clutches_won_1on1', 'CT2_overall_clutches_won_1on2', 'CT2_overall_clutches_won_1on3', 'CT2_overall_clutches_won_1on4', 'CT2_overall_clutches_won_1on5' 
+            'CT2_active_weapon_Galil AR', 'CT2_active_weapon_AK-47', 'CT2_active_weapon_M4A4', 'CT2_active_weapon_M4A1-S', 'CT2_active_weapon_SG 553', 'CT2_active_weapon_AUG', 'CT2_active_weapon_SSG 08', 'CT2_active_weapon_AWP', 'CT2_active_weapon_G3SG1', 'CT2_active_weapon_SCAR-20', 'CT2_active_weapon_HE Grenade', 'CT2_active_weapon_Flashbang', 'CT2_active_weapon_Smoke Grenade', 'CT2_active_weapon_Incendiary Grenade', 'CT2_active_weapon_Molotov', 'CT2_active_weapon_Decoy Grenade', 'CT2_overall_rating_2.0',
+            'CT2_overall_DPR', 'CT2_overall_KAST', 'CT2_overall_Impact', 'CT2_overall_ADR', 'CT2_overall_KPR', 'CT2_overall_total_kills', 'CT2_overall_HS%', 'CT2_overall_total_deaths', 'CT2_overall_KD_ratio', 'CT2_overall_dmgPR', 'CT2_overall_grenade_dmgPR', 'CT2_overall_maps_played', 'CT2_overall_saved_by_teammatePR', 'CT2_overall_saved_teammatesPR', 'CT2_overall_opening_kill_rating', 'CT2_overall_team_W%_after_opening', 'CT2_overall_opening_kill_in_W_rounds', 'CT2_overall_rating_1.0_all_Career', 'CT2_overall_clutches_1on1_ratio', 'CT2_overall_clutches_won_1on1', 'CT2_overall_clutches_won_1on2', 'CT2_overall_clutches_won_1on3', 'CT2_overall_clutches_won_1on4', 'CT2_overall_clutches_won_1on5', 
 
-            'CT3_team_name', 'CT3_name', 'CT3_X', 'CT3_Y', 'CT3_Z', 'CT3_pitch', 'CT3_yaw', 'CT3_velocity_X', 'CT3_velocity_Y', 'CT3_velocity_Z', 'CT3_health', 'CT3_armor_value', 'CT3_inventory', 'CT3_active_weapon_name', 'CT3_active_weapon_ammo', 'CT3_total_ammo_left', 'CT3_is_alive',
+            'CT3_team_name', 'CT3_name', 'CT3_X', 'CT3_Y', 'CT3_Z', 'CT3_pitch', 'CT3_yaw', 'CT3_velocity_X', 'CT3_velocity_Y', 'CT3_velocity_Z', 'CT3_health', 'CT3_armor_value', 'CT3_active_weapon_ammo', 'CT3_total_ammo_left', 'CT3_is_alive',
             'CT3_is_crouching', 'CT3_is_ducking', 'CT3_is_duck_jumping', 'CT3_is_walking', 'CT3_is_spotted', 'CT3_is_scoped', 'CT3_is_defusing', 'CT3_is_reloading', 'CT3_flash_duration', 'CT3_is_in_bombsite', 'CT3_balance',
             'CT3_current_equip_value', 'CT3_round_start_equip_value', 'CT3_is_shooting', 'CT3_is_CT', 'CT3_stat_kills', 'CT3_stat_HS_kills', 'CT3_stat_opening_kills', 'CT3_stat_deaths', 'CT3_stat_opening_deaths', 'CT3_stat_assists', 'CT3_stat_flash_assists', 'CT3_stat_damage', 'CT3_stat_weapon_damage', 'CT3_stat_nade_damage', 'CT3_stat_survives', 'CT3_stat_KPR', 'CT3_stat_ADR', 'CT3_stat_DPR', 'CT3_stat_HS%', 'CT3_stat_SPR', 'CT3_active_weapon_C4',
+            'CT3_inventory_C4', 'CT3_inventory_Taser', 'CT3_inventory_USP-S', 'CT3_inventory_P2000', 'CT3_inventory_Glock-18', 'CT3_inventory_Dual Berettas', 'CT3_inventory_P250', 'CT3_inventory_Tec-9', 'CT3_inventory_CZ75 Auto', 'CT3_inventory_Five-SeveN', 'CT3_inventory_Desert Eagle', 'CT3_inventory_MAC-10', 'CT3_inventory_MP9', 'CT3_inventory_MP7', 'CT3_inventory_MP5-SD', 'CT3_inventory_UMP-45', 'CT3_inventory_PP-Bizon', 'CT3_inventory_P90', 'CT3_inventory_Nova', 'CT3_inventory_XM1014', 'CT3_inventory_Sawed-Off', 'CT3_inventory_MAG-7', 'CT3_inventory_M249', 'CT3_inventory_Negev', 'CT3_inventory_FAMAS', 'CT3_inventory_Galil AR', 'CT3_inventory_AK-47', 'CT3_inventory_M4A4', 'CT3_inventory_M4A1-S',
+            'CT3_inventory_SG 553', 'CT3_inventory_AUG', 'CT3_inventory_SSG 08', 'CT3_inventory_AWP', 'CT3_inventory_G3SG1', 'CT3_inventory_SCAR-20', 'CT3_inventory_HE Grenade', 'CT3_inventory_Flashbang', 'CT3_inventory_Smoke Grenade', 'CT3_inventory_Incendiary Grenade', 'CT3_inventory_Molotov', 'CT3_inventory_Decoy Grenade',
             'CT3_active_weapon_Knife', 'CT3_active_weapon_Taser', 'CT3_active_weapon_USP-S', 'CT3_active_weapon_P2000', 'CT3_active_weapon_Glock-18', 'CT3_active_weapon_Dual Berettas', 'CT3_active_weapon_P250', 'CT3_active_weapon_Tec-9', 'CT3_active_weapon_CZ75 Auto', 'CT3_active_weapon_Five-SeveN', 'CT3_active_weapon_Desert Eagle', 'CT3_active_weapon_MAC-10', 'CT3_active_weapon_MP9', 'CT3_active_weapon_MP7', 'CT3_active_weapon_MP5-SD', 'CT3_active_weapon_UMP-45', 'CT3_active_weapon_PP-Bizon', 'CT3_active_weapon_P90', 'CT3_active_weapon_Nova', 'CT3_active_weapon_XM1014', 'CT3_active_weapon_Sawed-Off', 'CT3_active_weapon_MAG-7', 'CT3_active_weapon_M249', 'CT3_active_weapon_Negev', 'CT3_active_weapon_FAMAS',
-            'CT3_active_weapon_Galil AR', 'CT3_active_weapon_AK-47', 'CT3_active_weapon_M4A4', 'CT3_active_weapon_M4A1', 'CT3_active_weapon_SG 553', 'CT3_active_weapon_AUG', 'CT3_active_weapon_SSG 08', 'CT3_active_weapon_AWP', 'CT3_active_weapon_G3SG1', 'CT3_active_weapon_SCAR-20', 'CT3_active_weapon_HE Grenade', 'CT3_active_weapon_Flashbang', 'CT3_active_weapon_Smoke Grenade', 'CT3_active_weapon_Incendiary Grenade', 'CT3_active_weapon_Molotov', 'CT3_active_weapon_Decoy Grenade', 'CT3_overall_rating_2.0',
-            'CT3_overall_DPR', 'CT3_overall_KAST', 'CT3_overall_Impact', 'CT3_overall_ADR', 'CT3_overall_KPR', 'CT3_overall_total_kills', 'CT3_overall_HS%', 'CT3_overall_total_deaths', 'CT3_overall_KD_ratio', 'CT3_overall_dmgPR', 'CT3_overall_grenade_dmgPR', 'CT3_overall_maps_played', 'CT3_overall_saved_by_teammatePR', 'CT3_overall_saved_teammatesPR', 'CT3_overall_opening_kill_rating', 'CT3_overall_team_W%_after_opening', 'CT3_overall_opening_kill_in_W_rounds', 'CT3_overall_rating_1.0_all_Career', 'CT3_overall_clutches_1on1_ratio', 'CT3_overall_clutches_won_1on1', 'CT3_overall_clutches_won_1on2', 'CT3_overall_clutches_won_1on3', 'CT3_overall_clutches_won_1on4', 'CT3_overall_clutches_won_1on5' 
+            'CT3_active_weapon_Galil AR', 'CT3_active_weapon_AK-47', 'CT3_active_weapon_M4A4', 'CT3_active_weapon_M4A1-S', 'CT3_active_weapon_SG 553', 'CT3_active_weapon_AUG', 'CT3_active_weapon_SSG 08', 'CT3_active_weapon_AWP', 'CT3_active_weapon_G3SG1', 'CT3_active_weapon_SCAR-20', 'CT3_active_weapon_HE Grenade', 'CT3_active_weapon_Flashbang', 'CT3_active_weapon_Smoke Grenade', 'CT3_active_weapon_Incendiary Grenade', 'CT3_active_weapon_Molotov', 'CT3_active_weapon_Decoy Grenade', 'CT3_overall_rating_2.0',
+            'CT3_overall_DPR', 'CT3_overall_KAST', 'CT3_overall_Impact', 'CT3_overall_ADR', 'CT3_overall_KPR', 'CT3_overall_total_kills', 'CT3_overall_HS%', 'CT3_overall_total_deaths', 'CT3_overall_KD_ratio', 'CT3_overall_dmgPR', 'CT3_overall_grenade_dmgPR', 'CT3_overall_maps_played', 'CT3_overall_saved_by_teammatePR', 'CT3_overall_saved_teammatesPR', 'CT3_overall_opening_kill_rating', 'CT3_overall_team_W%_after_opening', 'CT3_overall_opening_kill_in_W_rounds', 'CT3_overall_rating_1.0_all_Career', 'CT3_overall_clutches_1on1_ratio', 'CT3_overall_clutches_won_1on1', 'CT3_overall_clutches_won_1on2', 'CT3_overall_clutches_won_1on3', 'CT3_overall_clutches_won_1on4', 'CT3_overall_clutches_won_1on5', 
 
-            'CT4_team_name', 'CT4_name', 'CT4_X', 'CT4_Y', 'CT4_Z', 'CT4_pitch', 'CT4_yaw', 'CT4_velocity_X', 'CT4_velocity_Y', 'CT4_velocity_Z', 'CT4_health', 'CT4_armor_value', 'CT4_inventory', 'CT4_active_weapon_name', 'CT4_active_weapon_ammo', 'CT4_total_ammo_left', 'CT4_is_alive',
+            'CT4_team_name', 'CT4_name', 'CT4_X', 'CT4_Y', 'CT4_Z', 'CT4_pitch', 'CT4_yaw', 'CT4_velocity_X', 'CT4_velocity_Y', 'CT4_velocity_Z', 'CT4_health', 'CT4_armor_value', 'CT4_active_weapon_ammo', 'CT4_total_ammo_left', 'CT4_is_alive',
             'CT4_is_crouching', 'CT4_is_ducking', 'CT4_is_duck_jumping', 'CT4_is_walking', 'CT4_is_spotted', 'CT4_is_scoped', 'CT4_is_defusing', 'CT4_is_reloading', 'CT4_flash_duration', 'CT4_is_in_bombsite', 'CT4_balance',
             'CT4_current_equip_value', 'CT4_round_start_equip_value', 'CT4_is_shooting', 'CT4_is_CT', 'CT4_stat_kills', 'CT4_stat_HS_kills', 'CT4_stat_opening_kills', 'CT4_stat_deaths', 'CT4_stat_opening_deaths', 'CT4_stat_assists', 'CT4_stat_flash_assists', 'CT4_stat_damage', 'CT4_stat_weapon_damage', 'CT4_stat_nade_damage', 'CT4_stat_survives', 'CT4_stat_KPR', 'CT4_stat_ADR', 'CT4_stat_DPR', 'CT4_stat_HS%', 'CT4_stat_SPR', 'CT4_active_weapon_C4',
+            'CT4_inventory_C4', 'CT4_inventory_Taser', 'CT4_inventory_USP-S', 'CT4_inventory_P2000', 'CT4_inventory_Glock-18', 'CT4_inventory_Dual Berettas', 'CT4_inventory_P250', 'CT4_inventory_Tec-9', 'CT4_inventory_CZ75 Auto', 'CT4_inventory_Five-SeveN', 'CT4_inventory_Desert Eagle', 'CT4_inventory_MAC-10', 'CT4_inventory_MP9', 'CT4_inventory_MP7', 'CT4_inventory_MP5-SD', 'CT4_inventory_UMP-45', 'CT4_inventory_PP-Bizon', 'CT4_inventory_P90', 'CT4_inventory_Nova', 'CT4_inventory_XM1014', 'CT4_inventory_Sawed-Off', 'CT4_inventory_MAG-7', 'CT4_inventory_M249', 'CT4_inventory_Negev', 'CT4_inventory_FAMAS', 'CT4_inventory_Galil AR', 'CT4_inventory_AK-47', 'CT4_inventory_M4A4', 'CT4_inventory_M4A1-S',
+            'CT4_inventory_SG 553', 'CT4_inventory_AUG', 'CT4_inventory_SSG 08', 'CT4_inventory_AWP', 'CT4_inventory_G3SG1', 'CT4_inventory_SCAR-20', 'CT4_inventory_HE Grenade', 'CT4_inventory_Flashbang', 'CT4_inventory_Smoke Grenade', 'CT4_inventory_Incendiary Grenade', 'CT4_inventory_Molotov', 'CT4_inventory_Decoy Grenade',
             'CT4_active_weapon_Knife', 'CT4_active_weapon_Taser', 'CT4_active_weapon_USP-S', 'CT4_active_weapon_P2000', 'CT4_active_weapon_Glock-18', 'CT4_active_weapon_Dual Berettas', 'CT4_active_weapon_P250', 'CT4_active_weapon_Tec-9', 'CT4_active_weapon_CZ75 Auto', 'CT4_active_weapon_Five-SeveN', 'CT4_active_weapon_Desert Eagle', 'CT4_active_weapon_MAC-10', 'CT4_active_weapon_MP9', 'CT4_active_weapon_MP7', 'CT4_active_weapon_MP5-SD', 'CT4_active_weapon_UMP-45', 'CT4_active_weapon_PP-Bizon', 'CT4_active_weapon_P90', 'CT4_active_weapon_Nova', 'CT4_active_weapon_XM1014', 'CT4_active_weapon_Sawed-Off', 'CT4_active_weapon_MAG-7', 'CT4_active_weapon_M249', 'CT4_active_weapon_Negev', 'CT4_active_weapon_FAMAS',
-            'CT4_active_weapon_Galil AR', 'CT4_active_weapon_AK-47', 'CT4_active_weapon_M4A4', 'CT4_active_weapon_M4A1', 'CT4_active_weapon_SG 553', 'CT4_active_weapon_AUG', 'CT4_active_weapon_SSG 08', 'CT4_active_weapon_AWP', 'CT4_active_weapon_G3SG1', 'CT4_active_weapon_SCAR-20', 'CT4_active_weapon_HE Grenade', 'CT4_active_weapon_Flashbang', 'CT4_active_weapon_Smoke Grenade', 'CT4_active_weapon_Incendiary Grenade', 'CT4_active_weapon_Molotov', 'CT4_active_weapon_Decoy Grenade', 'CT4_overall_rating_2.0',
-            'CT4_overall_DPR', 'CT4_overall_KAST', 'CT4_overall_Impact', 'CT4_overall_ADR', 'CT4_overall_KPR', 'CT4_overall_total_kills', 'CT4_overall_HS%', 'CT4_overall_total_deaths', 'CT4_overall_KD_ratio', 'CT4_overall_dmgPR', 'CT4_overall_grenade_dmgPR', 'CT4_overall_maps_played', 'CT4_overall_saved_by_teammatePR', 'CT4_overall_saved_teammatesPR', 'CT4_overall_opening_kill_rating', 'CT4_overall_team_W%_after_opening', 'CT4_overall_opening_kill_in_W_rounds', 'CT4_overall_rating_1.0_all_Career', 'CT4_overall_clutches_1on1_ratio', 'CT4_overall_clutches_won_1on1', 'CT4_overall_clutches_won_1on2', 'CT4_overall_clutches_won_1on3', 'CT4_overall_clutches_won_1on4', 'CT4_overall_clutches_won_1on5' 
+            'CT4_active_weapon_Galil AR', 'CT4_active_weapon_AK-47', 'CT4_active_weapon_M4A4', 'CT4_active_weapon_M4A1-S', 'CT4_active_weapon_SG 553', 'CT4_active_weapon_AUG', 'CT4_active_weapon_SSG 08', 'CT4_active_weapon_AWP', 'CT4_active_weapon_G3SG1', 'CT4_active_weapon_SCAR-20', 'CT4_active_weapon_HE Grenade', 'CT4_active_weapon_Flashbang', 'CT4_active_weapon_Smoke Grenade', 'CT4_active_weapon_Incendiary Grenade', 'CT4_active_weapon_Molotov', 'CT4_active_weapon_Decoy Grenade', 'CT4_overall_rating_2.0',
+            'CT4_overall_DPR', 'CT4_overall_KAST', 'CT4_overall_Impact', 'CT4_overall_ADR', 'CT4_overall_KPR', 'CT4_overall_total_kills', 'CT4_overall_HS%', 'CT4_overall_total_deaths', 'CT4_overall_KD_ratio', 'CT4_overall_dmgPR', 'CT4_overall_grenade_dmgPR', 'CT4_overall_maps_played', 'CT4_overall_saved_by_teammatePR', 'CT4_overall_saved_teammatesPR', 'CT4_overall_opening_kill_rating', 'CT4_overall_team_W%_after_opening', 'CT4_overall_opening_kill_in_W_rounds', 'CT4_overall_rating_1.0_all_Career', 'CT4_overall_clutches_1on1_ratio', 'CT4_overall_clutches_won_1on1', 'CT4_overall_clutches_won_1on2', 'CT4_overall_clutches_won_1on3', 'CT4_overall_clutches_won_1on4', 'CT4_overall_clutches_won_1on5', 
 
-            'T5_team_name', 'T5_name', 'T5_X', 'T5_Y', 'T5_Z', 'T5_pitch', 'T5_yaw', 'T5_velocity_X', 'T5_velocity_Y', 'T5_velocity_Z', 'T5_health', 'T5_armor_value', 'T5_inventory', 'T5_active_weapon_name', 'T5_active_weapon_ammo', 'T5_total_ammo_left', 'T5_is_alive',
+            'T5_team_name', 'T5_name', 'T5_X', 'T5_Y', 'T5_Z', 'T5_pitch', 'T5_yaw', 'T5_velocity_X', 'T5_velocity_Y', 'T5_velocity_Z', 'T5_health', 'T5_armor_value', 'T5_active_weapon_ammo', 'T5_total_ammo_left', 'T5_is_alive',
             'T5_is_crouching', 'T5_is_ducking', 'T5_is_duck_jumping', 'T5_is_walking', 'T5_is_spotted', 'T5_is_scoped', 'T5_is_defusing', 'T5_is_reloading', 'T5_flash_duration', 'T5_is_in_bombsite', 'T5_balance',
             'T5_current_equip_value', 'T5_round_start_equip_value', 'T5_is_shooting', 'T5_is_CT', 'T5_stat_kills', 'T5_stat_HS_kills', 'T5_stat_opening_kills', 'T5_stat_deaths', 'T5_stat_opening_deaths', 'T5_stat_assists', 'T5_stat_flash_assists', 'T5_stat_damage', 'T5_stat_weapon_damage', 'T5_stat_nade_damage', 'T5_stat_survives', 'T5_stat_KPR', 'T5_stat_ADR', 'T5_stat_DPR', 'T5_stat_HS%', 'T5_stat_SPR', 'T5_active_weapon_C4',
+            'T5_inventory_C4', 'T5_inventory_Taser', 'T5_inventory_USP-S', 'T5_inventory_P2000', 'T5_inventory_Glock-18', 'T5_inventory_Dual Berettas', 'T5_inventory_P250', 'T5_inventory_Tec-9', 'T5_inventory_CZ75 Auto', 'T5_inventory_Five-SeveN', 'T5_inventory_Desert Eagle', 'T5_inventory_MAC-10', 'T5_inventory_MP9', 'T5_inventory_MP7', 'T5_inventory_MP5-SD', 'T5_inventory_UMP-45', 'T5_inventory_PP-Bizon', 'T5_inventory_P90', 'T5_inventory_Nova', 'T5_inventory_XM1014', 'T5_inventory_Sawed-Off', 'T5_inventory_MAG-7', 'T5_inventory_M249', 'T5_inventory_Negev', 'T5_inventory_FAMAS', 'T5_inventory_Galil AR', 'T5_inventory_AK-47', 'T5_inventory_M4A4', 'T5_inventory_M4A1-S',
+            'T5_inventory_SG 553', 'T5_inventory_AUG', 'T5_inventory_SSG 08', 'T5_inventory_AWP', 'T5_inventory_G3SG1', 'T5_inventory_SCAR-20', 'T5_inventory_HE Grenade', 'T5_inventory_Flashbang', 'T5_inventory_Smoke Grenade', 'T5_inventory_Incendiary Grenade', 'T5_inventory_Molotov', 'T5_inventory_Decoy Grenade',
             'T5_active_weapon_Knife', 'T5_active_weapon_Taser', 'T5_active_weapon_USP-S', 'T5_active_weapon_P2000', 'T5_active_weapon_Glock-18', 'T5_active_weapon_Dual Berettas', 'T5_active_weapon_P250', 'T5_active_weapon_Tec-9', 'T5_active_weapon_CZ75 Auto', 'T5_active_weapon_Five-SeveN', 'T5_active_weapon_Desert Eagle', 'T5_active_weapon_MAC-10', 'T5_active_weapon_MP9', 'T5_active_weapon_MP7', 'T5_active_weapon_MP5-SD', 'T5_active_weapon_UMP-45', 'T5_active_weapon_PP-Bizon', 'T5_active_weapon_P90', 'T5_active_weapon_Nova', 'T5_active_weapon_XM1014', 'T5_active_weapon_Sawed-Off', 'T5_active_weapon_MAG-7', 'T5_active_weapon_M249', 'T5_active_weapon_Negev', 'T5_active_weapon_FAMAS',
-            'T5_active_weapon_Galil AR', 'T5_active_weapon_AK-47', 'T5_active_weapon_M4A4', 'T5_active_weapon_M4A1', 'T5_active_weapon_SG 553', 'T5_active_weapon_AUG', 'T5_active_weapon_SSG 08', 'T5_active_weapon_AWP', 'T5_active_weapon_G3SG1', 'T5_active_weapon_SCAR-20', 'T5_active_weapon_HE Grenade', 'T5_active_weapon_Flashbang', 'T5_active_weapon_Smoke Grenade', 'T5_active_weapon_Incendiary Grenade', 'T5_active_weapon_Molotov', 'T5_active_weapon_Decoy Grenade', 'T5_overall_rating_2.0',
-            'T5_overall_DPR', 'T5_overall_KAST', 'T5_overall_Impact', 'T5_overall_ADR', 'T5_overall_KPR', 'T5_overall_total_kills', 'T5_overall_HS%', 'T5_overall_total_deaths', 'T5_overall_KD_ratio', 'T5_overall_dmgPR', 'T5_overall_grenade_dmgPR', 'T5_overall_maps_played', 'T5_overall_saved_by_teammatePR', 'T5_overall_saved_teammatesPR', 'T5_overall_opening_kill_rating', 'T5_overall_team_W%_after_opening', 'T5_overall_opening_kill_in_W_rounds', 'T5_overall_rating_1.0_all_Career', 'T5_overall_clutches_1on1_ratio', 'T5_overall_clutches_won_1on1', 'T5_overall_clutches_won_1on2', 'T5_overall_clutches_won_1on3', 'T5_overall_clutches_won_1on4', 'T5_overall_clutches_won_1on5' 
+            'T5_active_weapon_Galil AR', 'T5_active_weapon_AK-47', 'T5_active_weapon_M4A4', 'T5_active_weapon_M4A1-S', 'T5_active_weapon_SG 553', 'T5_active_weapon_AUG', 'T5_active_weapon_SSG 08', 'T5_active_weapon_AWP', 'T5_active_weapon_G3SG1', 'T5_active_weapon_SCAR-20', 'T5_active_weapon_HE Grenade', 'T5_active_weapon_Flashbang', 'T5_active_weapon_Smoke Grenade', 'T5_active_weapon_Incendiary Grenade', 'T5_active_weapon_Molotov', 'T5_active_weapon_Decoy Grenade', 'T5_overall_rating_2.0',
+            'T5_overall_DPR', 'T5_overall_KAST', 'T5_overall_Impact', 'T5_overall_ADR', 'T5_overall_KPR', 'T5_overall_total_kills', 'T5_overall_HS%', 'T5_overall_total_deaths', 'T5_overall_KD_ratio', 'T5_overall_dmgPR', 'T5_overall_grenade_dmgPR', 'T5_overall_maps_played', 'T5_overall_saved_by_teammatePR', 'T5_overall_saved_teammatesPR', 'T5_overall_opening_kill_rating', 'T5_overall_team_W%_after_opening', 'T5_overall_opening_kill_in_W_rounds', 'T5_overall_rating_1.0_all_Career', 'T5_overall_clutches_1on1_ratio', 'T5_overall_clutches_won_1on1', 'T5_overall_clutches_won_1on2', 'T5_overall_clutches_won_1on3', 'T5_overall_clutches_won_1on4', 'T5_overall_clutches_won_1on5', 
 
-            'T6_team_name', 'T6_name', 'T6_X', 'T6_Y', 'T6_Z', 'T6_pitch', 'T6_yaw', 'T6_velocity_X', 'T6_velocity_Y', 'T6_velocity_Z', 'T6_health', 'T6_armor_value', 'T6_inventory', 'T6_active_weapon_name', 'T6_active_weapon_ammo', 'T6_total_ammo_left', 'T6_is_alive',
+            'T6_team_name', 'T6_name', 'T6_X', 'T6_Y', 'T6_Z', 'T6_pitch', 'T6_yaw', 'T6_velocity_X', 'T6_velocity_Y', 'T6_velocity_Z', 'T6_health', 'T6_armor_value', 'T6_active_weapon_ammo', 'T6_total_ammo_left', 'T6_is_alive',
             'T6_is_crouching', 'T6_is_ducking', 'T6_is_duck_jumping', 'T6_is_walking', 'T6_is_spotted', 'T6_is_scoped', 'T6_is_defusing', 'T6_is_reloading', 'T6_flash_duration', 'T6_is_in_bombsite', 'T6_balance',
             'T6_current_equip_value', 'T6_round_start_equip_value', 'T6_is_shooting', 'T6_is_CT', 'T6_stat_kills', 'T6_stat_HS_kills', 'T6_stat_opening_kills', 'T6_stat_deaths', 'T6_stat_opening_deaths', 'T6_stat_assists', 'T6_stat_flash_assists', 'T6_stat_damage', 'T6_stat_weapon_damage', 'T6_stat_nade_damage', 'T6_stat_survives', 'T6_stat_KPR', 'T6_stat_ADR', 'T6_stat_DPR', 'T6_stat_HS%', 'T6_stat_SPR', 'T6_active_weapon_C4',
+            'T6_inventory_C4', 'T6_inventory_Taser', 'T6_inventory_USP-S', 'T6_inventory_P2000', 'T6_inventory_Glock-18', 'T6_inventory_Dual Berettas', 'T6_inventory_P250', 'T6_inventory_Tec-9', 'T6_inventory_CZ75 Auto', 'T6_inventory_Five-SeveN', 'T6_inventory_Desert Eagle', 'T6_inventory_MAC-10', 'T6_inventory_MP9', 'T6_inventory_MP7', 'T6_inventory_MP5-SD', 'T6_inventory_UMP-45', 'T6_inventory_PP-Bizon', 'T6_inventory_P90', 'T6_inventory_Nova', 'T6_inventory_XM1014', 'T6_inventory_Sawed-Off', 'T6_inventory_MAG-7', 'T6_inventory_M249', 'T6_inventory_Negev', 'T6_inventory_FAMAS', 'T6_inventory_Galil AR', 'T6_inventory_AK-47', 'T6_inventory_M4A4', 'T6_inventory_M4A1-S',
+            'T6_inventory_SG 553', 'T6_inventory_AUG', 'T6_inventory_SSG 08', 'T6_inventory_AWP', 'T6_inventory_G3SG1', 'T6_inventory_SCAR-20', 'T6_inventory_HE Grenade', 'T6_inventory_Flashbang', 'T6_inventory_Smoke Grenade', 'T6_inventory_Incendiary Grenade', 'T6_inventory_Molotov', 'T6_inventory_Decoy Grenade',
             'T6_active_weapon_Knife', 'T6_active_weapon_Taser', 'T6_active_weapon_USP-S', 'T6_active_weapon_P2000', 'T6_active_weapon_Glock-18', 'T6_active_weapon_Dual Berettas', 'T6_active_weapon_P250', 'T6_active_weapon_Tec-9', 'T6_active_weapon_CZ75 Auto', 'T6_active_weapon_Five-SeveN', 'T6_active_weapon_Desert Eagle', 'T6_active_weapon_MAC-10', 'T6_active_weapon_MP9', 'T6_active_weapon_MP7', 'T6_active_weapon_MP5-SD', 'T6_active_weapon_UMP-45', 'T6_active_weapon_PP-Bizon', 'T6_active_weapon_P90', 'T6_active_weapon_Nova', 'T6_active_weapon_XM1014', 'T6_active_weapon_Sawed-Off', 'T6_active_weapon_MAG-7', 'T6_active_weapon_M249', 'T6_active_weapon_Negev', 'T6_active_weapon_FAMAS',
-            'T6_active_weapon_Galil AR', 'T6_active_weapon_AK-47', 'T6_active_weapon_M4A4', 'T6_active_weapon_M4A1', 'T6_active_weapon_SG 553', 'T6_active_weapon_AUG', 'T6_active_weapon_SSG 08', 'T6_active_weapon_AWP', 'T6_active_weapon_G3SG1', 'T6_active_weapon_SCAR-20', 'T6_active_weapon_HE Grenade', 'T6_active_weapon_Flashbang', 'T6_active_weapon_Smoke Grenade', 'T6_active_weapon_Incendiary Grenade', 'T6_active_weapon_Molotov', 'T6_active_weapon_Decoy Grenade', 'T6_overall_rating_2.0',
-            'T6_overall_DPR', 'T6_overall_KAST', 'T6_overall_Impact', 'T6_overall_ADR', 'T6_overall_KPR', 'T6_overall_total_kills', 'T6_overall_HS%', 'T6_overall_total_deaths', 'T6_overall_KD_ratio', 'T6_overall_dmgPR', 'T6_overall_grenade_dmgPR', 'T6_overall_maps_played', 'T6_overall_saved_by_teammatePR', 'T6_overall_saved_teammatesPR', 'T6_overall_opening_kill_rating', 'T6_overall_team_W%_after_opening', 'T6_overall_opening_kill_in_W_rounds', 'T6_overall_rating_1.0_all_Career', 'T6_overall_clutches_1on1_ratio', 'T6_overall_clutches_won_1on1', 'T6_overall_clutches_won_1on2', 'T6_overall_clutches_won_1on3', 'T6_overall_clutches_won_1on4', 'T6_overall_clutches_won_1on5' 
+            'T6_active_weapon_Galil AR', 'T6_active_weapon_AK-47', 'T6_active_weapon_M4A4', 'T6_active_weapon_M4A1-S', 'T6_active_weapon_SG 553', 'T6_active_weapon_AUG', 'T6_active_weapon_SSG 08', 'T6_active_weapon_AWP', 'T6_active_weapon_G3SG1', 'T6_active_weapon_SCAR-20', 'T6_active_weapon_HE Grenade', 'T6_active_weapon_Flashbang', 'T6_active_weapon_Smoke Grenade', 'T6_active_weapon_Incendiary Grenade', 'T6_active_weapon_Molotov', 'T6_active_weapon_Decoy Grenade', 'T6_overall_rating_2.0',
+            'T6_overall_DPR', 'T6_overall_KAST', 'T6_overall_Impact', 'T6_overall_ADR', 'T6_overall_KPR', 'T6_overall_total_kills', 'T6_overall_HS%', 'T6_overall_total_deaths', 'T6_overall_KD_ratio', 'T6_overall_dmgPR', 'T6_overall_grenade_dmgPR', 'T6_overall_maps_played', 'T6_overall_saved_by_teammatePR', 'T6_overall_saved_teammatesPR', 'T6_overall_opening_kill_rating', 'T6_overall_team_W%_after_opening', 'T6_overall_opening_kill_in_W_rounds', 'T6_overall_rating_1.0_all_Career', 'T6_overall_clutches_1on1_ratio', 'T6_overall_clutches_won_1on1', 'T6_overall_clutches_won_1on2', 'T6_overall_clutches_won_1on3', 'T6_overall_clutches_won_1on4', 'T6_overall_clutches_won_1on5', 
 
-            'T7_team_name', 'T7_name', 'T7_X', 'T7_Y', 'T7_Z', 'T7_pitch', 'T7_yaw', 'T7_velocity_X', 'T7_velocity_Y', 'T7_velocity_Z', 'T7_health', 'T7_armor_value', 'T7_inventory', 'T7_active_weapon_name', 'T7_active_weapon_ammo', 'T7_total_ammo_left', 'T7_is_alive',
+            'T7_team_name', 'T7_name', 'T7_X', 'T7_Y', 'T7_Z', 'T7_pitch', 'T7_yaw', 'T7_velocity_X', 'T7_velocity_Y', 'T7_velocity_Z', 'T7_health', 'T7_armor_value', 'T7_active_weapon_ammo', 'T7_total_ammo_left', 'T7_is_alive',
             'T7_is_crouching', 'T7_is_ducking', 'T7_is_duck_jumping', 'T7_is_walking', 'T7_is_spotted', 'T7_is_scoped', 'T7_is_defusing', 'T7_is_reloading', 'T7_flash_duration', 'T7_is_in_bombsite', 'T7_balance',
             'T7_current_equip_value', 'T7_round_start_equip_value', 'T7_is_shooting', 'T7_is_CT', 'T7_stat_kills', 'T7_stat_HS_kills', 'T7_stat_opening_kills', 'T7_stat_deaths', 'T7_stat_opening_deaths', 'T7_stat_assists', 'T7_stat_flash_assists', 'T7_stat_damage', 'T7_stat_weapon_damage', 'T7_stat_nade_damage', 'T7_stat_survives', 'T7_stat_KPR', 'T7_stat_ADR', 'T7_stat_DPR', 'T7_stat_HS%', 'T7_stat_SPR', 'T7_active_weapon_C4',
+            'T7_inventory_C4', 'T7_inventory_Taser', 'T7_inventory_USP-S', 'T7_inventory_P2000', 'T7_inventory_Glock-18', 'T7_inventory_Dual Berettas', 'T7_inventory_P250', 'T7_inventory_Tec-9', 'T7_inventory_CZ75 Auto', 'T7_inventory_Five-SeveN', 'T7_inventory_Desert Eagle', 'T7_inventory_MAC-10', 'T7_inventory_MP9', 'T7_inventory_MP7', 'T7_inventory_MP5-SD', 'T7_inventory_UMP-45', 'T7_inventory_PP-Bizon', 'T7_inventory_P90', 'T7_inventory_Nova', 'T7_inventory_XM1014', 'T7_inventory_Sawed-Off', 'T7_inventory_MAG-7', 'T7_inventory_M249', 'T7_inventory_Negev', 'T7_inventory_FAMAS', 'T7_inventory_Galil AR', 'T7_inventory_AK-47', 'T7_inventory_M4A4', 'T7_inventory_M4A1-S',
+            'T7_inventory_SG 553', 'T7_inventory_AUG', 'T7_inventory_SSG 08', 'T7_inventory_AWP', 'T7_inventory_G3SG1', 'T7_inventory_SCAR-20', 'T7_inventory_HE Grenade', 'T7_inventory_Flashbang', 'T7_inventory_Smoke Grenade', 'T7_inventory_Incendiary Grenade', 'T7_inventory_Molotov', 'T7_inventory_Decoy Grenade',
             'T7_active_weapon_Knife', 'T7_active_weapon_Taser', 'T7_active_weapon_USP-S', 'T7_active_weapon_P2000', 'T7_active_weapon_Glock-18', 'T7_active_weapon_Dual Berettas', 'T7_active_weapon_P250', 'T7_active_weapon_Tec-9', 'T7_active_weapon_CZ75 Auto', 'T7_active_weapon_Five-SeveN', 'T7_active_weapon_Desert Eagle', 'T7_active_weapon_MAC-10', 'T7_active_weapon_MP9', 'T7_active_weapon_MP7', 'T7_active_weapon_MP5-SD', 'T7_active_weapon_UMP-45', 'T7_active_weapon_PP-Bizon', 'T7_active_weapon_P90', 'T7_active_weapon_Nova', 'T7_active_weapon_XM1014', 'T7_active_weapon_Sawed-Off', 'T7_active_weapon_MAG-7', 'T7_active_weapon_M249', 'T7_active_weapon_Negev', 'T7_active_weapon_FAMAS',
-            'T7_active_weapon_Galil AR', 'T7_active_weapon_AK-47', 'T7_active_weapon_M4A4', 'T7_active_weapon_M4A1', 'T7_active_weapon_SG 553', 'T7_active_weapon_AUG', 'T7_active_weapon_SSG 08', 'T7_active_weapon_AWP', 'T7_active_weapon_G3SG1', 'T7_active_weapon_SCAR-20', 'T7_active_weapon_HE Grenade', 'T7_active_weapon_Flashbang', 'T7_active_weapon_Smoke Grenade', 'T7_active_weapon_Incendiary Grenade', 'T7_active_weapon_Molotov', 'T7_active_weapon_Decoy Grenade', 'T7_overall_rating_2.0',
-            'T7_overall_DPR', 'T7_overall_KAST', 'T7_overall_Impact', 'T7_overall_ADR', 'T7_overall_KPR', 'T7_overall_total_kills', 'T7_overall_HS%', 'T7_overall_total_deaths', 'T7_overall_KD_ratio', 'T7_overall_dmgPR', 'T7_overall_grenade_dmgPR', 'T7_overall_maps_played', 'T7_overall_saved_by_teammatePR', 'T7_overall_saved_teammatesPR', 'T7_overall_opening_kill_rating', 'T7_overall_team_W%_after_opening', 'T7_overall_opening_kill_in_W_rounds', 'T7_overall_rating_1.0_all_Career', 'T7_overall_clutches_1on1_ratio', 'T7_overall_clutches_won_1on1', 'T7_overall_clutches_won_1on2', 'T7_overall_clutches_won_1on3', 'T7_overall_clutches_won_1on4', 'T7_overall_clutches_won_1on5' 
+            'T7_active_weapon_Galil AR', 'T7_active_weapon_AK-47', 'T7_active_weapon_M4A4', 'T7_active_weapon_M4A1-S', 'T7_active_weapon_SG 553', 'T7_active_weapon_AUG', 'T7_active_weapon_SSG 08', 'T7_active_weapon_AWP', 'T7_active_weapon_G3SG1', 'T7_active_weapon_SCAR-20', 'T7_active_weapon_HE Grenade', 'T7_active_weapon_Flashbang', 'T7_active_weapon_Smoke Grenade', 'T7_active_weapon_Incendiary Grenade', 'T7_active_weapon_Molotov', 'T7_active_weapon_Decoy Grenade', 'T7_overall_rating_2.0',
+            'T7_overall_DPR', 'T7_overall_KAST', 'T7_overall_Impact', 'T7_overall_ADR', 'T7_overall_KPR', 'T7_overall_total_kills', 'T7_overall_HS%', 'T7_overall_total_deaths', 'T7_overall_KD_ratio', 'T7_overall_dmgPR', 'T7_overall_grenade_dmgPR', 'T7_overall_maps_played', 'T7_overall_saved_by_teammatePR', 'T7_overall_saved_teammatesPR', 'T7_overall_opening_kill_rating', 'T7_overall_team_W%_after_opening', 'T7_overall_opening_kill_in_W_rounds', 'T7_overall_rating_1.0_all_Career', 'T7_overall_clutches_1on1_ratio', 'T7_overall_clutches_won_1on1', 'T7_overall_clutches_won_1on2', 'T7_overall_clutches_won_1on3', 'T7_overall_clutches_won_1on4', 'T7_overall_clutches_won_1on5', 
 
-            'T8_team_name', 'T8_name', 'T8_X', 'T8_Y', 'T8_Z', 'T8_pitch', 'T8_yaw', 'T8_velocity_X', 'T8_velocity_Y', 'T8_velocity_Z', 'T8_health', 'T8_armor_value', 'T8_inventory', 'T8_active_weapon_name', 'T8_active_weapon_ammo', 'T8_total_ammo_left', 'T8_is_alive',
+            'T8_team_name', 'T8_name', 'T8_X', 'T8_Y', 'T8_Z', 'T8_pitch', 'T8_yaw', 'T8_velocity_X', 'T8_velocity_Y', 'T8_velocity_Z', 'T8_health', 'T8_armor_value', 'T8_active_weapon_ammo', 'T8_total_ammo_left', 'T8_is_alive',
             'T8_is_crouching', 'T8_is_ducking', 'T8_is_duck_jumping', 'T8_is_walking', 'T8_is_spotted', 'T8_is_scoped', 'T8_is_defusing', 'T8_is_reloading', 'T8_flash_duration', 'T8_is_in_bombsite', 'T8_balance',
             'T8_current_equip_value', 'T8_round_start_equip_value', 'T8_is_shooting', 'T8_is_CT', 'T8_stat_kills', 'T8_stat_HS_kills', 'T8_stat_opening_kills', 'T8_stat_deaths', 'T8_stat_opening_deaths', 'T8_stat_assists', 'T8_stat_flash_assists', 'T8_stat_damage', 'T8_stat_weapon_damage', 'T8_stat_nade_damage', 'T8_stat_survives', 'T8_stat_KPR', 'T8_stat_ADR', 'T8_stat_DPR', 'T8_stat_HS%', 'T8_stat_SPR', 'T8_active_weapon_C4',
+            'T8_inventory_C4', 'T8_inventory_Taser', 'T8_inventory_USP-S', 'T8_inventory_P2000', 'T8_inventory_Glock-18', 'T8_inventory_Dual Berettas', 'T8_inventory_P250', 'T8_inventory_Tec-9', 'T8_inventory_CZ75 Auto', 'T8_inventory_Five-SeveN', 'T8_inventory_Desert Eagle', 'T8_inventory_MAC-10', 'T8_inventory_MP9', 'T8_inventory_MP7', 'T8_inventory_MP5-SD', 'T8_inventory_UMP-45', 'T8_inventory_PP-Bizon', 'T8_inventory_P90', 'T8_inventory_Nova', 'T8_inventory_XM1014', 'T8_inventory_Sawed-Off', 'T8_inventory_MAG-7', 'T8_inventory_M249', 'T8_inventory_Negev', 'T8_inventory_FAMAS', 'T8_inventory_Galil AR', 'T8_inventory_AK-47', 'T8_inventory_M4A4', 'T8_inventory_M4A1-S',
+            'T8_inventory_SG 553', 'T8_inventory_AUG', 'T8_inventory_SSG 08', 'T8_inventory_AWP', 'T8_inventory_G3SG1', 'T8_inventory_SCAR-20', 'T8_inventory_HE Grenade', 'T8_inventory_Flashbang', 'T8_inventory_Smoke Grenade', 'T8_inventory_Incendiary Grenade', 'T8_inventory_Molotov', 'T8_inventory_Decoy Grenade',
             'T8_active_weapon_Knife', 'T8_active_weapon_Taser', 'T8_active_weapon_USP-S', 'T8_active_weapon_P2000', 'T8_active_weapon_Glock-18', 'T8_active_weapon_Dual Berettas', 'T8_active_weapon_P250', 'T8_active_weapon_Tec-9', 'T8_active_weapon_CZ75 Auto', 'T8_active_weapon_Five-SeveN', 'T8_active_weapon_Desert Eagle', 'T8_active_weapon_MAC-10', 'T8_active_weapon_MP9', 'T8_active_weapon_MP7', 'T8_active_weapon_MP5-SD', 'T8_active_weapon_UMP-45', 'T8_active_weapon_PP-Bizon', 'T8_active_weapon_P90', 'T8_active_weapon_Nova', 'T8_active_weapon_XM1014', 'T8_active_weapon_Sawed-Off', 'T8_active_weapon_MAG-7', 'T8_active_weapon_M249', 'T8_active_weapon_Negev', 'T8_active_weapon_FAMAS',
-            'T8_active_weapon_Galil AR', 'T8_active_weapon_AK-47', 'T8_active_weapon_M4A4', 'T8_active_weapon_M4A1', 'T8_active_weapon_SG 553', 'T8_active_weapon_AUG', 'T8_active_weapon_SSG 08', 'T8_active_weapon_AWP', 'T8_active_weapon_G3SG1', 'T8_active_weapon_SCAR-20', 'T8_active_weapon_HE Grenade', 'T8_active_weapon_Flashbang', 'T8_active_weapon_Smoke Grenade', 'T8_active_weapon_Incendiary Grenade', 'T8_active_weapon_Molotov', 'T8_active_weapon_Decoy Grenade', 'T8_overall_rating_2.0',
-            'T8_overall_DPR', 'T8_overall_KAST', 'T8_overall_Impact', 'T8_overall_ADR', 'T8_overall_KPR', 'T8_overall_total_kills', 'T8_overall_HS%', 'T8_overall_total_deaths', 'T8_overall_KD_ratio', 'T8_overall_dmgPR', 'T8_overall_grenade_dmgPR', 'T8_overall_maps_played', 'T8_overall_saved_by_teammatePR', 'T8_overall_saved_teammatesPR', 'T8_overall_opening_kill_rating', 'T8_overall_team_W%_after_opening', 'T8_overall_opening_kill_in_W_rounds', 'T8_overall_rating_1.0_all_Career', 'T8_overall_clutches_1on1_ratio', 'T8_overall_clutches_won_1on1', 'T8_overall_clutches_won_1on2', 'T8_overall_clutches_won_1on3', 'T8_overall_clutches_won_1on4', 'T8_overall_clutches_won_1on5' 
+            'T8_active_weapon_Galil AR', 'T8_active_weapon_AK-47', 'T8_active_weapon_M4A4', 'T8_active_weapon_M4A1-S', 'T8_active_weapon_SG 553', 'T8_active_weapon_AUG', 'T8_active_weapon_SSG 08', 'T8_active_weapon_AWP', 'T8_active_weapon_G3SG1', 'T8_active_weapon_SCAR-20', 'T8_active_weapon_HE Grenade', 'T8_active_weapon_Flashbang', 'T8_active_weapon_Smoke Grenade', 'T8_active_weapon_Incendiary Grenade', 'T8_active_weapon_Molotov', 'T8_active_weapon_Decoy Grenade', 'T8_overall_rating_2.0',
+            'T8_overall_DPR', 'T8_overall_KAST', 'T8_overall_Impact', 'T8_overall_ADR', 'T8_overall_KPR', 'T8_overall_total_kills', 'T8_overall_HS%', 'T8_overall_total_deaths', 'T8_overall_KD_ratio', 'T8_overall_dmgPR', 'T8_overall_grenade_dmgPR', 'T8_overall_maps_played', 'T8_overall_saved_by_teammatePR', 'T8_overall_saved_teammatesPR', 'T8_overall_opening_kill_rating', 'T8_overall_team_W%_after_opening', 'T8_overall_opening_kill_in_W_rounds', 'T8_overall_rating_1.0_all_Career', 'T8_overall_clutches_1on1_ratio', 'T8_overall_clutches_won_1on1', 'T8_overall_clutches_won_1on2', 'T8_overall_clutches_won_1on3', 'T8_overall_clutches_won_1on4', 'T8_overall_clutches_won_1on5', 
 
-            'T9_team_name', 'T9_name', 'T9_X', 'T9_Y', 'T9_Z', 'T9_pitch', 'T9_yaw', 'T9_velocity_X', 'T9_velocity_Y', 'T9_velocity_Z', 'T9_health', 'T9_armor_value', 'T9_inventory', 'T9_active_weapon_name', 'T9_active_weapon_ammo', 'T9_total_ammo_left', 'T9_is_alive',
+            'T9_team_name', 'T9_name', 'T9_X', 'T9_Y', 'T9_Z', 'T9_pitch', 'T9_yaw', 'T9_velocity_X', 'T9_velocity_Y', 'T9_velocity_Z', 'T9_health', 'T9_armor_value', 'T9_active_weapon_ammo', 'T9_total_ammo_left', 'T9_is_alive',
             'T9_is_crouching', 'T9_is_ducking', 'T9_is_duck_jumping', 'T9_is_walking', 'T9_is_spotted', 'T9_is_scoped', 'T9_is_defusing', 'T9_is_reloading', 'T9_flash_duration', 'T9_is_in_bombsite', 'T9_balance',
             'T9_current_equip_value', 'T9_round_start_equip_value', 'T9_is_shooting', 'T9_is_CT', 'T9_stat_kills', 'T9_stat_HS_kills', 'T9_stat_opening_kills', 'T9_stat_deaths', 'T9_stat_opening_deaths', 'T9_stat_assists', 'T9_stat_flash_assists', 'T9_stat_damage', 'T9_stat_weapon_damage', 'T9_stat_nade_damage', 'T9_stat_survives', 'T9_stat_KPR', 'T9_stat_ADR', 'T9_stat_DPR', 'T9_stat_HS%', 'T9_stat_SPR', 'T9_active_weapon_C4',
+            'T9_inventory_C4', 'T9_inventory_Taser', 'T9_inventory_USP-S', 'T9_inventory_P2000', 'T9_inventory_Glock-18', 'T9_inventory_Dual Berettas', 'T9_inventory_P250', 'T9_inventory_Tec-9', 'T9_inventory_CZ75 Auto', 'T9_inventory_Five-SeveN', 'T9_inventory_Desert Eagle', 'T9_inventory_MAC-10', 'T9_inventory_MP9', 'T9_inventory_MP7', 'T9_inventory_MP5-SD', 'T9_inventory_UMP-45', 'T9_inventory_PP-Bizon', 'T9_inventory_P90', 'T9_inventory_Nova', 'T9_inventory_XM1014', 'T9_inventory_Sawed-Off', 'T9_inventory_MAG-7', 'T9_inventory_M249', 'T9_inventory_Negev', 'T9_inventory_FAMAS', 'T9_inventory_Galil AR', 'T9_inventory_AK-47', 'T9_inventory_M4A4', 'T9_inventory_M4A1-S',
+            'T9_inventory_SG 553', 'T9_inventory_AUG', 'T9_inventory_SSG 08', 'T9_inventory_AWP', 'T9_inventory_G3SG1', 'T9_inventory_SCAR-20', 'T9_inventory_HE Grenade', 'T9_inventory_Flashbang', 'T9_inventory_Smoke Grenade', 'T9_inventory_Incendiary Grenade', 'T9_inventory_Molotov', 'T9_inventory_Decoy Grenade',
             'T9_active_weapon_Knife', 'T9_active_weapon_Taser', 'T9_active_weapon_USP-S', 'T9_active_weapon_P2000', 'T9_active_weapon_Glock-18', 'T9_active_weapon_Dual Berettas', 'T9_active_weapon_P250', 'T9_active_weapon_Tec-9', 'T9_active_weapon_CZ75 Auto', 'T9_active_weapon_Five-SeveN', 'T9_active_weapon_Desert Eagle', 'T9_active_weapon_MAC-10', 'T9_active_weapon_MP9', 'T9_active_weapon_MP7', 'T9_active_weapon_MP5-SD', 'T9_active_weapon_UMP-45', 'T9_active_weapon_PP-Bizon', 'T9_active_weapon_P90', 'T9_active_weapon_Nova', 'T9_active_weapon_XM1014', 'T9_active_weapon_Sawed-Off', 'T9_active_weapon_MAG-7', 'T9_active_weapon_M249', 'T9_active_weapon_Negev', 'T9_active_weapon_FAMAS',
-            'T9_active_weapon_Galil AR', 'T9_active_weapon_AK-47', 'T9_active_weapon_M4A4', 'T9_active_weapon_M4A1', 'T9_active_weapon_SG 553', 'T9_active_weapon_AUG', 'T9_active_weapon_SSG 08', 'T9_active_weapon_AWP', 'T9_active_weapon_G3SG1', 'T9_active_weapon_SCAR-20', 'T9_active_weapon_HE Grenade', 'T9_active_weapon_Flashbang', 'T9_active_weapon_Smoke Grenade', 'T9_active_weapon_Incendiary Grenade', 'T9_active_weapon_Molotov', 'T9_active_weapon_Decoy Grenade', 'T9_overall_rating_2.0',
-            'T9_overall_DPR', 'T9_overall_KAST', 'T9_overall_Impact', 'T9_overall_ADR', 'T9_overall_KPR', 'T9_overall_total_kills', 'T9_overall_HS%', 'T9_overall_total_deaths', 'T9_overall_KD_ratio', 'T9_overall_dmgPR', 'T9_overall_grenade_dmgPR', 'T9_overall_maps_played', 'T9_overall_saved_by_teammatePR', 'T9_overall_saved_teammatesPR', 'T9_overall_opening_kill_rating', 'T9_overall_team_W%_after_opening', 'T9_overall_opening_kill_in_W_rounds', 'T9_overall_rating_1.0_all_Career', 'T9_overall_clutches_1on1_ratio', 'T9_overall_clutches_won_1on1', 'T9_overall_clutches_won_1on2', 'T9_overall_clutches_won_1on3', 'T9_overall_clutches_won_1on4', 'T9_overall_clutches_won_1on5' 
+            'T9_active_weapon_Galil AR', 'T9_active_weapon_AK-47', 'T9_active_weapon_M4A4', 'T9_active_weapon_M4A1-S', 'T9_active_weapon_SG 553', 'T9_active_weapon_AUG', 'T9_active_weapon_SSG 08', 'T9_active_weapon_AWP', 'T9_active_weapon_G3SG1', 'T9_active_weapon_SCAR-20', 'T9_active_weapon_HE Grenade', 'T9_active_weapon_Flashbang', 'T9_active_weapon_Smoke Grenade', 'T9_active_weapon_Incendiary Grenade', 'T9_active_weapon_Molotov', 'T9_active_weapon_Decoy Grenade', 'T9_overall_rating_2.0',
+            'T9_overall_DPR', 'T9_overall_KAST', 'T9_overall_Impact', 'T9_overall_ADR', 'T9_overall_KPR', 'T9_overall_total_kills', 'T9_overall_HS%', 'T9_overall_total_deaths', 'T9_overall_KD_ratio', 'T9_overall_dmgPR', 'T9_overall_grenade_dmgPR', 'T9_overall_maps_played', 'T9_overall_saved_by_teammatePR', 'T9_overall_saved_teammatesPR', 'T9_overall_opening_kill_rating', 'T9_overall_team_W%_after_opening', 'T9_overall_opening_kill_in_W_rounds', 'T9_overall_rating_1.0_all_Career', 'T9_overall_clutches_1on1_ratio', 'T9_overall_clutches_won_1on1', 'T9_overall_clutches_won_1on2', 'T9_overall_clutches_won_1on3', 'T9_overall_clutches_won_1on4', 'T9_overall_clutches_won_1on5', 
 
             
-            'tick', 'round', 'CT_losing_streak', 'T_losing_streak', 'is_bomb_dropped', 'freeze_end', 'end', 'winner', 'CT_wins',
-            'CT_alive_num', 'T_alive_num', 'CT_total_hp', 'T_total_hp', 'CT_equipment_alue', 'T_equipment_value', 'remaining_time',
+            'tick', 'round', 'CT_losing_streak', 'T_losing_streak', 'is_bomb_dropped', 'freeze_end', 'end', 'CT_wins',
+            'CT_alive_num', 'T_alive_num', 'CT_total_hp', 'T_total_hp', 'CT_equipment_value', 'T_equipment_value', 'remaining_time',
             'match_id', 'is_bomb_being_planted', 'is_bomb_being_defused', 'is_bomb_defused', 'is_bomb_planted_at_A_site', 'is_bomb_planted_at_B_site', 'bomb_X',
             'bomb_Y', 'bomb_Z', 'numerical_match_id', 'bomb_mx_pos1', 'bomb_mx_pos2', 'bomb_mx_pos3', 'bomb_mx_pos4', 'bomb_mx_pos5',
             'bomb_mx_pos6', 'bomb_mx_pos7', 'bomb_mx_pos8', 'bomb_mx_pos9', 'smokes_active', 'infernos_active'
