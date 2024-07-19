@@ -215,25 +215,22 @@ class CS2_Tabular_Normalize:
 
 
     # Match normalization with the map scaler model path
-    def match_normalization(self, match_dataset, map_graph_scaler_path: str):
+    def match_normalization(self, df, map_graph_scaler):
         """
         Normalize one match dataset. Parameters:
-            - match_dataset: The match dataset.
+            - df: The match dataset.
             - map_graph_scaler: The map graph scaler.
         """
 
         # Get the min-max values of all datasets
-        player_min_max_values, overall_min_max_values = self.__build_scaling_dictionary__(match_dataset)
+        player_min_max_values, overall_min_max_values = self.__build_scaling_dictionary__(df)
 
-        # Create new variable for the same dataset
-        df = match_dataset
 
         # -------------------------
         # Normalize overall columns
         # -------------------------
 
         # Normalize overall positional columns
-        map_graph_scaler = load(map_graph_scaler_path)
         df[self.OVERALL_POS_NORM_COLS] = map_graph_scaler.transform(df[self.OVERALL_POS_NORM_COLS].rename(columns={'bomb_X': 'x', 'bomb_Y': 'y'}))
 
         # Normalize overall columns
