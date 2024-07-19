@@ -1,22 +1,30 @@
-import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
-from joblib import dump, load
 from IPython.display import clear_output
+from joblib import dump, load
+import pandas as pd
 
 
 
-class TabularGraphDataNormalization:
-
-
+class CS2_Tabular_Normalize:
 
     # Variables
     MATCH_LIST = []
     TABULAR_MATCHES_PATH = None
     OUTPUT_PATH = None
 
-    # Column groups
-    # Player positional columns, which are normalized with the min-max scaler of the inferno graph nodes
-    PLAYER_POS_NORM_COLS = [['playerNUMBER_x', 'playerNUMBER_y'], ['playerNUMBER_eyeX', 'playerNUMBER_eyeY']]
+
+
+    # ---------- POSITIONAL COLUMNS ----------
+
+    # Player positional columns
+    PLAYER_POS_NORM_COLS = [['CT-NUMBER-_X', 'CT-NUMBER-_Y', 'CT-NUMBER-_Z'], ['T-NUMBER-_X', 'T-NUMBER-_Y', 'T-NUMBER-_Z']]
+
+    # Overall positional columns, which are normalized with the min-max scaler of the inferno graph nodes
+    OVERALL_POS_NORM_COLS = ['bomb_X', 'bomb_Y', 'bomb_Z']
+
+
+
+    # ---------- NON-POSITIONAL COLUMNS ----------
 
     # Other player columns to normalize
     PLAYER_NORM_COLS = ['playerNUMBER_z', 'playerNUMBER_eyeZ', 'playerNUMBER_velocityX', 'playerNUMBER_velocityY', 'playerNUMBER_velocityZ',
@@ -25,9 +33,6 @@ class TabularGraphDataNormalization:
                         'playerNUMBER_equipmentValue', 'playerNUMBER_equipmentValueRoundStart',
                         'playerNUMBER_stat_kills', 'playerNUMBER_stat_HSK', 'playerNUMBER_stat_openKills', 'playerNUMBER_stat_tradeKills', 'playerNUMBER_stat_deaths', 'playerNUMBER_stat_openDeaths',
                         'playerNUMBER_stat_assists', 'playerNUMBER_stat_flashAssists', 'playerNUMBER_stat_damage', 'playerNUMBER_stat_weaponDamage', 'playerNUMBER_stat_nadeDamage']
-
-    # Overall positional columns, which are normalized with the min-max scaler of the inferno graph nodes
-    OVERALL_POS_NORM_COLS = ['bomb_X', 'bomb_Y']
 
     # Overall columns to normalize
     OVERALL_NORM_COLS = ['roundNum', 'tScore', 'ctScore', 'endTScore', 'endCTScore',
@@ -46,42 +51,39 @@ class TabularGraphDataNormalization:
     # --------------------------------------------------------------------------------------------
 
     # Normalize the Inferno graph nodes dataset
-    def normalize_map_graph_node_dataset(self, graph_nodes_folder_path, nodes_file_name, output_file_name=None, scaler_operation='save', model_folder_path=None, model_file_name=None):
+    def normalize_map_graph(self, nodes, pos_col_names=['X', 'Y', 'Z'], scaler_operation='save', scaler_save_path=None, scaler_save_name=None):
         """
-        Normalize the map graph dataset X and Y coordinates. Parameters:
-            - graph_nodes_folder_path: The folder path of the graph nodes dataset.
-            - nodes_file_name: The name of the graph nodes dataset.
-            - output_file_name: The name of the output file.
-            - scaler_operation: The operation to perform with the scaler. It can be 'save' or 'return'.
-            - model_folder_path: The folder path to save the model.
-            - model_file_name: The name of the model file.
+        Normalize the map node dataset's X, Y and Z coordinates. Parameters:
+            - nodes: The nodes dataset of the map.
+            - pos_col_names: The names of the positional columns to normalize. Default is ['X', 'Y', 'Z'].
+            - scaler_operation: The operation to perform with the scaler. It can be 'save' or 'return'. Default is 'save'.
+            - scaler_save_path: The path to which the scaler should be saved. Useful only if the scaler_operation is 'save'. Default is None.
+            - scaler_save_name: The name as which the model will be saved. Useful only if the scaler_operation is 'save'. Default is None.
         """
 
-        # If the output file name is not provided, use the default one
-        if output_file_name == None:
-            output_file_name = 'norm_' + nodes_file_name
+        # Check whether the filename ends with '.pkl'
+        if scaler_save_name != None and scaler_save_name[-4:] != '.pkl':
+            scaler_save_name += '.pkl'
 
-        # If the scaler operation is save, check whether the model folder path and model file name are provided
-        if scaler_operation == 'save':
-            if model_folder_path == None or model_file_name == None:
-                raise Exception('Please provide a model folder path and a model file name.')
-
-        nodes = pd.read_csv(graph_nodes_folder_path + nodes_file_name)
+        # Fit the scaler and transform the nodes dataset
         map_graph_scaler = MinMaxScaler()
-
-        # Fit the scaler for later use
-        map_graph_scaler.fit(nodes[['x', 'y']])
+        map_graph_scaler.fit(nodes[pos_col_names])
+        nodes[pos_col_names] = map_graph_scaler.transform(nodes[pos_col_names])
         
-        # Save the normalized nodes
-        nodes[['x', 'y']] = map_graph_scaler.transform(nodes[['x', 'y']])
-        nodes.to_csv(graph_nodes_folder_path + output_file_name, index=False)
-        
+        # If the scaler operation is 'save', save the model and return the nodes dataset
         if scaler_operation == 'save':
-            # Save the scaler for later use
-            dump(map_graph_scaler, model_folder_path + model_file_name)
 
+            if scaler_save_path == None or scaler_save_name == None:
+                print('Path or filename was not declared, unable to save the scaler.')
+                return nodes
+            
+            else:
+                dump(map_graph_scaler, scaler_save_path)
+                return nodes
+
+        # If the scaler operation is 'return', return both the nodes dataset and the scaler
         elif scaler_operation == 'return':
-            return map_graph_scaler
+            return nodes, map_graph_scaler
     
 
 
