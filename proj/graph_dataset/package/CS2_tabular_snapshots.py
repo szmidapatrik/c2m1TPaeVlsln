@@ -116,7 +116,21 @@ class CS2TabularSnapshots:
 
 
 
+    def impute_match(
+        self, 
+        df, 
+        method='zero'
+    ):
+        """
+        Imputes missing values in the dataset. Parameters:
+            - df: the dataset to be imputed.
+        """
 
+        # Method: zero
+        if method == 'zero':
+            df = df.fillna(0)
+
+        return df
 
     # --------------------------------------------------------------------------------------------
 
@@ -214,6 +228,7 @@ class CS2TabularSnapshots:
         damages = match.damages
         smokes = match.smokes
         infernos = match.infernos
+
 
         # Filter columns
         rounds = rounds[['round', 'freeze_end', 'end', 'winner']]
@@ -674,10 +689,10 @@ class CS2TabularSnapshots:
 
         # Add time remaining column
         new_columns = pd.DataFrame({
-            'remaining_time': 0.0,
+            'time': 0.0,
         }, index=graph_data.index)
         graph_data = pd.concat([graph_data, new_columns], axis=1)
-        graph_data['remaining_time'] = graph_data.apply(self.__EXT_calculate_time_remaining__, axis=1)
+        graph_data['time'] = graph_data.apply(self.__EXT_calculate_time_remaining__, axis=1)
 
         # Create a DataFrame with a single column for match_id
         match_id_df = pd.DataFrame({'match_id': str(match_id)}, index=graph_data.index)
@@ -707,6 +722,7 @@ class CS2TabularSnapshots:
             'is_bomb_defused': 0,
             'is_bomb_planted_at_A_site': 0,
             'is_bomb_planted_at_B_site': 0,
+            'plant_tick': 0,
             'bomb_X': 0.0,
             'bomb_Y': 0.0,
             'bomb_Z': 0.0
@@ -725,10 +741,17 @@ class CS2TabularSnapshots:
                 tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'bomb_X'] = row['X']
                 tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'bomb_Y'] = row['Y']
                 tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'bomb_Z'] = row['Z']
+                tabular_df.loc[(tabular_df['round'] == row['round']), 'plant_tick'] = row['tick']
 
             if (row['event'] == 'defused'):
                 tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_being_defused'] = 0
                 tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_defused'] = 1
+
+        # Time remaining including the plant time
+        tabular_df['remaining_time'] = tabular_df['time']
+        tabular_df.loc[tabular_df['is_bomb_planted_at_A_site'] == 1, 'remaining_time'] = 40.0 - ((tabular_df['tick'] - tabular_df['plant_tick']) / 64.0)
+        tabular_df.loc[tabular_df['is_bomb_planted_at_B_site'] == 1, 'remaining_time'] = 40.0 - ((tabular_df['tick'] - tabular_df['plant_tick']) / 64.0)
+
 
         return tabular_df
 
@@ -1066,7 +1089,7 @@ class CS2TabularSnapshots:
             'T9_hltv_rating_2.0', 'T9_hltv_DPR', 'T9_hltv_KAST', 'T9_hltv_Impact', 'T9_hltv_ADR', 'T9_hltv_KPR', 'T9_hltv_total_kills', 'T9_hltv_HS%', 'T9_hltv_total_deaths', 'T9_hltv_KD_ratio', 'T9_hltv_dmgPR', 'T9_hltv_grenade_dmgPR', 'T9_hltv_maps_played', 'T9_hltv_saved_by_teammatePR', 'T9_hltv_saved_teammatesPR', 'T9_hltv_opening_kill_rating', 'T9_hltv_team_W%_after_opening', 'T9_hltv_opening_kill_in_W_rounds', 'T9_hltv_rating_1.0_all_Career', 'T9_hltv_clutches_1on1_ratio', 'T9_hltv_clutches_won_1on1', 'T9_hltv_clutches_won_1on2', 'T9_hltv_clutches_won_1on3', 'T9_hltv_clutches_won_1on4', 'T9_hltv_clutches_won_1on5', 
 
             
-            'numerical_match_id', 'match_id', 'tick', 'round', 'remaining_time', 'freeze_end', 'end', 'CT_wins', 
+            'numerical_match_id', 'match_id', 'tick', 'round', 'time', 'remaining_time', 'freeze_end', 'end', 'CT_wins', 
             'CT_alive_num', 'T_alive_num', 'CT_total_hp', 'T_total_hp', 'CT_equipment_value', 'T_equipment_value',  'CT_losing_streak', 'T_losing_streak',
             'is_bomb_dropped', 'is_bomb_being_planted', 'is_bomb_being_defused', 'is_bomb_defused', 'is_bomb_planted_at_A_site', 'is_bomb_planted_at_B_site',
             'bomb_X', 'bomb_Y', 'bomb_Z', 'bomb_mx_pos1', 'bomb_mx_pos2', 'bomb_mx_pos3', 'bomb_mx_pos4', 'bomb_mx_pos5', 'bomb_mx_pos6', 'bomb_mx_pos7', 'bomb_mx_pos8', 'bomb_mx_pos9', 
