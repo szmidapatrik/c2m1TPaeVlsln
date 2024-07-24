@@ -18,6 +18,7 @@ class CS2TabularSnapshots:
     numerical_match_id = None
     group_players_by_side = True
     num_permutations_per_round = 1
+    build_dictionary = True
 
     # Other variables
     __nth_tick__ = 1
@@ -43,6 +44,7 @@ class CS2TabularSnapshots:
         numerical_match_id: int = None,
         num_permutations_per_round: int = 1,
         group_players_by_side: bool = True,
+        build_dictionary: bool = True,
     ):
         """
         Formats the match data and creates the tabular game-snapshot dataset. Parameters:
@@ -54,6 +56,7 @@ class CS2TabularSnapshots:
             - numerical_match_id (optional): numerical match id to add to the dataset. If value is None, no numerical match id will be added. Default is None.
             - num_permutations_per_round (optional): number of different player permutations to create for the snapshots per round. Default is 1.
             - group_players_by_side (optional): group players by side. Default is True.
+            - build_dictionary (optional): whether to build and return a dictionary with the min and max column values. Default is True.
         """
 
         # INPUT
@@ -112,7 +115,18 @@ class CS2TabularSnapshots:
         if group_players_by_side:
             tabular_df = self._TABULAR_refactor_player_columns(tabular_df)
 
-        return tabular_df
+        # 14.
+        if build_dictionary:
+            tabular_df_dict = self._FINAL_build_dictionary(tabular_df)
+
+        # 15.
+        self._FINAL_free_memory(ticks, kills, rounds, bomb, damages, smokes, infernos)
+
+        # Return
+        if build_dictionary:
+            return tabular_df, tabular_df_dict
+        else:
+            return tabular_df
 
 
 
@@ -128,7 +142,7 @@ class CS2TabularSnapshots:
 
         # Method: zero
         if method == 'zero':
-            df = df.fillna(0)
+            df = df.infer_objects().fillna(0)
 
         return df
 
@@ -144,6 +158,17 @@ class CS2TabularSnapshots:
         # Set the nth_tick value (the type must be integer)
         self.__nth_tick__ = int(64 / self.ticks_per_second)
 
+    # 15. Free memory
+    def _FINAL_free_memory(self, ticks, kills, rounds, bomb, damages, smokes, infernos):
+        del ticks
+        del kills
+        del rounds
+        del bomb
+        del damages
+        del smokes
+        del infernos
+
+    # --------------------------------------------------------------------------------------------
 
     # 1. Get needed dataframes
     def _INIT_dataframes(self):
@@ -1104,3 +1129,20 @@ class CS2TabularSnapshots:
         renamed_df = pd.concat([team_1_ct, team_2_ct])
 
         return renamed_df
+
+
+
+    # 14. Build column dictionary
+    def _FINAL_build_dictionary(self, df):
+
+        # Get the numerical columns
+        numeric_cols = [col for col in df.columns if '_name' not in col and col not in ['match_id', 'smokes_active', 'infernos_active']]
+
+        # Create dictionary dataset
+        df_dict = pd.DataFrame(data={
+            'column': numeric_cols, 
+            'min': df[numeric_cols].min().values, 
+            'max': df[numeric_cols].max().values
+        })
+
+        return df_dict
