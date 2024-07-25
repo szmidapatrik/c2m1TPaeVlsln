@@ -70,6 +70,7 @@ class CS2_Tabular_Normalize:
             return nodes
     
 
+
     # Build scaling dictionary
     def build_scaling_dict(
         self, 
@@ -90,6 +91,21 @@ class CS2_Tabular_Normalize:
             print("Invalid convention type. Please use 'prefix' or 'postfix'.")
             return None
 
+        # 1. Build the player-variant scaling dictionary
+        scaling_dict = self.__scaling_dict_1__(folder_path, convention_type, convention_value)
+
+        # 2. Make it player-invariant
+        scaling_dict = self.__scaling_dict_player_invariant__(scaling_dict)
+
+        return  scaling_dict
+    
+
+
+    # --------------------------------------------------------------------------------------------
+
+    # Create the player-variant scaling dictionary
+    def __scaling_dict_player_variant__(self, folder_path, convention_type, convention_value):
+        
         # Read all files in the folder_path and filter the ones with the given postfix
         files = os.listdir(folder_path)
 
@@ -118,12 +134,37 @@ class CS2_Tabular_Normalize:
         # Drop the 'other_min' and 'other_max' columns
         scaling_dict.drop(columns=['other_min', 'other_max'], inplace=True)
 
+        return scaling_dict
 
+    # Create the player-invariant scaling dictionary
+    def __scaling_dict_player_invariant__(self, scaling_dict):
 
+        # Initialize the player_column_prefix list
+        player_column_prefix = ['CT0', 'CT1', 'CT2', 'CT3', 'CT4', 'T5', 'T6', 'T7', 'T8', 'T9']
 
-        # TODO: Build the dictionary independently of the player indexes (e.g. CT0_health and CT1_health should be scaled to the same range)
+        # Select the rows from the dataframe which's 'column' values start with any of the strings in the 'player_column_prefix' list
+        for prefix in player_column_prefix:
+            exec(f"{prefix.lower()} = scaling_dict[scaling_dict['column'].str.startswith('{prefix}')]")
 
+        player_column_dict = ct0.copy()
+        player_column_dict['column'] = player_column_dict['column'].apply(lambda x: x.replace('CT0', ''))
 
+        for prefix in player_column_prefix[1:]:
 
+            # Store the 'min' and 'max' columns of the current prefix database in a temporary dataframe and rename the columns
+            exec(f"temp = {prefix.lower()}[['min', 'max']]")
+            temp.rename(columns={'min': 'other_player_min', 'max': 'other_player_max'}, inplace=True)
+
+            # Merge the temporary dataframe with the player_column_dict dataframe and update the 'min' and 'max' columns
+            player_column_dict = pd.concat([player_column_dict, temp], axis=1)
+            player_column_dict['min'] = player_column_dict[['min', 'other_player_min']].min(axis=1)
+            player_column_dict['max'] = player_column_dict[['max', 'other_player_']].max(axis=1)
+
+        # Drop the 'other_player_min' and 'other_player_max' columns
+        player_column_dict.drop(columns=['other_player_min', 'other_player_max'], inplace=True)
+
+        # Flter the scaling_dict for non_player columns and append the player_column_dict to the scaling_dict
+        non_player_columns = scaling_dict[~scaling_dict['column'].str.startswith(tuple(player_column_prefix))]
+        scaling_dict = pd.concat([non_player_columns, player_column_dict], axis=0)
 
         return scaling_dict

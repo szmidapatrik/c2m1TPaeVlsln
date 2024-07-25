@@ -16,7 +16,6 @@ class CS2TabularSnapshots:
     # Optional variables
     ticks_per_second = 1
     numerical_match_id = None
-    group_players_by_side = True
     num_permutations_per_round = 1
     build_dictionary = True
 
@@ -43,7 +42,6 @@ class CS2TabularSnapshots:
         ticks_per_second: int = 1,
         numerical_match_id: int = None,
         num_permutations_per_round: int = 1,
-        group_players_by_side: bool = True,
         build_dictionary: bool = True,
     ):
         """
@@ -55,7 +53,6 @@ class CS2TabularSnapshots:
             - ticks_per_second (optional): how many ticks should be returned for each second. Values: 1, 2, 4, 8, 16, 32 and 64. Default is 1.
             - numerical_match_id (optional): numerical match id to add to the dataset. If value is None, no numerical match id will be added. Default is None.
             - num_permutations_per_round (optional): number of different player permutations to create for the snapshots per round. Default is 1.
-            - group_players_by_side (optional): group players by side. Default is True.
             - build_dictionary (optional): whether to build and return a dictionary with the min and max column values. Default is True.
         """
 
@@ -68,7 +65,6 @@ class CS2TabularSnapshots:
         self.ticks_per_second = ticks_per_second
         self.numerical_match_id = numerical_match_id
         self.num_permutations_per_round = num_permutations_per_round
-        self.group_players_by_side = group_players_by_side
 
         # 0. Ticks per second operations
         self.__ticks_per_second_operations__()
@@ -112,8 +108,7 @@ class CS2TabularSnapshots:
             tabular_df = self._TABULAR_player_permutation(tabular_df, self.num_permutations_per_round)
             
         # 13.
-        if group_players_by_side:
-            tabular_df = self._TABULAR_refactor_player_columns(tabular_df)
+        tabular_df = self._TABULAR_refactor_player_columns(tabular_df)
 
         # 14.
         if build_dictionary:
