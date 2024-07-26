@@ -4,7 +4,7 @@ import numpy as np
 import random
 
 
-class CS2TabularSnapshots:
+class CS2_TabularSnapshots:
 
     # INPUT
     # Folder path constants
@@ -67,7 +67,7 @@ class CS2TabularSnapshots:
         self.num_permutations_per_round = num_permutations_per_round
 
         # 0. Ticks per second operations
-        self.__ticks_per_second_operations__()
+        self.__PREP_ticks_per_second_operations__()
 
         # 1.
         ticks, kills, rounds, bomb, damages, smokes, infernos = self._INIT_dataframes()
@@ -133,6 +133,7 @@ class CS2TabularSnapshots:
         """
         Imputes missing values in the dataset. Parameters:
             - df: the dataset to be imputed.
+            - method (optional): the method to be used for imputation. Can be 'zero'. Default is 'zero'.
         """
 
         # Method: zero
@@ -141,10 +142,57 @@ class CS2TabularSnapshots:
 
         return df
 
+
+
+    def noramlize_match(
+        self,
+        df,
+        position_scaler,
+        dictionary,
+    ):
+        """
+        Normalizes the dataset. Parameters:
+            - df: the dataset to be normalized.
+            - position_scaler: the scaler to be used for the positional columns. Often it is the map node scaling model.
+            - dictionary: the dictionary with the min and max values of each column.
+        """
+
+        for col in df.columns:
+            
+            # Format column name
+            dict_column_name = col[3:] if col.startswith('CT') else col[2:]
+
+            # Different normalization methods for different columns
+            # Position columns are normalized using the position_scaler - skip them
+            if dict_column_name in ['_X', '_Y', '_Z', 'bomb_X', 'bomb_Y', 'bomb_Z']:
+                continue
+
+            # Skip the state-describint boolean columns (values are already 0 or 1)
+            if dict_column_name.startswith('_is'):
+                continue
+
+            # Skip the inventory columns (values are already 0 or 1)
+            if dict_column_name.startswith('_inventory'):
+                continue
+
+            # Skip the active weapon columns (values are already 0 or 1)
+            if dict_column_name.startswith('_active_weapon'):
+                continue
+
+            # TODO: active_weapon_ammo - simple normalization is not enough, as the values are not in the same range (weapon dependent)
+
+            # TODO: total_ammo_left - simple normalization is not enough, as the values are not in the same range (weapon dependent)
+
+            # Transform other columns
+            dict_values = dictionary.loc[dictionary['column'] == dict_column_name]
+            df[col] = (df[col] - dict_values['min']) / (dict_values['max'] - dict_values['min']) 
+
+        return df
+
     # --------------------------------------------------------------------------------------------
 
     # 0. Ticks per second operations
-    def __ticks_per_second_operations__(self):
+    def __PREP_ticks_per_second_operations__(self):
         
         # Check if the ticks_per_second is valid
         if self.ticks_per_second not in [1, 2, 4, 8, 16, 32, 64]:
