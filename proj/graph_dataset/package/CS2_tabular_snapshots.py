@@ -38,6 +38,7 @@ class CS2_TabularSnapshots:
         match_path: str,
         player_stats_data_path: str, 
         missing_player_stats_data_path: str,
+        weapon_info_df: pd.DataFrame,
 
         ticks_per_second: int = 1,
         numerical_match_id: int = None,
@@ -49,6 +50,7 @@ class CS2_TabularSnapshots:
             - match_path: name of the match file,
             - player_stats_data_path: path of the player statistics data,
             - missing_player_stats_data_path: path of the missing player statistics data,
+            - weapon_info_df: dataframe with the weapon information for the ammo and total ammo left columns,
 
             - ticks_per_second (optional): how many ticks should be returned for each second. Values: 1, 2, 4, 8, 16, 32 and 64. Default is 1.
             - numerical_match_id (optional): numerical match id to add to the dataset. If value is None, no numerical match id will be added. Default is None.
@@ -82,39 +84,42 @@ class CS2_TabularSnapshots:
         pf = self._PLAYER_active_weapons(pf)
 
         # 5.
-        players = self._PLAYER_player_datasets(pf)
+        pf = self._PLAYER_weapon_ammo_info(pf, weapon_info_df)
 
         # 6.
-        players = self._PLAYER_hltv_statistics(players)
+        players = self._PLAYER_player_datasets(pf)
 
         # 7.
-        tabular_df = self._TABULAR_initial_dataset(players, rounds, self.MATCH_PATH)
+        players = self._PLAYER_hltv_statistics(players)
 
         # 8.
-        tabular_df = self._TABULAR_bomb_info(tabular_df, bomb)
+        tabular_df = self._TABULAR_initial_dataset(players, rounds, self.MATCH_PATH)
 
         # 9.
-        tabular_df = self._TABULAR_INFERNO_bombsite_3x3_split(tabular_df)
+        tabular_df = self._TABULAR_bomb_info(tabular_df, bomb)
 
         # 10.
-        tabular_df = self._TABULAR_smokes_and_molotovs(tabular_df, smokes, infernos)
+        tabular_df = self._TABULAR_INFERNO_bombsite_3x3_split(tabular_df)
 
         # 11.
+        tabular_df = self._TABULAR_smokes_and_molotovs(tabular_df, smokes, infernos)
+
+        # 12.
         if self.numerical_match_id is not None:
             tabular_df = self._TABULAR_numerical_match_id(tabular_df)
 
-        # 12.
+        # 13.
         if num_permutations_per_round > 1:
             tabular_df = self._TABULAR_player_permutation(tabular_df, self.num_permutations_per_round)
             
-        # 13.
+        # 14.
         tabular_df = self._TABULAR_refactor_player_columns(tabular_df)
 
-        # 14.
+        # 15.
         if build_dictionary:
             tabular_df_dict = self._FINAL_build_dictionary(tabular_df)
 
-        # 15.
+        # 16.
         self._FINAL_free_memory(ticks, kills, rounds, bomb, damages, smokes, infernos)
 
         # Return
@@ -201,7 +206,7 @@ class CS2_TabularSnapshots:
         # Set the nth_tick value (the type must be integer)
         self.__nth_tick__ = int(64 / self.ticks_per_second)
 
-    # 15. Free memory
+    # 16. Free memory
     def _FINAL_free_memory(self, ticks, kills, rounds, bomb, damages, smokes, infernos):
         del ticks
         del kills
@@ -477,7 +482,14 @@ class CS2_TabularSnapshots:
     
 
 
-    # 5. Create player dataset
+    # TODO: Active weapon ammo info
+
+    # 5. Handle weapon ammo info
+    # def _PLAYER_weapon_ammo_info(self, pf, weapon_info_df):
+
+
+
+    # 6. Create player dataset
     def _PLAYER_player_datasets(self, pf):
     
         startAsCTPlayerNames = pf[(pf['is_CT'] == True)  & (pf['round'] == 1)]['name'].drop_duplicates().tolist()
@@ -503,7 +515,7 @@ class CS2_TabularSnapshots:
     
 
 
-    # 6. Insert universal player statistics into player dataset
+    # 7. Insert universal player statistics into player dataset
     def __EXT_insert_columns_into_player_dataframes__(self, stat_df, players_df):
         for col in stat_df.columns:
             if col != 'player_name':
@@ -580,7 +592,7 @@ class CS2_TabularSnapshots:
     
 
 
-    # 7. Create tabular dataset - first version (1 row - 1 graph)
+    # 8. Create tabular dataset - first version (1 row - 1 graph)
     def __EXT_calculate_ct_equipment_value__(self, row):
         if row['player0_is_CT']:
             return row[['player0_equi_val_alive', 'player1_equi_val_alive', 'player2_equi_val_alive', 'player3_equi_val_alive', 'player4_equi_val_alive']].sum()
@@ -769,7 +781,7 @@ class CS2_TabularSnapshots:
         return graph_data_concatenated
 
 
-    # 8. Add bomb information to the dataset
+    # 9. Add bomb information to the dataset
     def __EXT_calculate_is_bomb_being_planted__(self, row):
         for i in range(0,10):
             if row['player{}_active_weapon_C4'.format(i)] == 1:
@@ -825,7 +837,7 @@ class CS2_TabularSnapshots:
 
 
 
-    # 9. Split the bombsites by 3x3 matrix for bomb position feature
+    # 10. Split the bombsites by 3x3 matrix for bomb position feature
     def __EXT_INFERNO_get_bomb_mx_coordinate__(self, row):
         # If bomb is planted on A
         if row['is_bomb_planted_at_A_site'] == 1:
@@ -951,7 +963,7 @@ class CS2_TabularSnapshots:
     
 
 
-    # 10. Handle smoke and molotov grenades
+    # 11. Handle smoke and molotov grenades
     def _TABULAR_smokes_and_molotovs(self, df, smokes, infernos):
 
         # Create new columns for smokes and infernos in the tabular dataframe
@@ -979,7 +991,7 @@ class CS2_TabularSnapshots:
 
 
 
-    # 11. Add numerical match id
+    # 12. Add numerical match id
     def _TABULAR_numerical_match_id(self, tabular_df):
 
         if type(self.numerical_match_id) is not int:
@@ -994,7 +1006,7 @@ class CS2_TabularSnapshots:
 
 
 
-    # 12. Function to extend the dataframe with copies of the rounds with varied player permutations
+    # 13. Function to extend the dataframe with copies of the rounds with varied player permutations
     def _TABULAR_player_permutation(self, df, num_permutations_per_round=3):
         """
         Function to extend the dataframe with copies of the rounds with varied player permutations
@@ -1063,7 +1075,7 @@ class CS2_TabularSnapshots:
 
 
 
-    # 13. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
+    # 14. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
     def _TABULAR_refactor_player_columns(self, df):
 
         # Separate the CT and T halves
@@ -1175,7 +1187,7 @@ class CS2_TabularSnapshots:
 
 
 
-    # 14. Build column dictionary
+    # 15. Build column dictionary
     def _FINAL_build_dictionary(self, df):
 
         # Get the numerical columns
