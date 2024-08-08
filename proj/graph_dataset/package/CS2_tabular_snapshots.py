@@ -155,8 +155,8 @@ class CS2_TabularSnapshots:
     def noramlize_match(
         self,
         df,
-        position_scaler,
         dictionary,
+        position_scaler=None,
     ):
         """
         Normalizes the dataset. Parameters:
@@ -165,10 +165,12 @@ class CS2_TabularSnapshots:
             - dictionary: the dictionary with the min and max values of each column.
         """
 
+        # TODO: Transform the positional columns using the position_scaler
+
         for col in df.columns:
             
             # Format column name
-            dict_column_name = col[3:] if col.startswith('CT') else col[2:]
+            dict_column_name = col[3:] if col.startswith('CT') else col[2:] if col.startswith('T') else col
 
             # Different normalization methods for different columns
             # Position columns are normalized using the position_scaler - skip them
@@ -183,13 +185,11 @@ class CS2_TabularSnapshots:
             if dict_column_name.startswith('_inventory'):
                 continue
 
-            # Skip the active weapon columns (values are already 0 or 1)
-            if dict_column_name.startswith('_active_weapon'):
+            # Skip the active weapon flag columns (values are already 0 or 1)
+            if dict_column_name.startswith('_active_weapon') and \
+               dict_column_name not in ['_active_weapon_magazine_size', '_active_weapon_ammo', '_active_weapon_magazine_ammo_left_%', '_active_weapon_max_ammo', '_active_weapon_total_ammo_left_%',]:
                 continue
 
-            # TODO: active_weapon_ammo - simple normalization is not enough, as the values are not in the same range (weapon dependent)
-
-            # TODO: total_ammo_left - simple normalization is not enough, as the values are not in the same range (weapon dependent)
 
             # Transform other columns
             dict_values = dictionary.loc[dictionary['column'] == dict_column_name]
