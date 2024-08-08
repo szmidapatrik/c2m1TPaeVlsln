@@ -55,7 +55,6 @@ class CS2_Dictionary:
 
     # --------------------------------------------------------------------------------------------
 
-    # TODO: Convention is not good, since CT and T prefixes have different lengths - needs to be fixed
     # Create the player-variant scaling dictionary
     def __scaling_dict_player_variant__(self, folder_path, convention_type, convention_value):
         
