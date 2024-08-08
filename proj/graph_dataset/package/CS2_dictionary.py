@@ -89,6 +89,9 @@ class CS2_Dictionary:
 
         return scaling_dict
 
+
+
+
     # Create the player-invariant scaling dictionary
     def __scaling_dict_player_invariant__(self, scaling_dict):
 
