@@ -1,8 +1,9 @@
+from typing import Union
 from awpy import Demo
 import pandas as pd
 import numpy as np
 import random
-
+import sklearn
 
 class CS2_TabularSnapshots:
 
@@ -154,30 +155,40 @@ class CS2_TabularSnapshots:
 
     def noramlize_match(
         self,
-        df,
-        dictionary,
-        position_scaler=None,
+        df: pd.DataFrame,
+        dictionary_path: str,
+        position_scaler: sklearn.preprocessing.MinMaxScaler,
     ):
         """
         Normalizes the dataset. Parameters:
             - df: the dataset to be normalized.
-            - position_scaler: the scaler to be used for the positional columns. Often it is the map node scaling model.
             - dictionary: the dictionary with the min and max values of each column.
+            - position_scaler: the scaler to be used for the positional columns.
         """
 
-        # TODO: Transform the positional columns using the position_scaler
+        # Read dictionary
+        dictionary = pd.read_csv(dictionary_path)
 
+        # Normalize position columns
+        for player_idx in range(0, 10):
+            if player_idx < 5:
+                position_scaler.transform(df[[f'CT{player_idx}_X', f'CT{player_idx}_Y', f'CT{player_idx}_Z']])
+            else:
+                position_scaler.transform(df[[f'T{player_idx}_X', f'T{player_idx}_Y', f'T{player_idx}_Z']])
+        
+        position_scaler.transform(df[['bomb_X', 'bomb_Y', 'bomb_Z']])
+
+        # Normalize other columns
         for col in df.columns:
             
             # Format column name
             dict_column_name = col[3:] if col.startswith('CT') else col[2:] if col.startswith('T') else col
 
-            # Different normalization methods for different columns
-            # Position columns are normalized using the position_scaler - skip them
+            # Skip the positional columns (already normalized with the position_scaler)
             if dict_column_name in ['_X', '_Y', '_Z', 'bomb_X', 'bomb_Y', 'bomb_Z']:
                 continue
 
-            # Skip the state-describint boolean columns (values are already 0 or 1)
+            # Skip the state-describing boolean columns (values are already 0 or 1)
             if dict_column_name.startswith('_is'):
                 continue
 
