@@ -3,7 +3,6 @@ from awpy import Demo
 import pandas as pd
 import numpy as np
 import random
-import sklearn
 
 class CS2_TabularSnapshots:
 
@@ -157,7 +156,7 @@ class CS2_TabularSnapshots:
         self,
         df: pd.DataFrame,
         dictionary_path: str,
-        position_scaler: sklearn.preprocessing.MinMaxScaler,
+        position_scaler,
     ):
         """
         Normalizes the dataset. Parameters:

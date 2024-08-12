@@ -87,3 +87,23 @@ Winning team by number:
     <td>CT - Counter-Terrorists</td>
   </tr>
 </table>
+
+
+### 4. CS2 parser classes
+
+Classes:
+
+  - CS2_tabular_snapshots: responsible for creating tabular snapshots from a demo file.
+  - CS2_dictionary: responsible for creating the normalizing dictionary for the scaling.
+  - CS2_map: responsible for normalizing map node coordinates and saving the scaler for later use.
+
+Function name conventions:
+
+  - <div>__PREP__: Preparations are done in these functions, unrelated to the actual functionality/purpose.</div>
+  - <div>__EXT__: External functions, samller code parts are organized here for better readability.</div>
+
+
+  - <div>_INIT_: Initial functions, initial steps are done in these parts.</div>
+  - <div>_PLAYER_: These functions work on databases that contain information about the players.</div>
+  - <div>_TABULAR_: These functions work on databases that contain information about the game snapshots.</div>
+  - <div>_FINAL_: Finalizing the function.</div>
