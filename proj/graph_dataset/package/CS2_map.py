@@ -21,7 +21,9 @@ class CS2_Map:
         scaler_save_name=None
     ):
         """
-        Normalize the map node dataset's X, Y and Z coordinates. Parameters:
+        Normalize the map node dataset's X, Y and Z coordinates.
+        
+        Parameters:
             - nodes: The nodes dataset of the map.
             - pos_col_names: The names of the positional columns to normalize. Default is ['X', 'Y', 'Z'].
             - scaler_operation: The operation to perform with the scaler. It can be 'save', 'return' or 'none'. Default is 'none'.

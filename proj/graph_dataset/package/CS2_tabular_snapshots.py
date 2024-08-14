@@ -47,7 +47,9 @@ class CS2_TabularSnapshots:
         build_dictionary: bool = True,
     ):
         """
-        Formats the match data and creates the tabular game-snapshot dataset. Parameters:
+        Formats the match data and creates the tabular game-snapshot dataset.
+        
+        Parameters:
             - match_path: name of the match file,
             - player_stats_data_path: path of the player statistics data,
             - missing_player_stats_data_path: path of the missing player statistics data,
@@ -139,7 +141,9 @@ class CS2_TabularSnapshots:
         method='zero'
     ):
         """
-        Imputes missing values in the dataset. Parameters:
+        Imputes missing values in the dataset.
+        
+        Parameters:
             - df: the dataset to be imputed.
             - method (optional): the method to be used for imputation. Can be 'zero'. Default is 'zero'.
         """
@@ -159,7 +163,9 @@ class CS2_TabularSnapshots:
         position_scaler,
     ):
         """
-        Normalizes the dataset. Parameters:
+        Normalizes the dataset.
+        
+        Parameters:
             - df: the dataset to be normalized.
             - dictionary: the dictionary with the min and max values of each column.
             - position_scaler: the scaler to be used for the positional columns.
@@ -568,6 +574,7 @@ class CS2_TabularSnapshots:
         return players_df
 
     def _PLAYER_hltv_statistics(self, players):
+        
         # Needed columns
         needed_stats = ['player_name', 'rating_2.0', 'DPR', 'KAST', 'Impact', 'ADR', 'KPR','total_kills', 'HS%', 'total_deaths', 'KD_ratio', 'dmgPR',
         'grenade_dmgPR', 'maps_played', 'saved_by_teammatePR', 'saved_teammatesPR','opening_kill_rating', 'team_W%_after_opening',
@@ -758,6 +765,11 @@ class CS2_TabularSnapshots:
     def _TABULAR_initial_dataset(self, players, rounds, match_id):
         """
         Creates the first version of the dataset for the graph model.
+        
+        Parameters:
+            - players: the dataframes of the players.
+            - rounds: the dataframes of the rounds.
+            - match_id: the id of the match.
         """
 
         # Copy players object
@@ -1054,7 +1066,11 @@ class CS2_TabularSnapshots:
     # 13. Function to extend the dataframe with copies of the rounds with varied player permutations
     def _TABULAR_player_permutation(self, df, num_permutations_per_round=3):
         """
-        Function to extend the dataframe with copies of the rounds with varied player permutations
+        Function to extend the dataframe with copies of the rounds with varied player permutations.
+
+        Parameters:
+            - df: the dataframe to extend.
+            - num_permutations_per_round: the number of permutations to create per round.
         """
 
         # Get the unique rounds and store team 1 and two player numbers

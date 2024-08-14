@@ -24,7 +24,9 @@ class CS2_GraphSnapshots:
 
     def process_snapshots(self, df: pd.DataFrame, nodes: pd.DataFrame, edges: pd.DataFrame, player_edges_num: int = 1):
         """
-        Create graphs from the rows of a tabular snapshot dataframe. Parameters:
+        Create graphs from the rows of a tabular snapshot dataframe.
+        
+        Parameters:
         - df: the snapshot dataframe.
         - nodes: the map graph nodes dataframe.
         - edges: the map graph edges dataframe.
@@ -249,7 +251,9 @@ class CS2_GraphSnapshots:
     # Calculate closest graph node to a position
     def __EXT_closest_node_to_pos__(self, coord_x, coord_y, coord_z, nodes):
         """
-        Returns the id of the closest node to a given position. Parameters:
+        Returns the id of the closest node to a given position.
+        
+        Parameters:
         - coord_x: the x coordinate of the position.
         - coord_y: the y coordinate of the position.
         - coord_z: the z coordinate of the position.

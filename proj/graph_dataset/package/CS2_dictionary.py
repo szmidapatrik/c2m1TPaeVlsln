@@ -32,10 +32,12 @@ class CS2_Dictionary:
 
     ):
         """
-        Builds a dictionary of min and max values for each column in the dataset by reading the dictionary files of the given folder. Parameters:
-            - folder_path: The path to the folder containing the dataset dinctionaries.
-            - convention_type: The convention type to use for filtering the dictionary files. It can be 'prefix' or 'postfix'. Default is 'prefix'.
-            - convention_value: The value to use for filtering the dictionary files. Default is None.
+        Builds a dictionary of min and max values for each column in the dataset by reading the dictionary files of the given folder.
+        
+        Parameters:
+            - folder_path: str: The path to the folder containing the dictionary files.
+            - convention_type: str: The convention type used in the dictionary files. It can be 'prefix' or 'postfix'. Default is 'prefix'.
+            - convention_value: str: The convention value used in the dictionary files. Default is None
         """
 
         # Parameter validation
