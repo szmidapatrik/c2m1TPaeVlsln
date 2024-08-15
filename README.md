@@ -107,3 +107,16 @@ Function name conventions:
   - <div>_PLAYER_: These functions work on databases that contain information about the players.</div>
   - <div>_TABULAR_: These functions work on databases that contain information about the game snapshots.</div>
   - <div>_FINAL_: Finalizing the function.</div>
+
+
+### 5. Token
+
+Token layout plan:
+
+  - 1: CT position encodings
+  - 2: T position encodings
+  - 3: CT buy type (0-3)
+  - 4: T buy type (0-3)
+  - 5: CT score (with length of 2)
+  - 6: T score (with length of 2)
+  - 7: CT wins the round (1 - true, 0 - false)
