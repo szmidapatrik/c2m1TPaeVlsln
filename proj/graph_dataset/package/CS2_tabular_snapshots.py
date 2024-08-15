@@ -321,9 +321,20 @@ class CS2_TabularSnapshots:
         smokes = match.smokes
         infernos = match.infernos
 
+        # Create columns to follow the game scores
+        rounds['CT_score'] = 0
+        rounds['T_score'] = 0
+
+        # Calculate the team scores in the rounds dataframe
+        for idx, row in rounds.iterrows():
+            if row['winner'] == 'CT':
+                rounds.loc[idx:, 'CT_score'] += 1
+
+            elif row['winner'] == 'T':
+                rounds.loc[idx:, 'T_score'] += 1
 
         # Filter columns
-        rounds = rounds[['round', 'freeze_end', 'end', 'winner']]
+        rounds = rounds[['round', 'freeze_end', 'end', 'CT_score', 'T_score', 'winner']]
         ticks = ticks[['tick', 'round', 'team_name', 'name',
                        'X', 'Y', 'Z', 'pitch', 'yaw', 'velocity_X', 'velocity_Y', 'velocity_Z', 'inventory',
                        'health', 'armor_value', 'active_weapon_name', 'active_weapon_ammo', 'total_ammo_left',
@@ -1231,7 +1242,7 @@ class CS2_TabularSnapshots:
 
             
             'numerical_match_id', 'match_id', 'tick', 'round', 'time', 'remaining_time', 'freeze_end', 'end', 'CT_wins', 
-            'CT_alive_num', 'T_alive_num', 'CT_total_hp', 'T_total_hp', 'CT_equipment_value', 'T_equipment_value',  'CT_losing_streak', 'T_losing_streak',
+            'CT_score', 'T_score', 'CT_alive_num', 'T_alive_num', 'CT_total_hp', 'T_total_hp', 'CT_equipment_value', 'T_equipment_value',  'CT_losing_streak', 'T_losing_streak',
             'is_bomb_dropped', 'is_bomb_being_planted', 'is_bomb_being_defused', 'is_bomb_defused', 'is_bomb_planted_at_A_site', 'is_bomb_planted_at_B_site',
             'bomb_X', 'bomb_Y', 'bomb_Z', 'bomb_mx_pos1', 'bomb_mx_pos2', 'bomb_mx_pos3', 'bomb_mx_pos4', 'bomb_mx_pos5', 'bomb_mx_pos6', 'bomb_mx_pos7', 'bomb_mx_pos8', 'bomb_mx_pos9', 
             'smokes_active', 'infernos_active'
