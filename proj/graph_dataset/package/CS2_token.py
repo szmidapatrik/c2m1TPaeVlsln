@@ -178,6 +178,7 @@ class CS2_Token:
         new_columns['TOKEN_T_BUY'] = 0
         new_columns['TOKEN_CT_SCORE'] = 0
         new_columns['TOKEN_T_SCORE'] = 0
+        new_columns['TOKEN_AFTERPLANT'] = 0
         new_columns['TOKEN_CT_WINS'] = 0
 
 
@@ -193,6 +194,20 @@ class CS2_Token:
         df['TOKEN_CT_SCORE'] = df['CT_score'].apply(lambda x: f'0{x}' if x < 10 else str(x))
         df['TOKEN_T_SCORE'] = df['T_score'].apply(lambda x: f'0{x}' if x < 10 else str(x))
 
+        # Store the site plant values
+        plants_in_rounds = df[['round', 'is_bomb_planted_at_A_site', 'is_bomb_planted_at_B_site']].copy()
+        plants_in_rounds.drop_duplicates(subset=['round'], keep='last', inplace=True)
+        plants_in_rounds.rename(columns={'is_bomb_planted_at_A_site': 'TOKEN_A_PLANT', 'is_bomb_planted_at_B_site': 'TOKEN_B_PLANT'}, inplace=True)
+
+        # Set the plant in the df by merging the plants_in_rounds
+        df = df.merge(plants_in_rounds, on='round', how='left')
+
+        # Drop the bomb_site columns
+        del plants_in_rounds
+
+        # Set the afterplant flag values
+        df['TOKEN_AFTERPLANT'] = df['is_bomb_planted_at_A_site'].astype(int) + df['is_bomb_planted_at_B_site'].astype(int)
+
         # Set the win values
         df['TOKEN_CT_WINS'] = df['CT_wins']
 
@@ -203,6 +218,9 @@ class CS2_Token:
                       df['TOKEN_T_BUY'].astype(str) + \
                       df['TOKEN_CT_SCORE'].astype(str) + \
                       df['TOKEN_T_SCORE'].astype(str) + \
+                      df['TOKEN_A_PLANT'].astype(str) + \
+                      df['TOKEN_B_PLANT'].astype(str) + \
+                      df['TOKEN_AFTERPLANT'].astype(str) + \
                       df['TOKEN_CT_WINS'].astype(str)
 
         # Drop all columns starting with 'TOKEN_' except the token
