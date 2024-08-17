@@ -1,7 +1,5 @@
 import torch
 from torch_geometric.data import HeteroData
-from torch_geometric.data import Dataset, Data
-import sklearn
 
 import pandas as pd
 import numpy as np
@@ -38,7 +36,7 @@ class CS2_GraphSnapshots:
         # --------------------------------------------------
 
         # Validate the input paramters
-        self.__INIT_validate_inputs__(df, nodes, edges, player_edges_num)
+        self._PREP_validate_inputs_(df, nodes, edges, player_edges_num)
 
         # Create a list to store the heterogeneous graph snapshots
         heterograph_snapshot_list = []
@@ -48,7 +46,7 @@ class CS2_GraphSnapshots:
         last_round_bomb_near_was_calculated_for = 0
 
         # Columns of the nodes dataframe
-        nodes_columns = ['x', 'y', 'z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning']
+        nodes_columns = ['X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning']
 
         # Node dataframe to use for the graph
         nodes_for_graph = nodes.copy() 
@@ -69,15 +67,15 @@ class CS2_GraphSnapshots:
             # --------------------------------------------------
 
             # Set actual round number
-            actual_round_num = row['round']
+            actual_round_num = row['UNIVERSAL_round']
 
             # If the bomb isn't planted, use the original nodes
-            if row['is_bomb_planted_at_A_site'] + row['is_bomb_planted_at_B_site'] == 0:
+            if row['UNIVERSAL_is_bomb_planted_at_A_site'] + row['UNIVERSAL_is_bomb_planted_at_B_site'] == 0:
                 nodes_for_graph = nodes.copy()
                 
             # If the bomb is planted, and the nodes near the bomb weren't calculated yet for this round, calculate them
-            elif (row['is_bomb_planted_at_A_site'] + row['is_bomb_planted_at_B_site'] == 1) and (actual_round_num != last_round_bomb_near_was_calculated_for):
-                nodes_for_graph = self.__EXT_set_bomb_planted_near_for_nodes__(nodes.copy(), df.copy(), row_idx)
+            elif (row['UNIVERSAL_is_bomb_planted_at_A_site'] + row['UNIVERSAL_is_bomb_planted_at_B_site'] == 1) and (actual_round_num != last_round_bomb_near_was_calculated_for):
+                nodes_for_graph = self._EXT_set_bomb_planted_near_for_nodes_(nodes.copy(), df.copy(), row_idx)
                 last_round_bomb_near_was_calculated_for = actual_round_num
             # else:
                 # If the bomb is planted, and the nodes near the bomb were calculated already for this round, use the nodes_for_graph dataframe
@@ -90,7 +88,7 @@ class CS2_GraphSnapshots:
 
             # Get the tensors for the graph
             player_tensor = self._PLAYER_nodes_tensor_(row)
-            player_edges_tensor = self._PLAYER_get_edges_tensor_(row, nodes_for_graph)
+            player_edges_tensor = self._PLAYER_edges_tensor_(row, nodes_for_graph)
 
 
 
@@ -102,49 +100,49 @@ class CS2_GraphSnapshots:
             data = HeteroData()
 
             # Create node data
-            data['player'].x = torch.tensor(player_tensor.astype('float32'))
-            data['map'].x = torch.tensor(nodes_for_graph[nodes_columns].values.astype('float32'))
+            data['player'].x = torch.tensor(player_tensor, dtype=torch.float32)
+            data['map'].x = torch.tensor(nodes_for_graph[nodes_columns].values, dtype=torch.float32)
 
             # Create edge data
-            data['map', 'connected_to', 'map'].edge_index = torch.tensor(edges.values.T.astype('int16'))
-            data['player', 'closest_to', 'map'].edge_index = torch.tensor(player_edges_tensor.astype('int16'))
+            data['map', 'connected_to', 'map'].edge_index = torch.tensor(edges.values.T, dtype=torch.int16)
+            data['player', 'closest_to', 'map'].edge_index = torch.tensor(player_edges_tensor, dtype=torch.int16)
 
             # Define the graph-level features
             data.y = {
-                'numerical_match_id': row['numerical_match_id'].astype('float32'),
-                'tick': row['tick'].astype('float32'),
-                'round': row['round'].astype('float32'),
-                'time': row['time'].astype('float32'),
-                'remaining_time': row['remaining_time'].astype('float32'),
-                'freeze_end': row['freeze_end'].astype('float32'),
-                'end': row['end'].astype('float32'),
-                'CT_alive_num': row['CT_alive_num'].astype('float32'),
-                'T_alive_num': row['T_alive_num'].astype('float32'),
-                'CT_total_hp': row['CT_total_hp'].astype('float32'),
-                'T_total_hp': row['T_total_hp'].astype('float32'),
-                'CT_equipment_value': row['CT_equipment_value'].astype('float32'),
-                'T_equipment_value': row['T_equipment_value'].astype('float32'),
-                'CT_losing_streak': row['CT_losing_streak'].astype('float32'),
-                'T_losing_streak': row['T_losing_streak'].astype('float32'),
-                'is_bomb_dropped': row['is_bomb_dropped'].astype('float16'),
-                'is_bomb_being_planted': row['is_bomb_being_planted'].astype('float16'),
-                'is_bomb_being_defused': row['is_bomb_being_defused'].astype('float16'),
-                'is_bomb_defused': row['is_bomb_defused'].astype('float16'),
-                'is_bomb_planted_at_A_site': row['is_bomb_planted_at_A_site'].astype('float16'),
-                'is_bomb_planted_at_B_site': row['is_bomb_planted_at_B_site'].astype('float16'),
-                'bomb_X': row['bomb_X'].astype('float32'),
-                'bomb_Y': row['bomb_Y'].astype('float32'),
-                'bomb_Z': row['bomb_Z'].astype('float32'),
-                'bomb_mx_pos1': row['bomb_mx_pos1'].astype('float16'),
-                'bomb_mx_pos2': row['bomb_mx_pos2'].astype('float16'),
-                'bomb_mx_pos3': row['bomb_mx_pos3'].astype('float16'),
-                'bomb_mx_pos4': row['bomb_mx_pos4'].astype('float16'),
-                'bomb_mx_pos5': row['bomb_mx_pos5'].astype('float16'),
-                'bomb_mx_pos6': row['bomb_mx_pos6'].astype('float16'),
-                'bomb_mx_pos7': row['bomb_mx_pos7'].astype('float16'),
-                'bomb_mx_pos8': row['bomb_mx_pos8'].astype('float16'),
-                'bomb_mx_pos9': row['bomb_mx_pos9'].astype('float16'),
-                'CT_wins': row['CT_wins'].astype('float16'),
+                'numerical_match_id': row['NUMERICAL_MATCH_ID'].astype('float32'),
+                'tick': row['UNIVERSAL_tick'].astype('float32'),
+                'round': row['UNIVERSAL_round'].astype('float32'),
+                'time': row['UNIVERSAL_time'].astype('float32'),
+                'remaining_time': row['UNIVERSAL_remaining_time'].astype('float32'),
+                'freeze_end': row['UNIVERSAL_freeze_end'].astype('float32'),
+                'end': row['UNIVERSAL_end'].astype('float32'),
+                'CT_alive_num': row['UNIVERSAL_CT_alive_num'].astype('float32'),
+                'T_alive_num': row['UNIVERSAL_T_alive_num'].astype('float32'),
+                'CT_total_hp': row['UNIVERSAL_CT_total_hp'].astype('float32'),
+                'T_total_hp': row['UNIVERSAL_T_total_hp'].astype('float32'),
+                'CT_equipment_value': row['UNIVERSAL_CT_equipment_value'].astype('float32'),
+                'T_equipment_value': row['UNIVERSAL_T_equipment_value'].astype('float32'),
+                'CT_losing_streak': row['UNIVERSAL_CT_losing_streak'].astype('float32'),
+                'T_losing_streak': row['UNIVERSAL_T_losing_streak'].astype('float32'),
+                'is_bomb_dropped': row['UNIVERSAL_is_bomb_dropped'].astype('float16'),
+                'is_bomb_being_planted': row['UNIVERSAL_is_bomb_being_planted'].astype('float16'),
+                'is_bomb_being_defused': row['UNIVERSAL_is_bomb_being_defused'].astype('float16'),
+                'is_bomb_defused': row['UNIVERSAL_is_bomb_defused'].astype('float16'),
+                'is_bomb_planted_at_A_site': row['UNIVERSAL_is_bomb_planted_at_A_site'].astype('float16'),
+                'is_bomb_planted_at_B_site': row['UNIVERSAL_is_bomb_planted_at_B_site'].astype('float16'),
+                'bomb_X': row['UNIVERSAL_bomb_X'].astype('float32'),
+                'bomb_Y': row['UNIVERSAL_bomb_Y'].astype('float32'),
+                'bomb_Z': row['UNIVERSAL_bomb_Z'].astype('float32'),
+                'bomb_mx_pos1': row['UNIVERSAL_bomb_mx_pos1'].astype('float16'),
+                'bomb_mx_pos2': row['UNIVERSAL_bomb_mx_pos2'].astype('float16'),
+                'bomb_mx_pos3': row['UNIVERSAL_bomb_mx_pos3'].astype('float16'),
+                'bomb_mx_pos4': row['UNIVERSAL_bomb_mx_pos4'].astype('float16'),
+                'bomb_mx_pos5': row['UNIVERSAL_bomb_mx_pos5'].astype('float16'),
+                'bomb_mx_pos6': row['UNIVERSAL_bomb_mx_pos6'].astype('float16'),
+                'bomb_mx_pos7': row['UNIVERSAL_bomb_mx_pos7'].astype('float16'),
+                'bomb_mx_pos8': row['UNIVERSAL_bomb_mx_pos8'].astype('float16'),
+                'bomb_mx_pos9': row['UNIVERSAL_bomb_mx_pos9'].astype('float16'),
+                'CT_wins': row['UNIVERSAL_CT_wins'].astype('float16'),
             }
 
 
@@ -176,8 +174,8 @@ class CS2_GraphSnapshots:
             raise ValueError("The edges dataframe is empty.")
         
         # Check if the nodes dataset containes the required columns
-        if not all(col in nodes.columns for col in ['node_id', 'x', 'y', 'z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning']):
-            raise ValueError("The nodes dataframe does not contain the required columns. Required columns are: 'node_id', 'x', 'y', 'z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning'.")
+        if not all(col in nodes.columns for col in ['node_id', 'X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning']):
+            raise ValueError("The nodes dataframe does not contain the required columns. Required columns are: 'node_id', 'X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning'.")
         
         # Check if the edges dataset containes the required columns
         if not all(col in edges.columns for col in ['source', 'target']):
@@ -189,8 +187,8 @@ class CS2_GraphSnapshots:
 
     # 1. Set the 'is_bomb_planted_near' value for the nodes near the bomb
     def _EXT_set_bomb_planted_near_for_nodes_(self, nodes, df, index):
-        closest_node_id = self.__EXT_closest_node_to_pos__(df.iloc[index]['bomb_X'], df.iloc[index]['bomb_Y'], df.iloc[index]['bomb_Z'], nodes)
-        nodes.loc[nodes['node_id'] == closest_node_id, 'is_bomb_planted_near'] = 1
+        closest_node_id = self.__EXT_closest_node_to_pos__(df.iloc[index]['UNIVERSAL_bomb_X'], df.iloc[index]['UNIVERSAL_bomb_Y'], df.iloc[index]['UNIVERSAL_bomb_Z'], nodes)
+        nodes.loc[nodes['node_id'] == closest_node_id, 'UNIVERSAL_is_bomb_planted_near'] = 1
         return nodes
 
     # 2.1 Create the player nodes tensor
@@ -211,9 +209,9 @@ class CS2_GraphSnapshots:
             
             # Get the columns for the player with the right index
             if i < 5:
-                exec(f"player_columns = [col for col in row.keys() if f'CT{i}' in col]")
+                player_columns = [col for col in row.keys() if f'CT{i}' in col]
             else:
-                exec(f"player_columns = [col for col in row.keys() if f'T{i}' in col]")
+                player_columns = [col for col in row.keys() if f'T{i}' in col]
 
             # Get the player data
             player = row[player_columns].values
@@ -233,9 +231,11 @@ class CS2_GraphSnapshots:
         nearest_nodes_arr = np.array([])
         for player_idx in range(0, 10):
             if (player_idx < 5):
-                exec(f"nearest_nodes_arr.append(self.__EXT_closest_node_to_pos__(row['CT{player_idx}_X'], row['CT{player_idx}_Y'], row['CT{player_idx}_Z'], nodes))")
+                nearest_node = self.__EXT_closest_node_to_pos__(row[f'CT{player_idx}_X'], row[f'CT{player_idx}_Y'], row[f'CT{player_idx}_Z'], nodes)
+                nearest_nodes_arr = np.append(nearest_nodes_arr, nearest_node)
             else:
-                exec(f"nearest_nodes_arr.append(self.__EXT_closest_node_to_pos__(row['T{player_idx}_X'], row['T{player_idx}_Y'], row['T{player_idx}_Z'], nodes))")
+                nearest_node = self.__EXT_closest_node_to_pos__(row[f'T{player_idx}_X'], row[f'T{player_idx}_Y'], row[f'T{player_idx}_Z'], nodes)
+                nearest_nodes_arr = np.append(nearest_nodes_arr, nearest_node)
 
 
         playerEdges = np.array([
@@ -259,7 +259,7 @@ class CS2_GraphSnapshots:
         - coord_z: the z coordinate of the position.
         - nodes: the nodes dataframe.
         """
-        distances = np.sqrt((nodes['x'] - coord_x)**2 + (nodes['y'] - coord_y)**2 + (nodes['z'] - coord_z)**2)
+        distances = np.sqrt((nodes['X'] - coord_x)**2 + (nodes['Y'] - coord_y)**2 + (nodes['Z'] - coord_z)**2)
         return nodes.loc[distances.idxmin(), 'node_id']
 
 
