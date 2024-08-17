@@ -135,7 +135,7 @@ class CS2_Token:
     def __EXT_set_CT_buy(self, row):
 
         # Economy values
-        CT_economy = row['CT_equipment_value']
+        CT_economy = row['UNIVERSAL_CT_equipment_value']
 
         # Return the economy value
         if CT_economy < 5000:
@@ -150,7 +150,7 @@ class CS2_Token:
     def __EXT_set_T_buy(self, row):
 
         # Economy values
-        T_economy = row['T_equipment_value']
+        T_economy = row['UNIVERSAL_T_equipment_value']
 
         # Return the economy value
         if T_economy < 5000:
@@ -191,25 +191,25 @@ class CS2_Token:
         df['TOKEN_T_BUY'] = df.apply(self.__EXT_set_T_buy, axis=1)
 
         # Set the score values
-        df['TOKEN_CT_SCORE'] = df['CT_score'].apply(lambda x: f'0{x}' if x < 10 else str(x))
-        df['TOKEN_T_SCORE'] = df['T_score'].apply(lambda x: f'0{x}' if x < 10 else str(x))
+        df['TOKEN_CT_SCORE'] = df['UNIVERSAL_CT_score'].apply(lambda x: f'0{x}' if x < 10 else str(x))
+        df['TOKEN_T_SCORE'] = df['UNIVERSAL_T_score'].apply(lambda x: f'0{x}' if x < 10 else str(x))
 
         # Store the site plant values
-        plants_in_rounds = df[['round', 'is_bomb_planted_at_A_site', 'is_bomb_planted_at_B_site']].copy()
-        plants_in_rounds.drop_duplicates(subset=['round'], keep='last', inplace=True)
-        plants_in_rounds.rename(columns={'is_bomb_planted_at_A_site': 'TOKEN_A_PLANT', 'is_bomb_planted_at_B_site': 'TOKEN_B_PLANT'}, inplace=True)
+        plants_in_rounds = df[['UNIVERSAL_round', 'UNIVERSAL_is_bomb_planted_at_A_site', 'UNIVERSAL_is_bomb_planted_at_B_site']].copy()
+        plants_in_rounds.drop_duplicates(subset=['UNIVERSAL_round'], keep='last', inplace=True)
+        plants_in_rounds.rename(columns={'UNIVERSAL_is_bomb_planted_at_A_site': 'TOKEN_A_PLANT', 'UNIVERSAL_is_bomb_planted_at_B_site': 'TOKEN_B_PLANT'}, inplace=True)
 
         # Set the plant in the df by merging the plants_in_rounds
-        df = df.merge(plants_in_rounds, on='round', how='left')
+        df = df.merge(plants_in_rounds, on='UNIVERSAL_round', how='left')
 
         # Drop the bomb_site columns
         del plants_in_rounds
 
         # Set the afterplant flag values
-        df['TOKEN_AFTERPLANT'] = df['is_bomb_planted_at_A_site'].astype(int) + df['is_bomb_planted_at_B_site'].astype(int)
+        df['TOKEN_AFTERPLANT'] = df['UNIVERSAL_is_bomb_planted_at_A_site'].astype(int) + df['UNIVERSAL_is_bomb_planted_at_B_site'].astype(int)
 
         # Set the win values
-        df['TOKEN_CT_WINS'] = df['CT_wins']
+        df['TOKEN_CT_WINS'] = df['UNIVERSAL_CT_wins']
 
         # Create token by concatenating all the TOKEN columns as strings
         df['TOKEN'] = df['TOKEN_CT_POS'].astype(str) + \
@@ -244,7 +244,7 @@ class CS2_Token:
         - nodes: the nodes dataframe.
         """
 
-        distances = np.sqrt((map_nodes['x'] - coord_x)**2 + (map_nodes['y'] - coord_y)**2 + (map_nodes['z'] - coord_z)**2)
+        distances = np.sqrt((map_nodes['X'] - coord_x)**2 + (map_nodes['Y'] - coord_y)**2 + (map_nodes['Z'] - coord_z)**2)
         return map_nodes.loc[distances.idxmin(), 'pos_name']
     
     # Get the position names for the given map
@@ -259,4 +259,5 @@ class CS2_Token:
         if map == 'de_inferno':
             return self.INFERNO_POSITIONS
         else:
+            print('WARNING: the selected map is under development, thus not usable yet. Please contact the developer for further information: random.developer@email.com.')
             return []

@@ -1,4 +1,4 @@
-node_id,pos_name,x,y,z,type,is_contact,is_contact.1,is_bombsite,is_bomb_planted_near,is_burning,pos_id
+node_id,pos_name,X,Y,Z,type,is_contact,is_contact.1,is_bombsite,is_bomb_planted_near,is_burning,pos_id
 65,a,2280,1120,172,path,0,0,0,0,0,1001
 72,a,1630,0,138,path,0,0,0,0,0,1002
 73,a,1820,0,132,path,0,0,0,0,0,1003

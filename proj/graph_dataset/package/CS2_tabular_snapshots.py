@@ -1,7 +1,11 @@
-from typing import Union
 from awpy import Demo
+
+from sklearn.preprocessing import MinMaxScaler
+
 import pandas as pd
 import numpy as np
+
+import gc
 import random
 
 class CS2_TabularSnapshots:
@@ -26,12 +30,16 @@ class CS2_TabularSnapshots:
 
 
     # --------------------------------------------------------------------------------------------
+    # REGION: Constructor
+    # --------------------------------------------------------------------------------------------
 
     def __init__(self):
         pass
 
 
 
+    # --------------------------------------------------------------------------------------------
+    # REGION: Available Functions
     # --------------------------------------------------------------------------------------------
 
     def process_match(
@@ -121,10 +129,13 @@ class CS2_TabularSnapshots:
         tabular_df = self._TABULAR_refactor_player_columns(tabular_df)
 
         # 15.
+        tabular_df = self._TABULAR_prefix_universal_columns(tabular_df)
+
+        # 16.
         if build_dictionary:
             tabular_df_dict = self._FINAL_build_dictionary(tabular_df)
 
-        # 16.
+        # 17.
         self._FINAL_free_memory(ticks, kills, rounds, bomb, damages, smokes, infernos)
 
         # Return
@@ -138,19 +149,21 @@ class CS2_TabularSnapshots:
     def impute_match(
         self, 
         df, 
-        method='zero'
+        method='default'
     ):
         """
         Imputes missing values in the dataset.
         
         Parameters:
             - df: the dataset to be imputed.
-            - method (optional): the method to be used for imputation. Can be 'zero'. Default is 'zero'.
+            - method (optional): the method to be used for imputation. Can be 'default'. Default is 'default'.
         """
 
-        # Method: zero
-        if method == 'zero':
+        # Method: default
+        if method == 'default':
             df = df.infer_objects().fillna(0)
+            df = df.replace(np.inf, 0)
+            df = df.replace(-np.inf, 0)
 
         return df
 
@@ -159,8 +172,8 @@ class CS2_TabularSnapshots:
     def noramlize_match(
         self,
         df: pd.DataFrame,
-        dictionary_path: str,
-        position_scaler,
+        dictionary: pd.DataFrame,
+        position_scaler: MinMaxScaler,
     ):
         """
         Normalizes the dataset.
@@ -168,51 +181,36 @@ class CS2_TabularSnapshots:
         Parameters:
             - df: the dataset to be normalized.
             - dictionary: the dictionary with the min and max values of each column.
-            - position_scaler: the scaler to be used for the positional columns.
+            - position_scaler: the position scaler for the positional features.
         """
 
-        # Read dictionary
-        dictionary = pd.read_csv(dictionary_path)
-
         # Normalize position columns
-        for player_idx in range(0, 10):
-            if player_idx < 5:
-                position_scaler.transform(df[[f'CT{player_idx}_X', f'CT{player_idx}_Y', f'CT{player_idx}_Z']])
-            else:
-                position_scaler.transform(df[[f'T{player_idx}_X', f'T{player_idx}_Y', f'T{player_idx}_Z']])
-        
-        position_scaler.transform(df[['bomb_X', 'bomb_Y', 'bomb_Z']])
+        df = self.__NORMALIZE_positions__(df, position_scaler)
 
         # Normalize other columns
         for col in df.columns:
             
             # Format column name
-            dict_column_name = col[3:] if col.startswith('CT') else col[2:] if col.startswith('T') else col
+            dict_column_name = col[3:] if col.startswith('CT') else col[2:] if (col.startswith('T') and col != 'TOKEN') else col
 
-            # Skip the positional columns (already normalized with the position_scaler)
-            if dict_column_name in ['_X', '_Y', '_Z', 'bomb_X', 'bomb_Y', 'bomb_Z']:
+            if self.__NORMALIZE_skip_column__(dict_column_name):
                 continue
-
-            # Skip the state-describing boolean columns (values are already 0 or 1)
-            if dict_column_name.startswith('_is'):
-                continue
-
-            # Skip the inventory columns (values are already 0 or 1)
-            if dict_column_name.startswith('_inventory'):
-                continue
-
-            # Skip the active weapon flag columns (values are already 0 or 1)
-            if dict_column_name.startswith('_active_weapon') and \
-               dict_column_name not in ['_active_weapon_magazine_size', '_active_weapon_ammo', '_active_weapon_magazine_ammo_left_%', '_active_weapon_max_ammo', '_active_weapon_total_ammo_left_%',]:
-                continue
-
 
             # Transform other columns
-            dict_values = dictionary.loc[dictionary['column'] == dict_column_name]
-            df[col] = (df[col] - dict_values['min']) / (dict_values['max'] - dict_values['min']) 
+            col_min = dictionary.loc[dictionary['column'] == dict_column_name]['min'].values[0]
+            col_max = dictionary.loc[dictionary['column'] == dict_column_name]['max'].values[0]
+
+            if col_max == 0 and col_min == 0:
+                df[col] = 0
+            else:
+                df[col] = (df[col] - col_min) / (col_max - col_min) 
 
         return df
 
+
+
+    # --------------------------------------------------------------------------------------------
+    # REGION: Process Match Private Functions
     # --------------------------------------------------------------------------------------------
 
     # 0. Ticks per second operations
@@ -225,17 +223,7 @@ class CS2_TabularSnapshots:
         # Set the nth_tick value (the type must be integer)
         self.__nth_tick__ = int(64 / self.ticks_per_second)
 
-    # 16. Free memory
-    def _FINAL_free_memory(self, ticks, kills, rounds, bomb, damages, smokes, infernos):
-        del ticks
-        del kills
-        del rounds
-        del bomb
-        del damages
-        del smokes
-        del infernos
 
-    # --------------------------------------------------------------------------------------------
 
     # 1. Get needed dataframes
     def _INIT_dataframes(self):
@@ -436,6 +424,7 @@ class CS2_TabularSnapshots:
         pf['stat_ADR'] = pf['stat_damage'] / pf['round']
         pf['stat_DPR'] = pf['stat_deaths'] / pf['round']
         pf['stat_HS%'] = pf['stat_HS_kills'] / pf['stat_kills']
+        pf['stat_HS%'] = pf['stat_HS%'].fillna(0)
         pf['stat_SPR'] = pf['stat_survives'] / pf['round']
             
         return pf
@@ -521,6 +510,8 @@ class CS2_TabularSnapshots:
         # Create player ammo info columns
         pf['active_weapon_magazine_size'] = 0
         pf['active_weapon_max_ammo'] = 0
+        pf['active_weapon_magazine_ammo_left_%'] = 0
+        pf['active_weapon_total_ammo_left_%'] = 0
 
         # Active weapons
         active_weapons = [
@@ -544,8 +535,17 @@ class CS2_TabularSnapshots:
             pf.loc[pf[col] == 1, 'active_weapon_magazine_size'] = weapon_data.loc[weapon_data['weapon_name'] == col.replace('active_weapon_', '')]['magazine_size'].values[0]
             pf.loc[pf[col] == 1, 'active_weapon_max_ammo']    = weapon_data.loc[weapon_data['weapon_name'] == col.replace('active_weapon_', '')]['total_ammo'].values[0]
 
+        # Create magazine ammo left % column
+        # If the player holds a weapon without ammo (e.g. knife), the ammo left is 0, thus we devide by 0
         pf['active_weapon_magazine_ammo_left_%'] = pf['active_weapon_ammo'] / pf['active_weapon_magazine_size']
+        # Fix the 0 division
+        pf['active_weapon_magazine_ammo_left_%'] = pf['active_weapon_magazine_ammo_left_%'].fillna(0)
+
+        # Create total ammo left % column
+        # If the player holds a weapon without ammo (e.g. knife), the ammo left is 0, thus we devide by 0
         pf['active_weapon_total_ammo_left_%'] = pf['total_ammo_left'] / pf['active_weapon_max_ammo']
+        # Fix the 0 division
+        pf['active_weapon_total_ammo_left_%'] = pf['active_weapon_total_ammo_left_%'].fillna(0)
 
         return pf
 
@@ -1259,11 +1259,32 @@ class CS2_TabularSnapshots:
 
 
 
-    # 15. Build column dictionary
+    # 15. Rename overall columns
+    def _TABULAR_prefix_universal_columns(self, df):
+
+        # Get universal columns
+        universal_columns = [col for col in df.columns if not col.startswith('CT0') and not col.startswith('T5')
+                                                      and not col.startswith('CT1') and not col.startswith('T6')
+                                                      and not col.startswith('CT2') and not col.startswith('T7')
+                                                      and not col.startswith('CT3') and not col.startswith('T8')
+                                                      and not col.startswith('CT4') and not col.startswith('T9')
+                                                      and col != 'numerical_match_id' and col != 'match_id']
+
+        # Rename the columns
+        df = df.rename(columns={col: 'UNIVERSAL_' + col for col in universal_columns})
+
+        # Rename the match_id and numerical_match_id columns
+        df = df.rename(columns={'match_id': 'MATCH_ID', 'numerical_match_id': 'NUMERICAL_MATCH_ID'})
+
+        return df
+
+
+
+    # 16. Build column dictionary
     def _FINAL_build_dictionary(self, df):
 
         # Get the numerical columns
-        numeric_cols = [col for col in df.columns if '_name' not in col and col not in ['match_id', 'smokes_active', 'infernos_active']]
+        numeric_cols = [col for col in df.columns if '_name' not in col and col not in ['MATCH_ID', 'NUMERICAL_MATCH_ID' 'UNIVERSAL_smokes_active', 'UNIVERSAL_infernos_active']]
 
         # Create dictionary dataset
         df_dict = pd.DataFrame(data={
@@ -1273,3 +1294,118 @@ class CS2_TabularSnapshots:
         })
 
         return df_dict
+    
+
+
+    # 17. Free memory
+    def _FINAL_free_memory(self, ticks, kills, rounds, bomb, damages, smokes, infernos):
+        del ticks
+        del kills
+        del rounds
+        del bomb
+        del damages
+        del smokes
+        del infernos
+        gc.collect()
+
+
+
+    # --------------------------------------------------------------------------------------------
+    # REGION: Normalization private methods
+    # --------------------------------------------------------------------------------------------
+
+    # Normalize positions
+    def __NORMALIZE_positions__(self, df: pd.DataFrame, position_scaler: MinMaxScaler):
+
+        for player_idx in range(0, 10):
+
+            if player_idx < 5:
+            
+                # Get the column names and rename them
+                position_columns = [f'CT{player_idx}_X', f'CT{player_idx}_Y', f'CT{player_idx}_Z']
+                renamed_columns = df[position_columns].rename(columns={
+                    f'CT{player_idx}_X': 'X',
+                    f'CT{player_idx}_Y': 'Y',
+                    f'CT{player_idx}_Z': 'Z'
+                })
+
+                # Normalize positions
+                transformed_columns = position_scaler.transform(renamed_columns)
+
+                # Update the original dataframe
+                df[position_columns] = transformed_columns
+
+            else:
+
+                # Column names
+                position_columns = [f'T{player_idx}_X', f'T{player_idx}_Y', f'T{player_idx}_Z']
+
+                # Rename columns
+                renamed_columns = df[position_columns].rename(columns={
+                    f'T{player_idx}_X': 'X',
+                    f'T{player_idx}_Y': 'Y',
+                    f'T{player_idx}_Z': 'Z'
+                })
+
+                # Normalize positions
+                transformed_columns = position_scaler.transform(renamed_columns)
+
+                # Update the original dataframe
+                df[position_columns] = transformed_columns
+                
+
+        # Normalize the bomb position
+        bomb_columns = ['UNIVERSAL_bomb_X', 'UNIVERSAL_bomb_Y', 'UNIVERSAL_bomb_Z']
+        renamed_columns = df[bomb_columns].rename(columns={
+                    'UNIVERSAL_bomb_X': 'X',
+                    'UNIVERSAL_bomb_Y': 'Y',
+                    'UNIVERSAL_bomb_Z': 'Z'})
+       
+       # Normalize positions
+        transformed_columns = position_scaler.transform(renamed_columns)
+
+        # Update the original dataframe
+        df[bomb_columns] = transformed_columns
+
+        return df
+
+    # Check if the column should be skipped
+    def __NORMALIZE_skip_column__(self, dict_column_name: str):
+
+        # Skip the match_id, numerical_match_id, token, smokes and infernos active cols
+        if dict_column_name in ['MATCH_ID', 'NUMERICAL_MATCH_ID', 'TOKEN', 'UNIVERSAL_smokes_active', 'UNIVERSAL_infernos_active']:
+            return True
+
+        # Skip the positional columns (already normalized with the position_scaler)
+        if dict_column_name in ['_X', '_Y', '_Z', 'UNIVERSAL_bomb_X', 'UNIVERSAL_bomb_Y', 'UNIVERSAL_bomb_Z']:
+            return True
+        
+        # Skip the name columns
+        if dict_column_name == '_name':
+            return True
+
+        # Skip the state-describing boolean columns (values are already 0 or 1)
+        if dict_column_name.startswith('_is') or \
+        dict_column_name.startswith('UNIVERSAL_is') or \
+        dict_column_name.startswith('UNIVERSAL_bomb_mx_pos'):
+            return True
+
+        # Skip the inventory columns (values are already 0 or 1)
+        if dict_column_name.startswith('_inventory'):
+            return True
+
+        # Skip the universal HLTV player stat columns (values are already normalized)
+        if dict_column_name.startswith('_hltv'):
+            return True
+
+        # Skip the columns if the name includes '%' (values are already normalized)
+        if '%' in dict_column_name:
+            return True
+
+        # Skip the active weapon flag columns (values are already 0 or 1)
+        if dict_column_name.startswith('_active_weapon') and \
+           dict_column_name not in ['_active_weapon_magazine_size', '_active_weapon_ammo', '_active_weapon_magazine_ammo_left_%', '_active_weapon_max_ammo', '_active_weapon_total_ammo_left_%',]:
+            return True
+
+        return False
+

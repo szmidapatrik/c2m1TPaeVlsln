@@ -54,6 +54,21 @@ class CS2_Dictionary:
         return  scaling_dict
     
 
+    
+    # Build scaling dictionary for a single match
+    def build_single_dictionary(
+        self, 
+        dictionary: pd.DataFrame,
+    ):
+        """
+        Builds a dictionary of min and max values for each column in the dataset for a single match.
+        
+        Parameters:
+            - dictionary: pd.DataFrame: the initial dictionary.
+        """
+
+        return self.__scaling_dict_player_invariant__(dictionary)
+
 
     # --------------------------------------------------------------------------------------------
 
@@ -85,8 +100,8 @@ class CS2_Dictionary:
             # Free up memory
             del temp_dict
 
-        # Drop the 'other_min' and 'other_max' columns
-        scaling_dict.drop(columns=['other_min', 'other_max'], inplace=True)
+            # Drop the 'other_min' and 'other_max' columns
+            scaling_dict.drop(columns=['other_min', 'other_max'], inplace=True)
 
         return scaling_dict
 
@@ -94,34 +109,43 @@ class CS2_Dictionary:
 
 
     # Create the player-invariant scaling dictionary
-    def __scaling_dict_player_invariant__(self, scaling_dict):
+    def __scaling_dict_player_invariant__(self, scaling_dict: pd.DataFrame):
 
-        # Initialize the player_column_prefix list
+        # Initialize the player_column_prefix list, player_columns dictionary and player_dict DataFrame
         player_column_prefix = ['CT0', 'CT1', 'CT2', 'CT3', 'CT4', 'T5', 'T6', 'T7', 'T8', 'T9']
+        player_columns = {}
+        player_dict = pd.DataFrame()
 
-        # Select the rows from the dataframe which's 'column' values start with any of the strings in the 'player_column_prefix' list
         for prefix in player_column_prefix:
-            exec(f"{prefix.lower()} = scaling_dict[scaling_dict['column'].str.startswith('{prefix}')]")
 
-        player_column_dict = ct0.copy()
-        player_column_dict['column'] = player_column_dict['column'].apply(lambda x: x.replace('CT0', ''))
+            # Filter the scaling_dict for the current prefix    
+            player_columns[prefix] = scaling_dict[scaling_dict['column'].str.startswith(prefix)]
 
-        for prefix in player_column_prefix[1:]:
+            # If it is the first prefix, copy the database and remove the prefix from the 'column' column
+            if prefix == 'CT0':
+                player_dict = player_columns[prefix].copy()
+                player_dict['column'] = player_dict['column'].apply(lambda x: x.replace(prefix, ''))
+                continue
 
-            # Store the 'min' and 'max' columns of the current prefix database in a temporary dataframe and rename the columns
-            exec(f"temp = {prefix.lower()}[['min', 'max']]")
-            temp.rename(columns={'min': 'other_player_min', 'max': 'other_player_max'}, inplace=True)
+            # If it is not the first prefix, concat the current prefix database with the dictionary
+            else:
+                temp = player_columns[prefix][['min', 'max']].rename(columns={'min': 'other_min', 'max': 'other_max'}).reset_index(drop=True).copy()
+                player_dict = pd.concat([player_dict, temp], axis=1)
+                del temp
 
-            # Merge the temporary dataframe with the player_column_dict dataframe and update the 'min' and 'max' columns
-            player_column_dict = pd.concat([player_column_dict, temp], axis=1)
-            player_column_dict['min'] = player_column_dict[['min', 'other_player_min']].min(axis=1)
-            player_column_dict['max'] = player_column_dict[['max', 'other_player_']].max(axis=1)
 
-        # Drop the 'other_player_min' and 'other_player_max' columns
-        player_column_dict.drop(columns=['other_player_min', 'other_player_max'], inplace=True)
+            # Update the 'min' and 'max' columns
+            player_dict['min'] = player_dict[['min', 'other_min']].min(axis=1)
+            player_dict['max'] = player_dict[['max', 'other_max']].max(axis=1)
+
+            # Drop the 'other_player_min' and 'other_player_max' columns
+            player_dict.drop(columns=['other_min', 'other_max'], inplace=True)
 
         # Flter the scaling_dict for non_player columns and append the player_column_dict to the scaling_dict
-        non_player_columns = scaling_dict[~scaling_dict['column'].str.startswith(tuple(player_column_prefix))]
-        scaling_dict = pd.concat([non_player_columns, player_column_dict], axis=0)
+        non_player_columns = scaling_dict[scaling_dict['column'].str.startswith('UNIVERSAL_')]
+        scaling_dict = pd.concat([non_player_columns, player_dict], axis=0)
+
+        # Free up memory
+        del player_columns, player_dict, non_player_columns
 
         return scaling_dict
