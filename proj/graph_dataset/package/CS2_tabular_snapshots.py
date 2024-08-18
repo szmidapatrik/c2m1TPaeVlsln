@@ -1269,6 +1269,21 @@ class CS2_TabularSnapshots:
         # Concatenate the two dataframes
         renamed_df = pd.concat([team_1_ct, team_2_ct])
 
+        # Add a temporary column
+        new_columns = pd.DataFrame({
+            'temp_CT_score': 0,
+        }, index=renamed_df.index)
+        renamed_df = pd.concat([renamed_df, new_columns], axis=1)
+        renamed_df['temp_CT_score'] = renamed_df['CT_score']
+
+        # Swap the CT_score and T_score values for the second half
+        renamed_df.loc[renamed_df['round'] > 12, 'CT_score'] = renamed_df.loc[renamed_df['round'] > 12, 'T_score']
+        renamed_df.loc[renamed_df['round'] > 12, 'T_score'] = renamed_df.loc[renamed_df['round'] > 12, 'temp_CT_score']
+
+        # Drop the temporary column
+        renamed_df = renamed_df.drop(columns=['temp_CT_score'])
+
+
         return renamed_df
 
 
