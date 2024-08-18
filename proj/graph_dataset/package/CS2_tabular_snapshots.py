@@ -193,17 +193,25 @@ class CS2_TabularSnapshots:
             # Format column name
             dict_column_name = col[3:] if col.startswith('CT') else col[2:] if (col.startswith('T') and col != 'TOKEN') else col
 
+            # Skip columns that should not be normalized
             if self.__NORMALIZE_skip_column__(dict_column_name):
                 continue
 
-            # Transform other columns
-            col_min = dictionary.loc[dictionary['column'] == dict_column_name]['min'].values[0]
-            col_max = dictionary.loc[dictionary['column'] == dict_column_name]['max'].values[0]
-
-            if col_max == 0 and col_min == 0:
-                df[col] = 0
+            # Normalize some special columns manually
+            if self.__NORMALIZE_is_manual_normalize_column__(dict_column_name):
+                df = self.__NORMALIZE_manual__(df, col)
+                continue
+            
+            # Normalize the other columns
             else:
-                df[col] = (df[col] - col_min) / (col_max - col_min) 
+
+                col_min = dictionary.loc[dictionary['column'] == dict_column_name]['min'].values[0]
+                col_max = dictionary.loc[dictionary['column'] == dict_column_name]['max'].values[0]
+
+                if col_max == 0 and col_min == 0:
+                    df[col] = 0
+                else:
+                    df[col] = (df[col] - col_min) / (col_max - col_min) 
 
         return df
 
@@ -316,10 +324,16 @@ class CS2_TabularSnapshots:
         # Calculate the team scores in the rounds dataframe
         for idx, row in rounds.iterrows():
             if row['winner'] == 'CT':
-                rounds.loc[idx:, 'CT_score'] += 1
+                if row['round'] <= 12:
+                    rounds.loc[idx+1:, 'CT_score'] += 1
+                elif row['round'] > 12:
+                    rounds.loc[idx+1:, 'T_score'] += 1
 
             elif row['winner'] == 'T':
-                rounds.loc[idx:, 'T_score'] += 1
+                if row['round'] <= 12:
+                    rounds.loc[idx+1:, 'T_score'] += 1
+                elif row['round'] > 12:
+                    rounds.loc[idx+1:, 'CT_score'] += 1
 
         # Filter columns
         rounds = rounds[['round', 'freeze_end', 'end', 'CT_score', 'T_score', 'winner']]
@@ -819,7 +833,7 @@ class CS2_TabularSnapshots:
         graph_data['player9_equi_val_alive'] = graph_data['player9_current_equip_value'] * graph_data['player9_is_alive']
 
         graph_data['CT_alive_num'] = graph_data.apply(self.__EXT_calculate_ct_alive_num__, axis=1)
-        graph_data['T_alive_num']  = graph_data.apply(self.__EXT_calculate_t_equipment_value__, axis=1)
+        graph_data['T_alive_num']  = graph_data.apply(self.__EXT_calculate_t_alive_num__, axis=1)
         
         graph_data['CT_total_hp'] = graph_data.apply(self.__EXT_calculate_ct_total_hp__, axis=1)
         graph_data['T_total_hp']  = graph_data.apply(self.__EXT_calculate_t_total_hp__, axis=1)
@@ -1367,6 +1381,11 @@ class CS2_TabularSnapshots:
         # Update the original dataframe
         df[bomb_columns] = transformed_columns
 
+        # Set the bomb X, Y, Z columns to 0 if the bomb is not planted
+        df.loc[df['UNIVERSAL_is_bomb_planted_at_A_site'] + df['UNIVERSAL_is_bomb_planted_at_B_site'] == 0, 'UNIVERSAL_bomb_X'] = 0
+        df.loc[df['UNIVERSAL_is_bomb_planted_at_A_site'] + df['UNIVERSAL_is_bomb_planted_at_B_site'] == 0, 'UNIVERSAL_bomb_Y'] = 0
+        df.loc[df['UNIVERSAL_is_bomb_planted_at_A_site'] + df['UNIVERSAL_is_bomb_planted_at_B_site'] == 0, 'UNIVERSAL_bomb_Z'] = 0
+
         return df
 
     # Check if the column should be skipped
@@ -1409,3 +1428,48 @@ class CS2_TabularSnapshots:
 
         return False
 
+    # Check if the column should be manually normalized
+    def __NORMALIZE_is_manual_normalize_column__(self, dict_column_name: str):
+        
+        if dict_column_name in ['_health', '_armor_value', '_balance', 
+                                'UNIVERSAL_round',  
+                                'UNIVERSAL_CT_score', 'UNIVERSAL_T_score', 
+                                'UNIVERSAL_CT_alive_num', 'UNIVERSAL_T_alive_num',
+                                'UNIVERSAL_CT_total_hp', 'UNIVERSAL_T_total_hp',
+                                'UNIVERSAL_CT_losing_streak', 'UNIVERSAL_T_losing_streak',]:
+            return True
+        
+        return False
+
+    # Normalize column manually        
+    def __NORMALIZE_manual__(self, df: pd.DataFrame, column_name: str):
+
+        # Normalize the health and armor value columns
+        if '_health' in column_name or '_armor_value' in column_name:
+            df[column_name] = df[column_name] / 100
+
+        # Normalize the balance column
+        if '_balance' in column_name:
+            df[column_name] = df[column_name] / 16000
+
+        # Normalize the round column
+        if column_name == 'UNIVERSAL_round':
+            df[column_name] = df[column_name] / 24
+
+        # Normalize the CT and T score columns
+        if column_name in ['UNIVERSAL_CT_score', 'UNIVERSAL_T_score']:
+            df[column_name] = df[column_name] / 12
+
+        # Normalize the CT and T alive number columns
+        if column_name in ['UNIVERSAL_CT_alive_num', 'UNIVERSAL_T_alive_num']:
+            df[column_name] = df[column_name] / 5
+
+        # Normalize the CT and T total HP columns
+        if column_name in ['UNIVERSAL_CT_total_hp', 'UNIVERSAL_T_total_hp']:
+            df[column_name] = df[column_name] / 500
+
+        # Normalize the CT and T losing streak columns
+        if column_name in ['UNIVERSAL_CT_losing_streak', 'UNIVERSAL_T_losing_streak']:
+            df[column_name] = df[column_name] / 5
+
+        return df
