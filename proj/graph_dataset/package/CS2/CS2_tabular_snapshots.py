@@ -39,7 +39,7 @@ class CS2_TabularSnapshots:
 
 
     # --------------------------------------------------------------------------------------------
-    # REGION: Available Functions
+    # REGION: Public functions
     # --------------------------------------------------------------------------------------------
 
     def process_match(
@@ -85,7 +85,7 @@ class CS2_TabularSnapshots:
         self.__PREP_ticks_per_second_operations__()
 
         # 1.
-        ticks, kills, rounds, bomb, damages, smokes, infernos = self._INIT_dataframes()
+        ticks, kills, rounds, bomb, damages, smokes, infernos, he_grenades = self._INIT_dataframes()
 
         # 2.
         pf = self._PLAYER_ingame_stats(ticks, kills, rounds, damages)
@@ -115,7 +115,7 @@ class CS2_TabularSnapshots:
         tabular_df = self._TABULAR_INFERNO_bombsite_3x3_split(tabular_df)
 
         # 11.
-        tabular_df = self._TABULAR_smokes_and_molotovs(tabular_df, smokes, infernos)
+        tabular_df = self._TABULAR_smokes_HEs_infernos(tabular_df, smokes, he_grenades, infernos)
 
         # 12.
         if self.numerical_match_id is not None:
@@ -218,7 +218,7 @@ class CS2_TabularSnapshots:
 
 
     # --------------------------------------------------------------------------------------------
-    # REGION: Process Match Private Functions
+    # REGION: Process_match private methods
     # --------------------------------------------------------------------------------------------
 
     # 0. Ticks per second operations
@@ -316,6 +316,10 @@ class CS2_TabularSnapshots:
         damages = match.damages
         smokes = match.smokes
         infernos = match.infernos
+        he_grenades = match.grenades \
+                        .loc[match.grenades['grenade_type'] == 'he_grenade'] \
+                        .drop_duplicates(subset=['X', 'Y', 'Z']) \
+                        .drop_duplicates(subset=['entity_id'], keep='last')
 
         # Create columns to follow the game scores
         rounds['CT_score'] = 0
@@ -356,7 +360,7 @@ class CS2_TabularSnapshots:
             'FIRE'          : 'is_shooting'
         })
         
-        return ticks, kills, rounds, bomb, damages, smokes, infernos
+        return ticks, kills, rounds, bomb, damages, smokes, infernos, he_grenades
 
 
 
@@ -1046,12 +1050,13 @@ class CS2_TabularSnapshots:
 
 
     # 11. Handle smoke and molotov grenades
-    def _TABULAR_smokes_and_molotovs(self, df, smokes, infernos):
+    def _TABULAR_smokes_HEs_infernos(self, df, smokes, he_grenades, infernos):
 
         # Create new columns for smokes and infernos in the tabular dataframe
         new_columns = pd.DataFrame({
             'smokes_active': [[] for _ in range(len(df))],
-            'infernos_active': [[] for _ in range(len(df))]
+            'infernos_active': [[] for _ in range(len(df))],
+            'he_smoke_explosion_effect': [[] for _ in range(len(df))]
         }, index=df.index)
 
         df = pd.concat([df, new_columns], axis=1)
@@ -1061,13 +1066,21 @@ class CS2_TabularSnapshots:
 
             startTick = row['start_tick']
             endTick = row['end_tick']
-            df.loc[(df['round'] == row['round']) & (df['tick'] >= startTick) & (df['tick'] <= endTick), 'smokes_active'].apply(lambda x: x.append([row['X'], row['Y'], row['Z']]))
+            df.loc[(df['tick'] >= startTick) & (df['tick'] <= endTick), 'smokes_active'].apply(lambda x: x.append([row['X'], row['Y'], row['Z']]))
         
+        # Handle HE grenades
+        for _, row in he_grenades.iterrows():
+                
+                startTick = row['tick']
+                endTick = startTick + 128
+                df.loc[(df['tick'] >= startTick) & (df['tick'] <= endTick), 'he_smoke_explosion_effect'].apply(lambda x: x.append([row['X'], row['Y'], row['Z']]))
+
+        # Handle infernos
         for _, row in infernos.iterrows():
 
             startTick = row['start_tick']
             endTick = row['end_tick']
-            df.loc[(df['round'] == row['round']) & (df['tick'] >= startTick) & (df['tick'] <= endTick), 'infernos_active'].apply(lambda x: x.append([row['X'], row['Y'], row['Z']]))
+            df.loc[(df['tick'] >= startTick) & (df['tick'] <= endTick), 'infernos_active'].apply(lambda x: x.append([row['X'], row['Y'], row['Z']]))
 
         return df
 
@@ -1259,7 +1272,7 @@ class CS2_TabularSnapshots:
             'CT_score', 'T_score', 'CT_alive_num', 'T_alive_num', 'CT_total_hp', 'T_total_hp', 'CT_equipment_value', 'T_equipment_value',  'CT_losing_streak', 'T_losing_streak',
             'is_bomb_dropped', 'is_bomb_being_planted', 'is_bomb_being_defused', 'is_bomb_defused', 'is_bomb_planted_at_A_site', 'is_bomb_planted_at_B_site',
             'bomb_X', 'bomb_Y', 'bomb_Z', 'bomb_mx_pos1', 'bomb_mx_pos2', 'bomb_mx_pos3', 'bomb_mx_pos4', 'bomb_mx_pos5', 'bomb_mx_pos6', 'bomb_mx_pos7', 'bomb_mx_pos8', 'bomb_mx_pos9', 
-            'smokes_active', 'infernos_active'
+            'smokes_active', 'infernos_active', 'he_smoke_explosion_effect'
         ]
 
         # Rearrange the column order

@@ -15,12 +15,16 @@ class CS2_Dictionary:
 
 
     # --------------------------------------------------------------------------------------------
+    # REGION: Constructor
+    # --------------------------------------------------------------------------------------------
 
     def __init__(self):
         pass
 
 
 
+    # --------------------------------------------------------------------------------------------
+    # REGION: Public methods - Build dictionary
     # --------------------------------------------------------------------------------------------
 
     # Build scaling dictionary
@@ -53,8 +57,6 @@ class CS2_Dictionary:
 
         return  scaling_dict
     
-
-    
     # Build scaling dictionary for a single match
     def build_single_dictionary(
         self, 
@@ -70,9 +72,12 @@ class CS2_Dictionary:
         return self.__scaling_dict_player_invariant__(dictionary)
 
 
+
+    # --------------------------------------------------------------------------------------------
+    # REGION: Private methods
     # --------------------------------------------------------------------------------------------
 
-    # Create the player-variant scaling dictionary
+    # 1. Create the player-variant scaling dictionary
     def __scaling_dict_player_variant__(self, folder_path, convention_type, convention_value):
         
         # Read all files in the folder_path and filter the ones with the given postfix
@@ -105,10 +110,7 @@ class CS2_Dictionary:
 
         return scaling_dict
 
-
-
-
-    # Create the player-invariant scaling dictionary
+    # 2. Create the player-invariant scaling dictionary
     def __scaling_dict_player_invariant__(self, scaling_dict: pd.DataFrame):
 
         # Initialize the player_column_prefix list, player_columns dictionary and player_dict DataFrame

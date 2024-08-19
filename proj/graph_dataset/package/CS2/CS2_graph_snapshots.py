@@ -9,16 +9,24 @@ import random
 
 class CS2_GraphSnapshots:
 
+    # Molotov and incendiary grenade radius values
+    INFERNO_NADE_RADIUS_X = 120
+    INFERNO_NADE_RADIUS_Y = 120
+    INFERNO_NADE_RADIUS_Z = 50
 
 
-    # ----------------------------------------------
+    # --------------------------------------------------------------------------------------------
+    # REGION: Constructor
+    # --------------------------------------------------------------------------------------------
 
     def __init__(self):
         pass 
 
 
 
-    # ----------------------------------------------
+    # --------------------------------------------------------------------------------------------
+    # REGION: Public methods
+    # --------------------------------------------------------------------------------------------
 
     def process_snapshots(self, df: pd.DataFrame, nodes: pd.DataFrame, edges: pd.DataFrame, player_edges_num: int = 1):
         """
@@ -31,9 +39,9 @@ class CS2_GraphSnapshots:
         - player_edges_num: the number of closest nodes the player should be connected to in the graph. Default is 1.
         """
 
-        # --------------------------------------------------
-        #      0. Validation, create needed variables
-        # --------------------------------------------------
+
+
+        # ---- 0. Validation, create needed variables ------
 
         # Validate the input paramters
         self._PREP_validate_inputs_(df, nodes, edges, player_edges_num)
@@ -62,9 +70,9 @@ class CS2_GraphSnapshots:
 
 
 
-            # --------------------------------------------------
-            #         1. Create the accurate node dataset
-            # --------------------------------------------------
+            # ------- 1. Create the accurate node dataset ------
+
+            # -------- 1.1 Set the nodes near the bomb ---------
 
             # Set actual round number
             actual_round_num = row['UNIVERSAL_round']
@@ -82,9 +90,13 @@ class CS2_GraphSnapshots:
 
 
 
-            # --------------------------------------------------
-            #       2. Get player nodes and edges tensors
-            # --------------------------------------------------
+            # -------- 1.2 Set the nodes that are burning --------
+
+            nodes_for_graph = self._EXT_set_burning_for_nodes_(nodes_for_graph, row)
+
+
+
+            # ----- 2. Get player nodes and edges tensors ------
 
             # Get the tensors for the graph
             player_tensor = self._PLAYER_nodes_tensor_(row)
@@ -92,9 +104,7 @@ class CS2_GraphSnapshots:
 
 
 
-            # --------------------------------------------------
-            #         3. Create the heterodata object
-            # --------------------------------------------------
+            # ------- 3. Create the heterodata object ----------
 
             # Create a HeteroData object
             data = HeteroData()
@@ -160,7 +170,11 @@ class CS2_GraphSnapshots:
         # Return the list of HeteroData objects
         return heterograph_snapshot_list
 
-    # ----------------------------------------------
+
+
+    # --------------------------------------------------------------------------------------------
+    # REGION: Private methods
+    # --------------------------------------------------------------------------------------------
 
     # 0. Validate the input parameters
     def _PREP_validate_inputs_(self, df: pd.DataFrame, nodes: pd.DataFrame, edges: pd.DataFrame, player_edges_num: int):
@@ -185,11 +199,37 @@ class CS2_GraphSnapshots:
         if not isinstance(player_edges_num, int) or player_edges_num < 1:
             raise ValueError("The player_edges_num should be a positive integer.")
 
-    # 1. Set the 'is_bomb_planted_near' value for the nodes near the bomb
+    # 1.1 Set the 'is_bomb_planted_near' value for the nodes near the bomb
     def _EXT_set_bomb_planted_near_for_nodes_(self, nodes, df, index):
         closest_node_id = self.__EXT_closest_node_to_pos__(df.iloc[index]['UNIVERSAL_bomb_X'], df.iloc[index]['UNIVERSAL_bomb_Y'], df.iloc[index]['UNIVERSAL_bomb_Z'], nodes)
         nodes.loc[nodes['node_id'] == closest_node_id, 'UNIVERSAL_is_bomb_planted_near'] = 1
         return nodes
+
+    # 1.2 Set the 'is_burning' value for the nodes that are burning
+    def _EXT_set_burning_for_nodes_(self, nodes_for_graph, row):
+
+        # Reset the 'is_burning' value for all nodes
+        nodes_for_graph['UNIVERSAL_is_burning'] = 0
+
+        # If there are no moloovs thrown, continue
+        if len(row['UNIVERSAL_infernos_active']) == 0:
+            return nodes_for_graph
+
+        # If there are molotovs thrown, set the 'is_burning' values
+        else:
+            # Iterate through the molotovs
+            for molotov in row['UNIVERSAL_infernos_active']:
+
+                nodes_for_graph.loc[
+                    (nodes_for_graph['X'] >= (molotov[0] - self.INFERNO_NADE_RADIUS_X)) &
+                    (nodes_for_graph['X'] <= (molotov[0] + self.INFERNO_NADE_RADIUS_X)) &
+                    (nodes_for_graph['Y'] >= (molotov[1] - self.INFERNO_NADE_RADIUS_Y)) &
+                    (nodes_for_graph['Y'] <= (molotov[1] + self.INFERNO_NADE_RADIUS_Y)) &
+                    (nodes_for_graph['Z'] >= (molotov[2] - self.INFERNO_NADE_RADIUS_Z)) &
+                    (nodes_for_graph['Z'] <= (molotov[2] + self.INFERNO_NADE_RADIUS_Z)),
+                    'UNIVERSAL_is_burning'] = 1
+            
+            return nodes_for_graph
 
     # 2.1 Create the player nodes tensor
     def _PLAYER_nodes_tensor_(self, row):
@@ -246,7 +286,9 @@ class CS2_GraphSnapshots:
 
     
 
-    # ----------------------------------------------
+    # --------------------------------------------------------------------------------------------
+    # REGION: External methods
+    # --------------------------------------------------------------------------------------------
   
     # Calculate closest graph node to a position
     def __EXT_closest_node_to_pos__(self, coord_x, coord_y, coord_z, nodes):
