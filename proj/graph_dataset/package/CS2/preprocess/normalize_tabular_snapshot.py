@@ -148,7 +148,7 @@ class NormalizeTabularSnapshot:
             return True
         
         # Skip the name columns
-        if dict_column_name == '_name':
+        if dict_column_name == '_name' or dict_column_name == 'UNIVERSAL_CT_clan_name' or dict_column_name == 'UNIVERSAL_T_clan_name':
             return True
 
         # Skip the state-describing boolean columns (values are already 0 or 1)
