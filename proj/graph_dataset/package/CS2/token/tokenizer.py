@@ -4,7 +4,10 @@ import pandas as pd
 import numpy as np
 import random
 
-class CS2_Token:
+class Tokenizer:
+
+    # Token Version (e. g. 100 for version 1.0.0)
+    TOKEN_VERSION = '100'
 
     # Positions for encoding
     INFERNO_POSITIONS = [
@@ -217,8 +220,12 @@ class CS2_Token:
         # Set the win values
         df['TOKEN_CT_WINS'] = df['UNIVERSAL_CT_wins']
 
+        # Token version
+        df['TOKEN_VERSION'] = self.TOKEN_VERSION
+
         # Create token by concatenating all the TOKEN columns as strings
-        df['TOKEN'] = df['TOKEN_CT_POS'].astype(str) + \
+        df['TOKEN'] = df['TOKEN_VERSION'].astype(str) + \
+                      df['TOKEN_CT_POS'].astype(str) + \
                       df['TOKEN_T_POS'].astype(str) + \
                       df['TOKEN_CT_BUY'].astype(str) + \
                       df['TOKEN_T_BUY'].astype(str) + \

@@ -7,12 +7,12 @@ import numpy as np
 import random
 
 
-class CS2_GraphSnapshots:
+class GraphSnapshots:
 
     # Molotov and incendiary grenade radius values
-    INFERNO_NADE_RADIUS_X = 120
-    INFERNO_NADE_RADIUS_Y = 120
-    INFERNO_NADE_RADIUS_Z = 50
+    MOLOTOV_RADIUS_X = 120
+    MOLOTOV_RADIUS_Y = 120
+    MOLOTOV_RADIUS_Z = 50
 
 
     # --------------------------------------------------------------------------------------------
@@ -28,7 +28,16 @@ class CS2_GraphSnapshots:
     # REGION: Public methods
     # --------------------------------------------------------------------------------------------
 
-    def process_snapshots(self, df: pd.DataFrame, nodes: pd.DataFrame, edges: pd.DataFrame, player_edges_num: int = 1):
+    def process_snapshots(
+        self, 
+        df: pd.DataFrame, 
+        nodes: pd.DataFrame, 
+        edges_pos_id: pd.DataFrame, 
+        active_infernos: pd.DataFrame,
+        active_smokes: pd.DataFrame,
+        actigve_he_explosions: pd.DataFrame,
+        player_edges_num: int = 1
+    ):
         """
         Create graphs from the rows of a tabular snapshot dataframe.
         
@@ -43,8 +52,9 @@ class CS2_GraphSnapshots:
 
         # ---- 0. Validation, create needed variables ------
 
-        # Validate the input paramters
-        self._PREP_validate_inputs_(df, nodes, edges, player_edges_num)
+        # Validate the input paramters and create the accurate edges dataframe
+        self._PREP_validate_inputs_(df, nodes, edges_pos_id, player_edges_num)
+        edges = self._PREP_create_edges_(nodes, edges_pos_id)
 
         # Create a list to store the heterogeneous graph snapshots
         heterograph_snapshot_list = []
@@ -54,10 +64,10 @@ class CS2_GraphSnapshots:
         last_round_bomb_near_was_calculated_for = 0
 
         # Columns of the nodes dataframe
-        nodes_columns = ['X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning']
+        nodes_columns = ['pos_id', 'X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning']
 
         # Node dataframe to use for the graph
-        nodes_for_graph = nodes.copy() 
+        nodes_bomb = nodes.copy() 
 
 
 
@@ -65,10 +75,11 @@ class CS2_GraphSnapshots:
         # Iterate through the rows of the snapshot dataframe
         for row_idx in range(0, len(df)):
 
-            # ROW
+            # ROW and TICK
             row = df.iloc[row_idx]
+            tick = row['UNIVERSAL_tick']
 
-
+            
 
             # ------- 1. Create the accurate node dataset ------
 
@@ -79,28 +90,35 @@ class CS2_GraphSnapshots:
 
             # If the bomb isn't planted, use the original nodes
             if row['UNIVERSAL_is_bomb_planted_at_A_site'] + row['UNIVERSAL_is_bomb_planted_at_B_site'] == 0:
-                nodes_for_graph = nodes.copy()
+                nodes_bomb = nodes.copy()
                 
             # If the bomb is planted, and the nodes near the bomb weren't calculated yet for this round, calculate them
             elif (row['UNIVERSAL_is_bomb_planted_at_A_site'] + row['UNIVERSAL_is_bomb_planted_at_B_site'] == 1) and (actual_round_num != last_round_bomb_near_was_calculated_for):
-                nodes_for_graph = self._EXT_set_bomb_planted_near_for_nodes_(nodes.copy(), df.copy(), row_idx)
+                nodes_bomb = self._EXT_set_bomb_planted_near_for_nodes_(nodes.copy(), df.copy(), row_idx)
                 last_round_bomb_near_was_calculated_for = actual_round_num
             # else:
-                # If the bomb is planted, and the nodes near the bomb were calculated already for this round, use the nodes_for_graph dataframe
+                # If the bomb is planted, and the nodes near the bomb were calculated already for this round, use the nodes_with_bomb dataframe
 
 
 
-            # -------- 1.2 Set the nodes that are burning --------
+            # ------- 1.2 Set the nodes that are burning -------
 
-            nodes_for_graph = self._EXT_set_burning_for_nodes_(nodes_for_graph, row)
+            nodes_with_bomb_inf = self._EXT_set_burning_for_nodes_(nodes_bomb, active_infernos, tick)
 
 
 
-            # ----- 2. Get player nodes and edges tensors ------
+            # -------- 1.3 Add the smokes to the map -----------
+
+            # nodes_with_bomb_inf_smokes = self._EXT_add_smokes_(nodes_with_bomb_inf, row)
+            nodes_with_bomb_inf_smokes = nodes_with_bomb_inf
+
+
+
+            # ---- 2. Get player nodes and edges tensors -------
 
             # Get the tensors for the graph
             player_tensor = self._PLAYER_nodes_tensor_(row)
-            player_edges_tensor = self._PLAYER_edges_tensor_(row, nodes_for_graph)
+            player_edges_tensor = self._PLAYER_edges_tensor_(row, nodes_with_bomb_inf_smokes)
 
 
 
@@ -111,7 +129,7 @@ class CS2_GraphSnapshots:
 
             # Create node data
             data['player'].x = torch.tensor(player_tensor, dtype=torch.float32)
-            data['map'].x = torch.tensor(nodes_for_graph[nodes_columns].values, dtype=torch.float32)
+            data['map'].x = torch.tensor(nodes_with_bomb_inf_smokes[nodes_columns].values, dtype=torch.float32)
 
             # Create edge data
             data['map', 'connected_to', 'map'].edge_index = torch.tensor(edges.values.T, dtype=torch.int16)
@@ -188,16 +206,39 @@ class CS2_GraphSnapshots:
             raise ValueError("The edges dataframe is empty.")
         
         # Check if the nodes dataset containes the required columns
-        if not all(col in nodes.columns for col in ['node_id', 'X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning']):
+        if not all(col in nodes.columns for col in ['pos_id', 'X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning']):
             raise ValueError("The nodes dataframe does not contain the required columns. Required columns are: 'node_id', 'X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning'.")
         
         # Check if the edges dataset containes the required columns
-        if not all(col in edges.columns for col in ['source', 'target']):
+        if not all(col in edges.columns for col in ['source_pos_id', 'source_pos_id']):
             raise ValueError("The edges dataframe does not contain the required columns. Required columns are: 'source', 'target'.")
         
         # Check if the player_edges_num is a positive integer
         if not isinstance(player_edges_num, int) or player_edges_num < 1:
             raise ValueError("The player_edges_num should be a positive integer.")
+
+    # 0.1 Create the edges dataframe
+    def _PREP_create_edges_(self, nodes: pd.DataFrame, edges_pos_id: pd.DataFrame):
+
+        # Add node_id column to the nodes dataframe by setting the index as the node_id, create a copy of the edges dataframe
+        nodes['node_id'] = nodes.index
+        edges = edges_pos_id.copy()
+
+        # Merge the nodes dataframe with the edges dataframe to get the source node ids
+        edges = edges.merge(nodes[['pos_id', 'node_id']], left_on='source_pos_id', right_on='pos_id', how='left')
+        edges = edges.drop(columns=['pos_id'])
+        edges = edges.rename(columns={'node_id': 'source'})
+
+        # Merge the nodes dataframe with the edges dataframe to get the target node ids
+        edges = edges.merge(nodes[['pos_id', 'node_id']], left_on='target_pos_id', right_on='pos_id', how='left')
+        edges = edges.drop(columns=['pos_id'])
+        edges = edges.rename(columns={'node_id': 'target'})
+
+        # Delete the source_pos_id and target_pos_id columns
+        del edges['source_pos_id']
+        del edges['target_pos_id']
+
+        return edges
 
     # 1.1 Set the 'is_bomb_planted_near' value for the nodes near the bomb
     def _EXT_set_bomb_planted_near_for_nodes_(self, nodes, df, index):
@@ -206,30 +247,46 @@ class CS2_GraphSnapshots:
         return nodes
 
     # 1.2 Set the 'is_burning' value for the nodes that are burning
-    def _EXT_set_burning_for_nodes_(self, nodes_for_graph, row):
+    def _EXT_set_burning_for_nodes_(self, nodes_bomb: pd.DataFrame, active_infernos: pd.DataFrame, tick: int):
 
         # Reset the 'is_burning' value for all nodes
-        nodes_for_graph['UNIVERSAL_is_burning'] = 0
+        nodes_bomb['is_burning'] = 0
+
+        # Select the actual rows from the infernos dataframe
+        active_infernos = active_infernos[active_infernos['tick'] == tick]
 
         # If there are no moloovs thrown, continue
-        if len(row['UNIVERSAL_infernos_active']) == 0:
-            return nodes_for_graph
+        if len(active_infernos) == 0:
+            return nodes_bomb
 
         # If there are molotovs thrown, set the 'is_burning' values
         else:
             # Iterate through the molotovs
-            for molotov in row['UNIVERSAL_infernos_active']:
+            for _, molotov in active_infernos.iterrows():
 
-                nodes_for_graph.loc[
-                    (nodes_for_graph['X'] >= (molotov[0] - self.INFERNO_NADE_RADIUS_X)) &
-                    (nodes_for_graph['X'] <= (molotov[0] + self.INFERNO_NADE_RADIUS_X)) &
-                    (nodes_for_graph['Y'] >= (molotov[1] - self.INFERNO_NADE_RADIUS_Y)) &
-                    (nodes_for_graph['Y'] <= (molotov[1] + self.INFERNO_NADE_RADIUS_Y)) &
-                    (nodes_for_graph['Z'] >= (molotov[2] - self.INFERNO_NADE_RADIUS_Z)) &
-                    (nodes_for_graph['Z'] <= (molotov[2] + self.INFERNO_NADE_RADIUS_Z)),
-                    'UNIVERSAL_is_burning'] = 1
+                nodes_bomb.loc[
+                    (nodes_bomb['X'] >= (molotov['X'] - self.MOLOTOV_RADIUS_X)) & (nodes_bomb['X'] <= (molotov['X'] + self.MOLOTOV_RADIUS_X)) &
+                    (nodes_bomb['Y'] >= (molotov['Y'] - self.MOLOTOV_RADIUS_Y)) & (nodes_bomb['Y'] <= (molotov['Y'] + self.MOLOTOV_RADIUS_Y)) &
+                    (nodes_bomb['Z'] >= (molotov['Z'] - self.MOLOTOV_RADIUS_Z)) & (nodes_bomb['Z'] <= (molotov['Z'] + self.MOLOTOV_RADIUS_Z)),
+                    'is_burning'] = 1
             
-            return nodes_for_graph
+            return nodes_bomb
+
+    # 1.3 Add smokes to the graph
+    def _EXT_add_smokes_(self, nodes_bomb_inf, row):
+        
+        # If there are no smokes, return the nodes
+        if len(row['UNIVERSAL_smokes_active']) == 0:
+            return nodes_bomb_inf
+        
+        # If there are smokes, iterate through them
+        for smoke in row['UNIVERSAL_smokes_active']:
+
+            # If a HE grenade exploded within the smoke, continue
+            pass
+
+
+
 
     # 2.1 Create the player nodes tensor
     def _PLAYER_nodes_tensor_(self, row):
@@ -242,7 +299,7 @@ class CS2_GraphSnapshots:
         row = row.drop(labels=drop_cols)
 
         # Create the players tensor
-        players_tensor = np.array([])
+        players_tensor = np.array([], dtype=np.float32)
 
         # Iterate through the players
         for i in range(0, 10):
@@ -262,7 +319,7 @@ class CS2_GraphSnapshots:
             else:
                 players_tensor = np.vstack([players_tensor, player])
             
-        return players_tensor
+        return players_tensor.astype(np.float32)
 
     # 2.2 Create the player edges tensor
     def _PLAYER_edges_tensor_(self, row, nodes):

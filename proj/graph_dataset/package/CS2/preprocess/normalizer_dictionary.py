@@ -6,7 +6,7 @@ import os
 
 
 
-class CS2_Dictionary:
+class NormalizerDictionary:
 
     # Variables
     MATCH_LIST = []

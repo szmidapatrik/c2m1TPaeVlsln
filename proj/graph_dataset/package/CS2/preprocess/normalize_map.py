@@ -2,7 +2,7 @@ from sklearn.preprocessing import MinMaxScaler
 from joblib import dump
 
 
-class CS2_Map:
+class NormalizeMap:
 
 
     # --------------------------------------------------------------------------------------------

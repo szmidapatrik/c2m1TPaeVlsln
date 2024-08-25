@@ -8,7 +8,7 @@ import numpy as np
 import gc
 import random
 
-class CS2_TabularSnapshots:
+class TabularSnapshots:
 
     # INPUT
     # Folder path constants
@@ -16,6 +16,14 @@ class CS2_TabularSnapshots:
     PLAYER_STATS_DATA_PATH = None
     MISSING_PLAYER_STATS_DATA_PATH = None
     WEAPON_DATA_PATH = None
+
+    # Position normalization constants
+    POS_X_MIN = 0
+    POS_X_MAX = 0
+    POS_Y_MIN = 0
+    POS_Y_MAX = 0
+    POS_Z_MIN = 0
+    POS_Z_MAX = 0
 
     
     # Optional variables
@@ -35,7 +43,7 @@ class CS2_TabularSnapshots:
 
     def __init__(self):
         pass
-
+        
 
 
     # --------------------------------------------------------------------------------------------
@@ -115,7 +123,7 @@ class CS2_TabularSnapshots:
         tabular_df = self._TABULAR_INFERNO_bombsite_3x3_split(tabular_df)
 
         # 11.
-        tabular_df = self._TABULAR_smokes_HEs_infernos(tabular_df, smokes, he_grenades, infernos)
+        active_infernos, active_smokes, active_he_smokes = self._TABULAR_smokes_HEs_infernos(tabular_df, smokes, he_grenades, infernos)
 
         # 12.
         if self.numerical_match_id is not None:
@@ -140,9 +148,9 @@ class CS2_TabularSnapshots:
 
         # Return
         if build_dictionary:
-            return tabular_df, tabular_df_dict
+            return tabular_df, tabular_df_dict, active_infernos, active_smokes, active_he_smokes
         else:
-            return tabular_df
+            return tabular_df, active_infernos, active_smokes, active_he_smokes
 
 
 
@@ -173,7 +181,7 @@ class CS2_TabularSnapshots:
         self,
         df: pd.DataFrame,
         dictionary: pd.DataFrame,
-        position_scaler: MinMaxScaler,
+        map_pos_dictionary: dict,
     ):
         """
         Normalizes the dataset.
@@ -181,11 +189,14 @@ class CS2_TabularSnapshots:
         Parameters:
             - df: the dataset to be normalized.
             - dictionary: the dictionary with the min and max values of each column.
-            - position_scaler: the position scaler for the positional features.
+            - map_pos_dictionary: the dictionary with the min and max values of the position columns.
         """
 
+        # Setup the position scaler
+        self.__PREP_NORM_position_scaler__(map_pos_dictionary)
+
         # Normalize position columns
-        df = self.__NORMALIZE_positions__(df, position_scaler)
+        df = self.__NORMALIZE_positions__(df)
 
         # Normalize other columns
         for col in df.columns:
@@ -234,6 +245,34 @@ class CS2_TabularSnapshots:
 
 
     # 1. Get needed dataframes
+    def __EXT_fill_smoke_NaNs__(self, smokes, rounds):
+        
+        # Temporary rounds dataframe with the ending tick of each round
+        rounds_temp = rounds[['round', 'official_end']].copy()
+
+        # Merge the smokes dataframe with the rounds dataframe and fill the NaN values with the official_end values
+        smokes = smokes.merge(rounds_temp, on='round')
+        smokes.loc[smokes['end_tick'].isna(), 'end_tick'] = smokes.loc[smokes['end_tick'].isna(), 'official_end']
+
+        # Drop the official_end column
+        smokes = smokes.drop(columns=['official_end'])
+
+        return smokes
+    
+    def __EXT_fill_infernos_NaNs__(self, infernos, rounds):
+        
+        # Temporary rounds dataframe with the ending tick of each round
+        rounds_temp = rounds[['round', 'official_end']].copy()
+
+        # Merge the infernos dataframe with the rounds dataframe and fill the NaN values with the official_end values
+        infernos = infernos.merge(rounds_temp, on='round')
+        infernos.loc[infernos['end_tick'].isna(), 'end_tick'] = infernos.loc[infernos['end_tick'].isna(), 'official_end']
+
+        # Drop the official_end column
+        infernos = infernos.drop(columns=['official_end'])
+
+        return infernos
+
     def _INIT_dataframes(self):
 
         player_cols = [
@@ -320,6 +359,10 @@ class CS2_TabularSnapshots:
                         .loc[match.grenades['grenade_type'] == 'he_grenade'] \
                         .drop_duplicates(subset=['X', 'Y', 'Z']) \
                         .drop_duplicates(subset=['entity_id'], keep='last')
+        
+        # Fill the NaN values of the smokes and infernos dataframes
+        smokes = self.__EXT_fill_smoke_NaNs__(smokes, rounds)
+        infernos = self.__EXT_fill_infernos_NaNs__(infernos, rounds)
 
         # Create columns to follow the game scores
         rounds['CT_score'] = 0
@@ -365,6 +408,53 @@ class CS2_TabularSnapshots:
 
 
     # 2. Calculate ingame player statistics
+    def __EXT_damage_per_round_df__(self, damages: pd.DataFrame, damage_type: str = 'all') -> pd.DataFrame:
+        """
+        Calculates the damages per round for the players.
+        
+        Parameters:
+            - damages: the damages dataframe.
+            - damage_type (optional): the type of damage to be calculated. Value can be 'all', 'weapon' and 'nade'. Default is 'all'.
+        """
+
+
+        # Check if the damage_type is valid
+        if damage_type not in ['all', 'weapon', 'nade']:
+            raise ValueError("Invalid damage_type value. Please choose one of the following: 'all', 'weapon' or 'nade'.")
+
+
+
+        # Filter the damages dataframe for friendly fire
+        damages = damages.loc[damages['attacker_team_name'] != damages['victim_team_name']]
+
+        # Filter the damages dataframe for the damage type
+        if damage_type == 'weapon':
+            damages = damages.loc[~damages['weapon'].isin(['inferno', 'molotov', 'hegrenade', 'flashbang', 'smokegrenade'])]
+
+        elif damage_type == 'nade':
+            damages = damages.loc[damages['weapon'].isin(['inferno', 'molotov', 'hegrenade', 'flashbang', 'smokegrenade'])]
+
+        # else:
+        #    damages = damages
+
+
+
+        # Create damages per round dataframe
+        dpr = damages.groupby(['round', 'attacker_name'])['dmg_health_real'].sum().reset_index()
+
+        # Rename columns
+        if damage_type == 'all':
+            dpr = dpr.rename(columns={'attacker_name': 'name', 'dmg_health_real': 'stat_damage'})
+        elif damage_type == 'weapon':
+            dpr = dpr.rename(columns={'attacker_name': 'name', 'dmg_health_real': 'stat_weapon_damage'})
+        elif damage_type == 'nade':
+            dpr = dpr.rename(columns={'attacker_name': 'name', 'dmg_health_real': 'stat_nade_damage'})
+
+        # Increase the round number by 1, as the damages are calculated when the round is over
+        dpr['round'] += 1
+
+        return dpr
+    
     def _PLAYER_ingame_stats(self, ticks, kills, rounds, damages):
     
         # Merge playerFrames with rounds
@@ -386,11 +476,6 @@ class CS2_TabularSnapshots:
         # Assist stats
         pf['stat_assists'] = 0
         pf['stat_flash_assists'] = 0
-
-        # Damage stats
-        pf['stat_damage'] = 0
-        pf['stat_weapon_damage'] = 0
-        pf['stat_nade_damage'] = 0
 
         # Setting kill-stats
         for _, row in kills.iterrows():
@@ -421,20 +506,30 @@ class CS2_TabularSnapshots:
                 pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['assister_name']), 'stat_flash_assists'] += 1
 
 
-        # Setting damage-stats
-        for _, row in damages.iterrows():
 
-            # All Damage
-            if (row['attacker_team_name'] != row['victim_team_name']):
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_damage'] += row['dmg_health_real']
+        # Create damages per round dataframe for the players for all types of damages
+        dpr = self.__EXT_damage_per_round_df__(damages, 'all')
+        wdpr = self.__EXT_damage_per_round_df__(damages, 'weapon')
+        ndpr = self.__EXT_damage_per_round_df__(damages, 'nade')
 
-            # Weapon Damage
-            if (row['attacker_team_name'] != row['victim_team_name']) and (row['weapon'] not in ['inferno', 'molotov', 'hegrenade', 'flashbang', 'smokegrenade']):
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_weapon_damage'] += row['dmg_health_real']
+        # Merge the damages per round dataframe with the player dataframe
+        pf = pf.merge(dpr, on=['round', 'name'], how='left')
+        pf = pf.merge(wdpr, on=['round', 'name'], how='left')
+        pf = pf.merge(ndpr, on=['round', 'name'], how='left')
 
-            # Nade Damage
-            if (row['attacker_team_name'] != row['victim_team_name']) and (row['weapon'] in ['inferno', 'molotov', 'hegrenade', 'flashbang', 'smokegrenade']):
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_nade_damage'] += row['dmg_health_real']
+
+        # Fill NaN values with 0
+        pf['stat_damage'] = pf['stat_damage'].fillna(0)
+        pf['stat_weapon_damage'] = pf['stat_weapon_damage'].fillna(0)
+        pf['stat_nade_damage'] = pf['stat_nade_damage'].fillna(0)
+
+        # Calculate the total damage for the players
+        for player in pf['name'].unique():
+            pf.loc[pf['name'] == player, 'stat_damage'] = pf.loc[pf['name'] == player, 'stat_damage'].cumsum()
+            pf.loc[pf['name'] == player, 'stat_weapon_damage'] = pf.loc[pf['name'] == player, 'stat_weapon_damage'].cumsum()
+            pf.loc[pf['name'] == player, 'stat_nade_damage'] = pf.loc[pf['name'] == player, 'stat_nade_damage'].cumsum()
+
+
 
         # Calculate other stats
         pf['stat_survives'] = pf['round'] - pf['stat_deaths']
@@ -1052,37 +1147,51 @@ class CS2_TabularSnapshots:
     # 11. Handle smoke and molotov grenades
     def _TABULAR_smokes_HEs_infernos(self, df, smokes, he_grenades, infernos):
 
-        # Create new columns for smokes and infernos in the tabular dataframe
-        new_columns = pd.DataFrame({
-            'smokes_active': [[] for _ in range(len(df))],
-            'infernos_active': [[] for _ in range(len(df))],
-            'he_smoke_explosion_effect': [[] for _ in range(len(df))]
-        }, index=df.index)
+        # Active infernos, smokes and HE explosions dataframe
+        active_infernos = df[['tick', 'round']].copy()
+        active_smokes = df[['tick', 'round']].copy()
+        active_he_smokes = df[['tick', 'round']].copy()
 
-        df = pd.concat([df, new_columns], axis=1)
+        # Add X, Y, Z coordinate columns to the new dataframes
+        active_infernos = pd.concat([active_infernos, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
+        active_smokes = pd.concat([active_smokes, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
+        active_he_smokes = pd.concat([active_he_smokes, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
+        
 
         # Handle smokes
+        # The round check is necessary because the smokes dataframe contains smokes with the end_tick values being NaN
         for _, row in smokes.iterrows():
 
             startTick = row['start_tick']
             endTick = row['end_tick']
-            df.loc[(df['tick'] >= startTick) & (df['tick'] <= endTick), 'smokes_active'].apply(lambda x: x.append([row['X'], row['Y'], row['Z']]))
-        
+            active_smokes.loc[(active_smokes['round'] == row['round']) & (active_smokes['tick'] >= startTick) & (active_smokes['tick'] <= endTick), 'X'] = row['X']
+            active_smokes.loc[(active_smokes['round'] == row['round']) & (active_smokes['tick'] >= startTick) & (active_smokes['tick'] <= endTick), 'Y'] = row['Y']
+            active_smokes.loc[(active_smokes['round'] == row['round']) & (active_smokes['tick'] >= startTick) & (active_smokes['tick'] <= endTick), 'Z'] = row['Z']
+
         # Handle HE grenades
         for _, row in he_grenades.iterrows():
                 
-                startTick = row['tick']
-                endTick = startTick + 128
-                df.loc[(df['tick'] >= startTick) & (df['tick'] <= endTick), 'he_smoke_explosion_effect'].apply(lambda x: x.append([row['X'], row['Y'], row['Z']]))
-
+            startTick = row['tick']
+            endTick = startTick + 128
+            active_he_smokes.loc[(active_he_smokes['round'] == row['round']) & (active_he_smokes['tick'] >= startTick) & (active_he_smokes['tick'] <= endTick), 'X'] = row['X']
+            active_he_smokes.loc[(active_he_smokes['round'] == row['round']) & (active_he_smokes['tick'] >= startTick) & (active_he_smokes['tick'] <= endTick), 'Y'] = row['Y']
+            active_he_smokes.loc[(active_he_smokes['round'] == row['round']) & (active_he_smokes['tick'] >= startTick) & (active_he_smokes['tick'] <= endTick), 'Z'] = row['Z']
+        
         # Handle infernos
         for _, row in infernos.iterrows():
 
             startTick = row['start_tick']
             endTick = row['end_tick']
-            df.loc[(df['tick'] >= startTick) & (df['tick'] <= endTick), 'infernos_active'].apply(lambda x: x.append([row['X'], row['Y'], row['Z']]))
+            active_infernos.loc[(active_infernos['round'] == row['round']) & (active_infernos['tick'] >= startTick) & (active_infernos['tick'] <= endTick), 'X'] = row['X']
+            active_infernos.loc[(active_infernos['round'] == row['round']) & (active_infernos['tick'] >= startTick) & (active_infernos['tick'] <= endTick), 'Y'] = row['Y']
+            active_infernos.loc[(active_infernos['round'] == row['round']) & (active_infernos['tick'] >= startTick) & (active_infernos['tick'] <= endTick), 'Z'] = row['Z']
 
-        return df
+        # Drop the rows with NaN values
+        active_infernos = active_infernos.dropna()
+        active_smokes = active_smokes.dropna()
+        active_he_smokes = active_he_smokes.dropna()
+
+        return active_infernos, active_smokes, active_he_smokes
 
 
 
@@ -1183,9 +1292,9 @@ class CS2_TabularSnapshots:
 
         # Rename the columns for team_1_ct
         for col in team_1_ct.columns:
-            if col.startswith('player') and int(col[6]) <= 4:
+            if col.startswith('player') and int(col[6]) < 5:
                 team_1_ct.rename(columns={col: col.replace('player', 'CT')}, inplace=True)
-            elif col.startswith('player') and int(col[6]) > 4:
+            elif col.startswith('player') and int(col[6]) >= 5:
                 team_1_ct.rename(columns={col: col.replace('player', 'T')}, inplace=True)
 
         # Rename the columns for team_2_ct
@@ -1271,8 +1380,7 @@ class CS2_TabularSnapshots:
             'numerical_match_id', 'match_id', 'tick', 'round', 'time', 'remaining_time', 'freeze_end', 'end', 'CT_wins', 
             'CT_score', 'T_score', 'CT_alive_num', 'T_alive_num', 'CT_total_hp', 'T_total_hp', 'CT_equipment_value', 'T_equipment_value',  'CT_losing_streak', 'T_losing_streak',
             'is_bomb_dropped', 'is_bomb_being_planted', 'is_bomb_being_defused', 'is_bomb_defused', 'is_bomb_planted_at_A_site', 'is_bomb_planted_at_B_site',
-            'bomb_X', 'bomb_Y', 'bomb_Z', 'bomb_mx_pos1', 'bomb_mx_pos2', 'bomb_mx_pos3', 'bomb_mx_pos4', 'bomb_mx_pos5', 'bomb_mx_pos6', 'bomb_mx_pos7', 'bomb_mx_pos8', 'bomb_mx_pos9', 
-            'smokes_active', 'infernos_active', 'he_smoke_explosion_effect'
+            'bomb_X', 'bomb_Y', 'bomb_Z', 'bomb_mx_pos1', 'bomb_mx_pos2', 'bomb_mx_pos3', 'bomb_mx_pos4', 'bomb_mx_pos5', 'bomb_mx_pos6', 'bomb_mx_pos7', 'bomb_mx_pos8', 'bomb_mx_pos9',
         ]
 
         # Rearrange the column order
@@ -1356,58 +1464,53 @@ class CS2_TabularSnapshots:
     # REGION: Normalization private methods
     # --------------------------------------------------------------------------------------------
 
+    # Prepare position scaler
+    def __PREP_NORM_position_scaler__(self, map_pos_dictionary: dict):
+
+        # If the map_norm_dict is not None, throw an error
+        if map_pos_dictionary is None:
+            raise ValueError("The map_norm_dict cannot be None.")
+        
+        # If the map_norm_dict is not a dictionary, throw an error
+        if not isinstance(map_pos_dictionary, dict):
+            raise ValueError("The map_norm_dict must be a dictionary.")
+        
+        # If the map_norm_dict doesn't have keys 'X', 'Y' and 'Z', throw an error
+        if 'X' not in map_pos_dictionary or 'Y' not in map_pos_dictionary or 'Z' not in map_pos_dictionary:
+            raise ValueError("The map_norm_dict must have keys 'X', 'Y' and 'Z'.")
+        
+        # Set the position normalization values
+        self.POS_X_MIN = map_pos_dictionary['X']['min']
+        self.POS_X_MAX = map_pos_dictionary['X']['max']
+        self.POS_Y_MIN = map_pos_dictionary['Y']['min']
+        self.POS_Y_MAX = map_pos_dictionary['Y']['max']
+        self.POS_Z_MIN = map_pos_dictionary['Z']['min']
+        self.POS_Z_MAX = map_pos_dictionary['Z']['max']
+
     # Normalize positions
-    def __NORMALIZE_positions__(self, df: pd.DataFrame, position_scaler: MinMaxScaler):
+    def __NORMALIZE_positions__(self, df: pd.DataFrame):
 
         for player_idx in range(0, 10):
 
             if player_idx < 5:
             
-                # Get the column names and rename them
-                position_columns = [f'CT{player_idx}_X', f'CT{player_idx}_Y', f'CT{player_idx}_Z']
-                renamed_columns = df[position_columns].rename(columns={
-                    f'CT{player_idx}_X': 'X',
-                    f'CT{player_idx}_Y': 'Y',
-                    f'CT{player_idx}_Z': 'Z'
-                })
-
-                # Normalize positions
-                transformed_columns = position_scaler.transform(renamed_columns)
-
-                # Update the original dataframe
-                df[position_columns] = transformed_columns
+                # Transform the X, Y, Z columns
+                df[f'CT{player_idx}_X'] = (df[f'CT{player_idx}_X'] - self.POS_X_MIN) / (self.POS_X_MAX - self.POS_X_MIN)
+                df[f'CT{player_idx}_Y'] = (df[f'CT{player_idx}_Y'] - self.POS_Y_MIN) / (self.POS_Y_MAX - self.POS_Y_MIN)
+                df[f'CT{player_idx}_Z'] = (df[f'CT{player_idx}_Z'] - self.POS_Z_MIN) / (self.POS_Z_MAX - self.POS_Z_MIN)
 
             else:
 
-                # Column names
-                position_columns = [f'T{player_idx}_X', f'T{player_idx}_Y', f'T{player_idx}_Z']
-
-                # Rename columns
-                renamed_columns = df[position_columns].rename(columns={
-                    f'T{player_idx}_X': 'X',
-                    f'T{player_idx}_Y': 'Y',
-                    f'T{player_idx}_Z': 'Z'
-                })
-
-                # Normalize positions
-                transformed_columns = position_scaler.transform(renamed_columns)
-
-                # Update the original dataframe
-                df[position_columns] = transformed_columns
+                # Transform the X, Y, Z columns
+                df[f'T{player_idx}_X'] = (df[f'T{player_idx}_X'] - self.POS_X_MIN) / (self.POS_X_MAX - self.POS_X_MIN)
+                df[f'T{player_idx}_Y'] = (df[f'T{player_idx}_Y'] - self.POS_Y_MIN) / (self.POS_Y_MAX - self.POS_Y_MIN)
+                df[f'T{player_idx}_Z'] = (df[f'T{player_idx}_Z'] - self.POS_Z_MIN) / (self.POS_Z_MAX - self.POS_Z_MIN)
                 
 
-        # Normalize the bomb position
-        bomb_columns = ['UNIVERSAL_bomb_X', 'UNIVERSAL_bomb_Y', 'UNIVERSAL_bomb_Z']
-        renamed_columns = df[bomb_columns].rename(columns={
-                    'UNIVERSAL_bomb_X': 'X',
-                    'UNIVERSAL_bomb_Y': 'Y',
-                    'UNIVERSAL_bomb_Z': 'Z'})
-       
-       # Normalize positions
-        transformed_columns = position_scaler.transform(renamed_columns)
-
-        # Update the original dataframe
-        df[bomb_columns] = transformed_columns
+        # Normalize the bomb X, Y, Z columns
+        df['UNIVERSAL_bomb_X'] = (df['UNIVERSAL_bomb_X'] - self.POS_X_MIN) / (self.POS_X_MAX - self.POS_X_MIN)
+        df['UNIVERSAL_bomb_Y'] = (df['UNIVERSAL_bomb_Y'] - self.POS_Y_MIN) / (self.POS_Y_MAX - self.POS_Y_MIN)
+        df['UNIVERSAL_bomb_Z'] = (df['UNIVERSAL_bomb_Z'] - self.POS_Z_MIN) / (self.POS_Z_MAX - self.POS_Z_MIN)
 
         # Set the bomb X, Y, Z columns to 0 if the bomb is not planted
         df.loc[df['UNIVERSAL_is_bomb_planted_at_A_site'] + df['UNIVERSAL_is_bomb_planted_at_B_site'] == 0, 'UNIVERSAL_bomb_X'] = 0
@@ -1420,7 +1523,7 @@ class CS2_TabularSnapshots:
     def __NORMALIZE_skip_column__(self, dict_column_name: str):
 
         # Skip the match_id, numerical_match_id, token, smokes and infernos active cols
-        if dict_column_name in ['MATCH_ID', 'NUMERICAL_MATCH_ID', 'TOKEN', 'UNIVERSAL_smokes_active', 'UNIVERSAL_infernos_active']:
+        if dict_column_name in ['MATCH_ID', 'NUMERICAL_MATCH_ID', 'TOKEN', 'UNIVERSAL_tick']:
             return True
 
         # Skip the positional columns (already normalized with the position_scaler)
@@ -1501,3 +1604,5 @@ class CS2_TabularSnapshots:
             df[column_name] = df[column_name] / 5
 
         return df
+    
+    
