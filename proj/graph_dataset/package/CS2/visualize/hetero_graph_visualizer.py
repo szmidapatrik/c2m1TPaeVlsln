@@ -45,8 +45,8 @@ class HeteroGraphVisualizer:
         plt.scatter(map_nodes[:, 0], map_nodes[:, 1], s=10, c=graph['map'].x[:, -1], cmap='RdGy_r', vmin=0, vmax=1.333)
 
         # Plot players
-        plt.scatter(players[:5, 0], players[:5, 1], s=10, c='lightblue')
-        plt.scatter(players[5:, 0], players[5:, 1], s=10, c='gold')
+        plt.scatter(players[:5, 0], players[:5, 1], s=15, c='lightblue')
+        plt.scatter(players[5:, 0], players[5:, 1], s=15, c='gold')
 
         for edge in player_edges.T:
             plt.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='grey', linewidth=0.5)

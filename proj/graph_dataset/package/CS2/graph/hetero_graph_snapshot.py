@@ -7,7 +7,7 @@ import numpy as np
 import random
 
 
-class GraphSnapshot:
+class HeteroGraphSnapshot:
 
     # Molotov and incendiary grenade radius values
     MOLOTOV_RADIUS_X = None

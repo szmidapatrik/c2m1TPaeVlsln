@@ -1,2 +1,2 @@
-from .tabular_snapshot import TabularSnapshot
-from .graph_snapshot import GraphSnapshot
+from .tabular_graph_snapshot import TabularGraphSnapshot
+from .hetero_graph_snapshot import HeteroGraphSnapshot

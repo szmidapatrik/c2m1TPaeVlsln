@@ -8,7 +8,7 @@ import numpy as np
 import gc
 import random
 
-class TabularSnapshot:
+class TabularGraphSnapshot:
 
     # INPUT
     # Folder path constants

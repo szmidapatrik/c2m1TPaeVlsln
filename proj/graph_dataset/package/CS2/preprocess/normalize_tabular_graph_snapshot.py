@@ -3,7 +3,7 @@ from joblib import dump
 import pandas as pd
 
 
-class NormalizeTabularSnapshot:
+class NormalizeTabularGraphSnapshot:
 
     # Position normalization constants
     POS_X_MIN = 0

@@ -1,4 +1,4 @@
 from .normalize_position import NormalizePosition
 from .normalizer_dictionary import Dictionary
-from .normalize_tabular_snapshot import NormalizeTabularSnapshot
-from .impute_tabular_snapshot import ImputeTabularSnapshot
+from .normalize_tabular_graph_snapshot import NormalizeTabularGraphSnapshot
+from .impute_tabular_graph_snapshot import ImputeTabularGraphSnapshot
