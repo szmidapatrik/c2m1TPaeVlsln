@@ -6,7 +6,7 @@ import os
 
 
 
-class NormalizerDictionary:
+class Dictionary:
 
     # Variables
     MATCH_LIST = []

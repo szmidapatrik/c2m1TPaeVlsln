@@ -1,2 +1,4 @@
-from .normalize_map import NormalizeMap
-from .normalizer_dictionary import NormalizerDictionary
+from .normalize_position import NormalizePosition
+from .normalizer_dictionary import Dictionary
+from .normalize_tabular_snapshot import NormalizeTabularSnapshot
+from .impute_tabular_snapshot import ImputeTabularSnapshot

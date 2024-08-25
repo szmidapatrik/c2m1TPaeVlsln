@@ -1,2 +1,2 @@
-from .tabular_snapshots import TabularSnapshots
-from .graph_snapshots import GraphSnapshots
+from .tabular_snapshot import TabularSnapshot
+from .graph_snapshot import GraphSnapshot

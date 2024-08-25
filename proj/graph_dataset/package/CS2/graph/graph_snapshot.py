@@ -7,12 +7,12 @@ import numpy as np
 import random
 
 
-class GraphSnapshots:
+class GraphSnapshot:
 
     # Molotov and incendiary grenade radius values
-    MOLOTOV_RADIUS_X = 120
-    MOLOTOV_RADIUS_Y = 120
-    MOLOTOV_RADIUS_Z = 50
+    MOLOTOV_RADIUS_X = None
+    MOLOTOV_RADIUS_Y = None
+    MOLOTOV_RADIUS_Z = None
 
 
     # --------------------------------------------------------------------------------------------
@@ -36,6 +36,7 @@ class GraphSnapshots:
         active_infernos: pd.DataFrame,
         active_smokes: pd.DataFrame,
         actigve_he_explosions: pd.DataFrame,
+        CONFIG_MOLOTOV_RADIUS: dict,
         player_edges_num: int = 1
     ):
         """
@@ -45,6 +46,10 @@ class GraphSnapshots:
         - df: the snapshot dataframe.
         - nodes: the map graph nodes dataframe.
         - edges: the map graph edges dataframe.
+        - active_infernos: the active infernos dataframe.
+        - active_smokes: the active smokes dataframe.
+        - actigve_he_explosions: the active HE grenade explosions dataframe.
+        - CONFIG_MOLOTOV_RADIUS: the molotov and incendiary grenade radius values.
         - player_edges_num: the number of closest nodes the player should be connected to in the graph. Default is 1.
         """
 
@@ -53,7 +58,8 @@ class GraphSnapshots:
         # ---- 0. Validation, create needed variables ------
 
         # Validate the input paramters and create the accurate edges dataframe
-        self._PREP_validate_inputs_(df, nodes, edges_pos_id, player_edges_num)
+        self._PREP_validate_inputs_(df, nodes, edges_pos_id, CONFIG_MOLOTOV_RADIUS, player_edges_num)
+        self._PREP_set_molotov_radius_(CONFIG_MOLOTOV_RADIUS)
         edges = self._PREP_create_edges_(nodes, edges_pos_id)
 
         # Create a list to store the heterogeneous graph snapshots
@@ -195,7 +201,7 @@ class GraphSnapshots:
     # --------------------------------------------------------------------------------------------
 
     # 0. Validate the input parameters
-    def _PREP_validate_inputs_(self, df: pd.DataFrame, nodes: pd.DataFrame, edges: pd.DataFrame, player_edges_num: int):
+    def _PREP_validate_inputs_(self, df: pd.DataFrame, nodes: pd.DataFrame, edges: pd.DataFrame, CONFIG_MOLOTOV_RADIUS: dict, player_edges_num: int):
 
         # Check if the input parameters are empty
         if df.empty:
@@ -213,11 +219,28 @@ class GraphSnapshots:
         if not all(col in edges.columns for col in ['source_pos_id', 'source_pos_id']):
             raise ValueError("The edges dataframe does not contain the required columns. Required columns are: 'source', 'target'.")
         
+        # Check if the CONFIG_MOLOTOV_RADIUS is a dictionary
+        if not isinstance(CONFIG_MOLOTOV_RADIUS, dict):
+            raise ValueError("The CONFIG_MOLOTOV_RADIUS should be a dictionary.")
+        
+        # Check if the CONFIG_MOLOTOV_RADIUS contains the required keys
+        if not all(key in CONFIG_MOLOTOV_RADIUS for key in ['X', 'Y', 'Z']):
+            raise ValueError("The CONFIG_MOLOTOV_RADIUS dictionary should contain the keys 'X', 'Y', 'Z'.")
+
         # Check if the player_edges_num is a positive integer
         if not isinstance(player_edges_num, int) or player_edges_num < 1:
             raise ValueError("The player_edges_num should be a positive integer.")
 
-    # 0.1 Create the edges dataframe
+        # 0.2 Set the molotov and incendiary grenade radius values
+    
+    # 0.1 Set the molotov and incendiary grenade radius values
+    def _PREP_set_molotov_radius_(self, CONFIG_MOLOTOV_RADIUS: dict):
+        
+        self.MOLOTOV_RADIUS_X = CONFIG_MOLOTOV_RADIUS['X']
+        self.MOLOTOV_RADIUS_Y = CONFIG_MOLOTOV_RADIUS['Y']
+        self.MOLOTOV_RADIUS_Z = CONFIG_MOLOTOV_RADIUS['Z']
+
+    # 0.2 Create the edges dataframe
     def _PREP_create_edges_(self, nodes: pd.DataFrame, edges_pos_id: pd.DataFrame):
 
         # Add node_id column to the nodes dataframe by setting the index as the node_id, create a copy of the edges dataframe
