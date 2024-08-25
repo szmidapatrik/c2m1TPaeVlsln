@@ -1,10 +1,22 @@
 # Counter Strike Player Action Evaluation Using Graph Neual Networks
 
+### ***TODO***s
+
+The list of tasks that are currently under development or are future upgrade plans.
+
+  - Tabular snapshot creator: improve time by iterating *round-by-round* on the ***damages*** dataframe instead of *row-by-row*
+
+<div style="min-height: 40px"></div>
+
+----
+
 ### 1. Python kernels (ASUS ROG Zepgyrus G16)
   - 3.11: *awpy* is installed on it for CSGO match parsing.
   - 3.12: *awpy2a9* is installed on it for CS2 match parsing.
 
----
+<div style="min-height: 40px"></div>
+
+----
 
 ### 2. Parsed match tables comparison
 
@@ -67,7 +79,9 @@
   </tr>
 </table>
 
----
+<div style="min-height: 40px"></div>
+
+----
 
 ### 3. Round win informations
 
@@ -88,6 +102,9 @@ Winning team by number:
   </tr>
 </table>
 
+<div style="min-height: 40px"></div>
+
+----
 
 ### 4. CS2 parser classes
 
@@ -108,15 +125,19 @@ Function name conventions:
   - <div>_TABULAR_: These functions work on databases that contain information about the game snapshots.</div>
   - <div>_FINAL_: Finalizing the function.</div>
 
+<div style="min-height: 40px"></div>
+
+----
 
 ### 5. Token
 
-Token layout plan:
+Token value orders plan:
 
-  - 1: CT position encodings
-  - 2: T position encodings
-  - 3: CT buy type (0-3)
-  - 4: T buy type (0-3)
-  - 5: CT score (with length of 2)
-  - 6: T score (with length of 2)
-  - 7: CT wins the round (1 - true, 0 - false)
+  - 0: *(3 digits)* Token version 
+  - 1: *(**n** digits)* CT position encodings 
+  - 2: *(**n** digits)* T position encodings 
+  - 3: *(1 digit)* CT buy type (0-3) 
+  - 4: *(3 digit)* T buy type (0-3) 
+  - 5: *(2 digits)* CT score (with length of 2) 
+  - 6: *(2 digits)* T score (with length of 2) 
+  - 7: *(1 digit)* CT wins the round (1 - true, 0 - false) 

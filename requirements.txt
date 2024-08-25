@@ -1,6 +1,6 @@
 # Data
 pandas
-numpy
+numpy==1.26.4
 # Model
 scikit-learn
 scipy
