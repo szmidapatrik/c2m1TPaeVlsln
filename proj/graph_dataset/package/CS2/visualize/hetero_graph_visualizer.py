@@ -61,7 +61,11 @@ class HeteroGraphVisualizer:
         fig, ax = plt.subplots(figsize=(10, 10))
 
         # Plot map image
-        ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.5)
+        if style == 'light':
+            ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.5)
+        elif style == 'dark':
+            ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.8)
+
 
         # Visualize map with light style
         if style == 'light':
