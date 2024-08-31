@@ -13,6 +13,11 @@ class HeteroGraphSnapshot:
     MOLOTOV_RADIUS_X = None
     MOLOTOV_RADIUS_Y = None
     MOLOTOV_RADIUS_Z = None
+    
+    # Smoke grenade radius values
+    SMOKE_RADIUS_X = None
+    SMOKE_RADIUS_Y = None
+    SMOKE_RADIUS_Z = None
 
 
     # --------------------------------------------------------------------------------------------
@@ -35,8 +40,9 @@ class HeteroGraphSnapshot:
         edges_pos_id: pd.DataFrame, 
         active_infernos: pd.DataFrame,
         active_smokes: pd.DataFrame,
-        actigve_he_explosions: pd.DataFrame,
+        active_he_explosions: pd.DataFrame,
         CONFIG_MOLOTOV_RADIUS: dict,
+        CONFIG_SMOKE_RADIUS: dict,
         player_edges_num: int = 1
     ):
         """
@@ -50,6 +56,7 @@ class HeteroGraphSnapshot:
         - active_smokes: the active smokes dataframe.
         - actigve_he_explosions: the active HE grenade explosions dataframe.
         - CONFIG_MOLOTOV_RADIUS: the molotov and incendiary grenade radius values.
+        - CONFIG_SMOKE_RADIUS: the smoke grenade radius values.
         - player_edges_num: the number of closest nodes the player should be connected to in the graph. Default is 1.
         """
 
@@ -60,6 +67,7 @@ class HeteroGraphSnapshot:
         # Validate the input paramters and create the accurate edges dataframe
         self._PREP_validate_inputs_(df, nodes, edges_pos_id, CONFIG_MOLOTOV_RADIUS, player_edges_num)
         self._PREP_set_molotov_radius_(CONFIG_MOLOTOV_RADIUS)
+        self._PREP_set_smoke_radius_(CONFIG_SMOKE_RADIUS)
         edges = self._PREP_create_edges_(nodes, edges_pos_id)
 
         # Create a list to store the heterogeneous graph snapshots
@@ -70,7 +78,7 @@ class HeteroGraphSnapshot:
         last_round_bomb_near_was_calculated_for = 0
 
         # Columns of the nodes dataframe
-        nodes_columns = ['pos_id', 'X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning']
+        nodes_columns = ['pos_id', 'X', 'Y', 'Z', 'is_contact', 'is_bombsite', 'is_bomb_planted_near', 'is_burning', 'is_smoked']
 
         # Node dataframe to use for the graph
         nodes_bomb = nodes.copy() 
@@ -115,8 +123,7 @@ class HeteroGraphSnapshot:
 
             # -------- 1.3 Add the smokes to the map -----------
 
-            # nodes_with_bomb_inf_smokes = self._EXT_add_smokes_(nodes_with_bomb_inf, row)
-            nodes_with_bomb_inf_smokes = nodes_with_bomb_inf
+            nodes_with_bomb_inf_smokes = self._EXT_add_smokes_(nodes_with_bomb_inf, active_smokes, active_he_explosions, tick)
 
 
 
@@ -239,6 +246,13 @@ class HeteroGraphSnapshot:
         self.MOLOTOV_RADIUS_X = CONFIG_MOLOTOV_RADIUS['X']
         self.MOLOTOV_RADIUS_Y = CONFIG_MOLOTOV_RADIUS['Y']
         self.MOLOTOV_RADIUS_Z = CONFIG_MOLOTOV_RADIUS['Z']
+    
+    # 0.2 Set the smoke grenade radius values
+    def _PREP_set_smoke_radius_(self, CONFIG_SMOKE_RADIUS: dict):
+        
+        self.SMOKE_RADIUS_X = CONFIG_SMOKE_RADIUS['X']
+        self.SMOKE_RADIUS_Y = CONFIG_SMOKE_RADIUS['Y']
+        self.SMOKE_RADIUS_Z = CONFIG_SMOKE_RADIUS['Z']
 
     # 0.2 Create the edges dataframe
     def _PREP_create_edges_(self, nodes: pd.DataFrame, edges_pos_id: pd.DataFrame):
@@ -296,17 +310,54 @@ class HeteroGraphSnapshot:
             return nodes_bomb
 
     # 1.3 Add smokes to the graph
-    def _EXT_add_smokes_(self, nodes_bomb_inf, row):
+    def _EXT_add_smokes_(self, nodes_bomb_inf: pd.DataFrame, active_smokes: pd.DataFrame, active_he_smokes: pd.DataFrame, tick: int):
         
-        # If there are no smokes, return the nodes
-        if len(row['UNIVERSAL_smokes_active']) == 0:
-            return nodes_bomb_inf
-        
-        # If there are smokes, iterate through them
-        for smoke in row['UNIVERSAL_smokes_active']:
+        # Reset the 'is_smoked' value for all nodes
+        nodes_bomb_inf['is_smoked'] = 0
 
-            # If a HE grenade exploded within the smoke, continue
-            pass
+        # Select the actual rows from the smokes dataframe
+        active_smokes = active_smokes[active_smokes['tick'] == tick]
+
+        # If there are no smokes thrown, continue
+        if len(active_smokes) == 0:
+            return nodes_bomb_inf
+
+        # If there are smokes thrown, check whether any HE grenade explosions are near for each smoke
+        else:
+            # Iterate through the smokes
+            for _, smoke in active_smokes.iterrows():
+
+                # Skip flag for the actual smoke if there is an HE grenade explosion near
+                SKIP_SMOKE = False
+
+                # Select the actual rows from the HE dataframe
+                active_he_smokes = active_he_smokes[active_he_smokes['tick'] == tick]
+
+                # If there are nade explosions in the actual tick, check whether any of them are near the smoke
+                if len(active_he_smokes) != 0:
+                    
+                    # Iterate through the HE grenade explosions
+                    for _, he_explosion in active_he_smokes.iterrows():
+
+                        # Check if the HE grenade explosion is near the smoke
+                        if  (he_explosion['X'] >= (smoke['X'] - self.SMOKE_RADIUS_X)) & (he_explosion['X'] <= (smoke['X'] + self.SMOKE_RADIUS_X)) & \
+                            (he_explosion['Y'] >= (smoke['Y'] - self.SMOKE_RADIUS_Y)) & (he_explosion['Y'] <= (smoke['Y'] + self.SMOKE_RADIUS_Y)) & \
+                            (he_explosion['Z'] >= (smoke['Z'] - self.SMOKE_RADIUS_Z)) & (he_explosion['Z'] <= (smoke['Z'] + self.SMOKE_RADIUS_Z)):
+                            
+                            # Set the skip flag if the HE grenade explosion is near the smoke
+                            SKIP_SMOKE = True
+
+                # If there are HE explosions in the smoke radius, skip the smoke, else set the 'is_smoked' value for the nodes
+                if SKIP_SMOKE:
+                    continue
+                else:
+                    nodes_bomb_inf.loc[
+                        (nodes_bomb_inf['X'] >= (smoke['X'] - self.SMOKE_RADIUS_X)) & (nodes_bomb_inf['X'] <= (smoke['X'] + self.SMOKE_RADIUS_X)) &
+                        (nodes_bomb_inf['Y'] >= (smoke['Y'] - self.SMOKE_RADIUS_Y)) & (nodes_bomb_inf['Y'] <= (smoke['Y'] + self.SMOKE_RADIUS_Y)) &
+                        (nodes_bomb_inf['Z'] >= (smoke['Z'] - self.SMOKE_RADIUS_Z)) & (nodes_bomb_inf['Z'] <= (smoke['Z'] + self.SMOKE_RADIUS_Z)),
+                        'is_smoked'] = 1
+            
+            return nodes_bomb_inf
 
 
 

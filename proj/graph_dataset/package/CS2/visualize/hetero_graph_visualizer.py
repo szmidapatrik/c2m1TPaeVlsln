@@ -42,7 +42,9 @@ class HeteroGraphVisualizer:
         # Plot map nodes and edges
         for edge in map_edges.T:
             plt.plot(map_nodes[edge, 0], map_nodes[edge, 1], c='black', linewidth=0.5)
-        plt.scatter(map_nodes[:, 0], map_nodes[:, 1], s=10, c=graph['map'].x[:, -1], cmap='RdGy_r', vmin=0, vmax=1.333)
+        plt.scatter(map_nodes[:, 0], map_nodes[:, 1], s=10, c='black')
+        plt.scatter(graph['map'].x[graph['map'].x[:, -2] == 1][:, 1], graph['map'].x[graph['map'].x[:, -2] == 1][:, 2], s=500, c='lightcoral', alpha=0.3)
+        plt.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='gray', alpha=0.3)
 
         # Plot players
         plt.scatter(players[:5, 0], players[:5, 1], s=15, c='lightblue')
