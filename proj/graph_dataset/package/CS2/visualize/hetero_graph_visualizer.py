@@ -53,18 +53,20 @@ class HeteroGraphVisualizer:
         players = graph['player'].x[:, 0:3].numpy()
         player_edges = graph['player', 'closest_to', 'map'].edge_index.numpy()
 
-        # Set dark background
+        # Set background color
+        if style == 'light':
+            plt.style.use('default')
         if style == 'dark':
             plt.style.use('dark_background')
 
         # Create figure
         fig, ax = plt.subplots(figsize=(10, 10))
 
+        # Set title
+        ax.set_title(f'Round: {round(graph.y['round'] * 24)}\nRemaining time: {round(graph.y['remaining_time'] * (115 + -4.78125))}', fontsize=20)
+
         # Plot map image
-        if style == 'light':
-            ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.5)
-        elif style == 'dark':
-            ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.8)
+        ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.5)
 
 
         # Visualize map with light style

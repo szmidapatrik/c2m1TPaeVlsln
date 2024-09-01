@@ -117,13 +117,13 @@ class HeteroGraphSnapshot:
 
             # ------- 1.2 Set the nodes that are burning -------
 
-            nodes_with_bomb_inf = self._EXT_set_burning_for_nodes_(nodes_bomb, active_infernos, tick)
+            nodes_with_bomb_inf = self._EXT_set_burning_(nodes_bomb, active_infernos, tick)
 
 
 
             # -------- 1.3 Add the smokes to the map -----------
 
-            nodes_with_bomb_inf_smokes = self._EXT_add_smokes_(nodes_with_bomb_inf, active_smokes, active_he_explosions, tick)
+            nodes_with_bomb_inf_smokes = self._EXT_set_smokes_(nodes_with_bomb_inf, active_smokes, active_he_explosions, tick)
 
 
 
@@ -280,11 +280,11 @@ class HeteroGraphSnapshot:
     # 1.1 Set the 'is_bomb_planted_near' value for the nodes near the bomb
     def _EXT_set_bomb_planted_near_for_nodes_(self, nodes, df, index):
         closest_node_id = self.__EXT_closest_node_to_pos__(df.iloc[index]['UNIVERSAL_bomb_X'], df.iloc[index]['UNIVERSAL_bomb_Y'], df.iloc[index]['UNIVERSAL_bomb_Z'], nodes)
-        nodes.loc[nodes['node_id'] == closest_node_id, 'UNIVERSAL_is_bomb_planted_near'] = 1
+        nodes.loc[nodes['pos_id'] == closest_node_id, 'UNIVERSAL_is_bomb_planted_near'] = 1
         return nodes
 
     # 1.2 Set the 'is_burning' value for the nodes that are burning
-    def _EXT_set_burning_for_nodes_(self, nodes_bomb: pd.DataFrame, active_infernos: pd.DataFrame, tick: int):
+    def _EXT_set_burning_(self, nodes_bomb: pd.DataFrame, active_infernos: pd.DataFrame, tick: int):
 
         # Reset the 'is_burning' value for all nodes
         nodes_bomb['is_burning'] = 0
@@ -292,7 +292,7 @@ class HeteroGraphSnapshot:
         # Select the actual rows from the infernos dataframe
         active_infernos = active_infernos[active_infernos['tick'] == tick]
 
-        # If there are no moloovs thrown, continue
+        # If there are no molotovs thrown, continue
         if len(active_infernos) == 0:
             return nodes_bomb
 
@@ -301,16 +301,29 @@ class HeteroGraphSnapshot:
             # Iterate through the molotovs
             for _, molotov in active_infernos.iterrows():
 
-                nodes_bomb.loc[
+                # Nodes close to the molotov
+                nodes_close = nodes_bomb.loc[
                     (nodes_bomb['X'] >= (molotov['X'] - self.MOLOTOV_RADIUS_X)) & (nodes_bomb['X'] <= (molotov['X'] + self.MOLOTOV_RADIUS_X)) &
                     (nodes_bomb['Y'] >= (molotov['Y'] - self.MOLOTOV_RADIUS_Y)) & (nodes_bomb['Y'] <= (molotov['Y'] + self.MOLOTOV_RADIUS_Y)) &
-                    (nodes_bomb['Z'] >= (molotov['Z'] - self.MOLOTOV_RADIUS_Z)) & (nodes_bomb['Z'] <= (molotov['Z'] + self.MOLOTOV_RADIUS_Z)),
-                    'is_burning'] = 1
+                    (nodes_bomb['Z'] >= (molotov['Z'] - self.MOLOTOV_RADIUS_Z)) & (nodes_bomb['Z'] <= (molotov['Z'] + self.MOLOTOV_RADIUS_Z))]
+                
+                # If there are no nodes close to the molotov, get the closest node
+                if len(nodes_close) == 0:
+                    closest_node_id = self.__EXT_closest_node_to_pos__(molotov['X'], molotov['Y'], molotov['Z'], nodes_bomb)
+                    nodes_bomb.loc[nodes_bomb['pos_id'] == closest_node_id, 'is_burning'] = 1
+                
+                # If there are nodes close to the molotov, set the 'is_burning' value for them
+                else:
+                    nodes_bomb.loc[
+                        (nodes_bomb['X'] >= (molotov['X'] - self.MOLOTOV_RADIUS_X)) & (nodes_bomb['X'] <= (molotov['X'] + self.MOLOTOV_RADIUS_X)) &
+                        (nodes_bomb['Y'] >= (molotov['Y'] - self.MOLOTOV_RADIUS_Y)) & (nodes_bomb['Y'] <= (molotov['Y'] + self.MOLOTOV_RADIUS_Y)) &
+                        (nodes_bomb['Z'] >= (molotov['Z'] - self.MOLOTOV_RADIUS_Z)) & (nodes_bomb['Z'] <= (molotov['Z'] + self.MOLOTOV_RADIUS_Z)),
+                        'is_burning'] = 1
             
-            return nodes_bomb
+        return nodes_bomb
 
     # 1.3 Add smokes to the graph
-    def _EXT_add_smokes_(self, nodes_bomb_inf: pd.DataFrame, active_smokes: pd.DataFrame, active_he_smokes: pd.DataFrame, tick: int):
+    def _EXT_set_smokes_(self, nodes_bomb_inf: pd.DataFrame, active_smokes: pd.DataFrame, active_he_explosions: pd.DataFrame, tick: int):
         
         # Reset the 'is_smoked' value for all nodes
         nodes_bomb_inf['is_smoked'] = 0
@@ -331,13 +344,13 @@ class HeteroGraphSnapshot:
                 SKIP_SMOKE = False
 
                 # Select the actual rows from the HE dataframe
-                active_he_smokes = active_he_smokes[active_he_smokes['tick'] == tick]
+                active_he_explosions = active_he_explosions[active_he_explosions['tick'] == tick]
 
                 # If there are nade explosions in the actual tick, check whether any of them are near the smoke
-                if len(active_he_smokes) != 0:
+                if len(active_he_explosions) != 0:
                     
                     # Iterate through the HE grenade explosions
-                    for _, he_explosion in active_he_smokes.iterrows():
+                    for _, he_explosion in active_he_explosions.iterrows():
 
                         # Check if the HE grenade explosion is near the smoke
                         if  (he_explosion['X'] >= (smoke['X'] - self.SMOKE_RADIUS_X)) & (he_explosion['X'] <= (smoke['X'] + self.SMOKE_RADIUS_X)) & \
@@ -350,14 +363,28 @@ class HeteroGraphSnapshot:
                 # If there are HE explosions in the smoke radius, skip the smoke, else set the 'is_smoked' value for the nodes
                 if SKIP_SMOKE:
                     continue
+
                 else:
-                    nodes_bomb_inf.loc[
+
+                    # Get the nodes close to the smoke
+                    nodes_close_to_smoke = nodes_bomb_inf.loc[
                         (nodes_bomb_inf['X'] >= (smoke['X'] - self.SMOKE_RADIUS_X)) & (nodes_bomb_inf['X'] <= (smoke['X'] + self.SMOKE_RADIUS_X)) &
                         (nodes_bomb_inf['Y'] >= (smoke['Y'] - self.SMOKE_RADIUS_Y)) & (nodes_bomb_inf['Y'] <= (smoke['Y'] + self.SMOKE_RADIUS_Y)) &
-                        (nodes_bomb_inf['Z'] >= (smoke['Z'] - self.SMOKE_RADIUS_Z)) & (nodes_bomb_inf['Z'] <= (smoke['Z'] + self.SMOKE_RADIUS_Z)),
-                        'is_smoked'] = 1
+                        (nodes_bomb_inf['Z'] >= (smoke['Z'] - self.SMOKE_RADIUS_Z)) & (nodes_bomb_inf['Z'] <= (smoke['Z'] + self.SMOKE_RADIUS_Z))]
+                    
+                    # If there are no nodes close to the smoke, get the closest node
+                    if len(nodes_close_to_smoke) == 0:
+                        closest_node_id = self.__EXT_closest_node_to_pos__(smoke['X'], smoke['Y'], smoke['Z'], nodes_bomb_inf)
+                        nodes_bomb_inf.loc[nodes_bomb_inf['pos_id'] == closest_node_id, 'is_smoked'] = 1
+
+                    else:
+                        nodes_bomb_inf.loc[
+                            (nodes_bomb_inf['X'] >= (smoke['X'] - self.SMOKE_RADIUS_X)) & (nodes_bomb_inf['X'] <= (smoke['X'] + self.SMOKE_RADIUS_X)) &
+                            (nodes_bomb_inf['Y'] >= (smoke['Y'] - self.SMOKE_RADIUS_Y)) & (nodes_bomb_inf['Y'] <= (smoke['Y'] + self.SMOKE_RADIUS_Y)) &
+                            (nodes_bomb_inf['Z'] >= (smoke['Z'] - self.SMOKE_RADIUS_Z)) & (nodes_bomb_inf['Z'] <= (smoke['Z'] + self.SMOKE_RADIUS_Z)),
+                            'is_smoked'] = 1
             
-            return nodes_bomb_inf
+        return nodes_bomb_inf
 
 
 
@@ -402,10 +429,10 @@ class HeteroGraphSnapshot:
         nearest_nodes_arr = np.array([])
         for player_idx in range(0, 10):
             if (player_idx < 5):
-                nearest_node = self.__EXT_closest_node_to_pos__(row[f'CT{player_idx}_X'], row[f'CT{player_idx}_Y'], row[f'CT{player_idx}_Z'], nodes)
+                nearest_node = self.__EXT_closest_node_to_player__(row[f'CT{player_idx}_X'], row[f'CT{player_idx}_Y'], row[f'CT{player_idx}_Z'], nodes)
                 nearest_nodes_arr = np.append(nearest_nodes_arr, nearest_node)
             else:
-                nearest_node = self.__EXT_closest_node_to_pos__(row[f'T{player_idx}_X'], row[f'T{player_idx}_Y'], row[f'T{player_idx}_Z'], nodes)
+                nearest_node = self.__EXT_closest_node_to_player__(row[f'T{player_idx}_X'], row[f'T{player_idx}_Y'], row[f'T{player_idx}_Z'], nodes)
                 nearest_nodes_arr = np.append(nearest_nodes_arr, nearest_node)
 
 
@@ -423,6 +450,20 @@ class HeteroGraphSnapshot:
   
     # Calculate closest graph node to a position
     def __EXT_closest_node_to_pos__(self, coord_x, coord_y, coord_z, nodes):
+        """
+        Returns the id of the closest node to a given position.
+        
+        Parameters:
+        - coord_x: the x coordinate of the position.
+        - coord_y: the y coordinate of the position.
+        - coord_z: the z coordinate of the position.
+        - nodes: the nodes dataframe.
+        """
+        distances = np.sqrt((nodes['X'] - coord_x)**2 + (nodes['Y'] - coord_y)**2 + (nodes['Z'] - coord_z)**2)
+        return nodes.loc[distances.idxmin(), 'pos_id']
+    
+    # Calculate closest graph node to a position
+    def __EXT_closest_node_to_player__(self, coord_x, coord_y, coord_z, nodes):
         """
         Returns the id of the closest node to a given position.
         

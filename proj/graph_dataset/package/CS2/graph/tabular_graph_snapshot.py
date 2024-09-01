@@ -1064,48 +1064,68 @@ class TabularGraphSnapshot:
     def _TABULAR_smokes_HEs_infernos(self, df, smokes, he_grenades, infernos):
 
         # Active infernos, smokes and HE explosions dataframe
-        active_infernos = df[['tick', 'round']].copy()
-        active_smokes = df[['tick', 'round']].copy()
-        active_he_smokes = df[['tick', 'round']].copy()
-
-        # Add X, Y, Z coordinate columns to the new dataframes
-        active_infernos = pd.concat([active_infernos, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
-        active_smokes = pd.concat([active_smokes, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
-        active_he_smokes = pd.concat([active_he_smokes, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
+        active_infernos = None
+        active_smokes = None
+        active_he_smokes = None
         
 
         # Handle smokes
         # The round check is necessary because the smokes dataframe contains smokes with the end_tick values being NaN
         for _, row in smokes.iterrows():
 
+            temp_smoke = df[['tick', 'round']].copy()
+            temp_smoke = pd.concat([temp_smoke, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
+
             startTick = row['start_tick']
-            endTick = row['end_tick']
-            active_smokes.loc[(active_smokes['round'] == row['round']) & (active_smokes['tick'] >= startTick) & (active_smokes['tick'] <= endTick), 'X'] = row['X']
-            active_smokes.loc[(active_smokes['round'] == row['round']) & (active_smokes['tick'] >= startTick) & (active_smokes['tick'] <= endTick), 'Y'] = row['Y']
-            active_smokes.loc[(active_smokes['round'] == row['round']) & (active_smokes['tick'] >= startTick) & (active_smokes['tick'] <= endTick), 'Z'] = row['Z']
+            endTick = row['end_tick'] - 112
+            temp_smoke.loc[(temp_smoke['round'] == row['round']) & (temp_smoke['tick'] >= startTick) & (temp_smoke['tick'] <= endTick), 'X'] = row['X']
+            temp_smoke.loc[(temp_smoke['round'] == row['round']) & (temp_smoke['tick'] >= startTick) & (temp_smoke['tick'] <= endTick), 'Y'] = row['Y']
+            temp_smoke.loc[(temp_smoke['round'] == row['round']) & (temp_smoke['tick'] >= startTick) & (temp_smoke['tick'] <= endTick), 'Z'] = row['Z']
+
+            temp_smoke = temp_smoke.dropna()
+
+            if active_smokes is None:
+                active_smokes = temp_smoke
+            else:
+                active_smokes = pd.concat([active_smokes, temp_smoke])
 
         # Handle HE grenades
         for _, row in he_grenades.iterrows():
                 
+            temp_HE = df[['tick', 'round']].copy()
+            temp_HE = pd.concat([temp_HE, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
+
             startTick = row['tick']
             endTick = startTick + 128
-            active_he_smokes.loc[(active_he_smokes['round'] == row['round']) & (active_he_smokes['tick'] >= startTick) & (active_he_smokes['tick'] <= endTick), 'X'] = row['X']
-            active_he_smokes.loc[(active_he_smokes['round'] == row['round']) & (active_he_smokes['tick'] >= startTick) & (active_he_smokes['tick'] <= endTick), 'Y'] = row['Y']
-            active_he_smokes.loc[(active_he_smokes['round'] == row['round']) & (active_he_smokes['tick'] >= startTick) & (active_he_smokes['tick'] <= endTick), 'Z'] = row['Z']
+            temp_HE.loc[(temp_HE['round'] == row['round']) & (temp_HE['tick'] >= startTick) & (temp_HE['tick'] <= endTick), 'X'] = row['X']
+            temp_HE.loc[(temp_HE['round'] == row['round']) & (temp_HE['tick'] >= startTick) & (temp_HE['tick'] <= endTick), 'Y'] = row['Y']
+            temp_HE.loc[(temp_HE['round'] == row['round']) & (temp_HE['tick'] >= startTick) & (temp_HE['tick'] <= endTick), 'Z'] = row['Z']
         
+            temp_HE = temp_HE.dropna()
+
+            if active_he_smokes is None:
+                active_he_smokes = temp_HE
+            else:
+                active_he_smokes = pd.concat([active_he_smokes, temp_HE])
+
         # Handle infernos
         for _, row in infernos.iterrows():
 
+            temp_inf = df[['tick', 'round']].copy()
+            temp_inf = pd.concat([temp_inf, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
+
             startTick = row['start_tick']
             endTick = row['end_tick']
-            active_infernos.loc[(active_infernos['round'] == row['round']) & (active_infernos['tick'] >= startTick) & (active_infernos['tick'] <= endTick), 'X'] = row['X']
-            active_infernos.loc[(active_infernos['round'] == row['round']) & (active_infernos['tick'] >= startTick) & (active_infernos['tick'] <= endTick), 'Y'] = row['Y']
-            active_infernos.loc[(active_infernos['round'] == row['round']) & (active_infernos['tick'] >= startTick) & (active_infernos['tick'] <= endTick), 'Z'] = row['Z']
+            temp_inf.loc[(temp_inf['round'] == row['round']) & (temp_inf['tick'] >= startTick) & (temp_inf['tick'] <= endTick), 'X'] = row['X']
+            temp_inf.loc[(temp_inf['round'] == row['round']) & (temp_inf['tick'] >= startTick) & (temp_inf['tick'] <= endTick), 'Y'] = row['Y']
+            temp_inf.loc[(temp_inf['round'] == row['round']) & (temp_inf['tick'] >= startTick) & (temp_inf['tick'] <= endTick), 'Z'] = row['Z']
 
-        # Drop the rows with NaN values
-        active_infernos = active_infernos.dropna()
-        active_smokes = active_smokes.dropna()
-        active_he_smokes = active_he_smokes.dropna()
+            temp_inf = temp_inf.dropna()
+
+            if active_infernos is None:
+                active_infernos = temp_inf
+            else:
+                active_infernos = pd.concat([active_infernos, temp_inf])
 
         return active_infernos, active_smokes, active_he_smokes
 
