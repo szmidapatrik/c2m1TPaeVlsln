@@ -9,8 +9,16 @@ import pandas as pd
 import numpy as np
 
 import random
+import os
 
 class HeteroGraphVisualizer:
+
+    # OS path for this file
+    __file_path = os.path.dirname(os.path.abspath(__file__))
+
+    # Map image path constants
+    INFERNO_LIGHT = '/radar/inferno.png'
+    INFERNO_DARK  = '/radar/inferno_dark.png'
 
 
 
@@ -19,7 +27,8 @@ class HeteroGraphVisualizer:
     # --------------------------------------------------------------------------------------------
 
     def __init__(self):
-        pass
+        self.INFERNO_LIGHT = self.__file_path + self.INFERNO_LIGHT
+        self.INFERNO_DARK = self.__file_path + self.INFERNO_DARK
 
 
 
@@ -28,23 +37,27 @@ class HeteroGraphVisualizer:
     # --------------------------------------------------------------------------------------------
 
     # Visualize a heterogeneous graph snapshot
-    def visualize_snapshot(self, graph: HeteroData, style='light', map_image_path: str = None) -> None:
+    def visualize_snapshot(self, graph: HeteroData, map: str, style='light') -> None:
         """
         Visualize a heterogeneous graph snapshot.
         Parameters:
         - graph: the HeteroData graph to visualize.
+        - map: the map on which the match was held.
         - style: the plot style. Can be 'light' or 'dark'. Default is 'light'.
-        - map_image_path: the path to the map image. Default is None. 
         """
 
         # Validate style
-        if style not in ['light', 'dark']:
-            raise ValueError('Invalid style. Must be "light" or "dark".')
+        if style not in ['light', 'l', 'dark', 'd']:
+            raise ValueError('Invalid style. Must be "light" (or "l" for short) or "dark" (or "d" for short).')
+
+        # Validate map
+        if map not in ['de_dust2', 'de_inferno', 'de_mirage', 'de_nuke', 'de_anubis', 'de_ancient', 'de_vertigo']:
+            raise ValueError('Invalid map. Must be one of "de_dust2", "de_inferno", "de_mirage", "de_nuke", "de_anubis", "de_ancient", "de_vertigo".')
+        
 
 
         # Get the image
-        if map_image_path is not None:
-            img = mpimg.imread(map_image_path)
+        img = self.__EXT_get_map_radar(map, style)
 
         # Get the data
         map_nodes = graph['map'].x[:, 1:4].numpy()
@@ -54,9 +67,9 @@ class HeteroGraphVisualizer:
         player_edges = graph['player', 'closest_to', 'map'].edge_index.numpy()
 
         # Set background color
-        if style == 'light':
+        if style == 'light' or style == 'l':
             plt.style.use('default')
-        if style == 'dark':
+        if style == 'dark' or style == 'd':
             plt.style.use('dark_background')
 
         # Create figure
@@ -70,7 +83,7 @@ class HeteroGraphVisualizer:
 
 
         # Visualize map with light style
-        if style == 'light':
+        if style == 'light' or style == 'l':
             
             # Plot map nodes and edges
             for edge in map_edges.T:
@@ -80,7 +93,7 @@ class HeteroGraphVisualizer:
             ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='dimgray', alpha=0.3)
 
         # Visualize map with dark style
-        elif style == 'dark':
+        elif style == 'dark' or style == 'd':
 
             # Plot map nodes and edges
             for edge in map_edges.T:
@@ -90,14 +103,14 @@ class HeteroGraphVisualizer:
             ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='lightgray', alpha=0.3)
 
         # Visualize players with light style
-        if style == 'light':
+        if style == 'light' or style == 'l':
 
             # Plot players
             ax.scatter(players[:5, 0], players[:5, 1], s=15, c='dodgerblue')
             ax.scatter(players[5:, 0], players[5:, 1], s=15, c='darkorange')
 
         # Visualize players with dark style
-        elif style == 'dark':
+        elif style == 'dark' or style == 'd':
 
             # Plot players
             ax.scatter(players[:5, 0], players[:5, 1], s=15, c='cyan')
@@ -108,8 +121,32 @@ class HeteroGraphVisualizer:
 
         plt.show()
 
+
+
+
     # --------------------------------------------------------------------------------------------
     # REGION: Private functions
     # --------------------------------------------------------------------------------------------
 
-   
+    # Get the map radar image
+    def __EXT_get_map_radar(self, map: str, style: str):
+        """
+        Get the map radar image.
+        Parameters:
+        - map: the map on which the match was held.
+        - style: the plot style. Can be 'light' or 'dark'.
+        Returns:
+        - the map radar image.
+        """
+
+        # Get the image
+        if map == 'de_inferno':
+            if style == 'light' or style == 'l':
+                img = mpimg.imread(self.INFERNO_LIGHT)
+            elif style == 'dark' or style == 'd':
+                img = mpimg.imread(self.INFERNO_DARK)
+
+        else:
+            raise ValueError('Support for this map is not yet available.')
+
+        return img
