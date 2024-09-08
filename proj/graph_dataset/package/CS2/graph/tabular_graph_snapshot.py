@@ -1768,25 +1768,22 @@ class POLARSTabularGraphSnapshot:
             damages = damages.filter(pl.col('weapon').is_in(['inferno', 'molotov', 'hegrenade', 'flashbang', 'smokegrenade']))
 
         # Create damages per round dataframe
-        dpr = damages.sort('round').group_by(['round', 'attacker_name']).agg(pl.col('dmg_health_real').sum().alias('dmg_health_real'))
+        dpr = damages.to_pandas().sort_values(by=['round']).groupby(['round', 'attacker_name'])['dmg_health_real'].sum().reset_index()
 
         # Use cumsum to calculate the damages for the whole match per player
-        dpr = dpr.with_columns([
-            pl.col('dmg_health_real').cum_sum().over('attacker_name').alias('dmg_health_real')
-        ])
+        dpr['dmg_health_real'] = dpr.groupby('attacker_name')['dmg_health_real'].cumsum()
 
         # Rename columns
         if damage_type == 'all':
-            dpr = dpr.rename({'attacker_name': 'name', 'dmg_health_real': 'stat_damage'})
+            dpr = dpr.rename(columns={'attacker_name': 'name', 'dmg_health_real': 'stat_damage'})
         elif damage_type == 'weapon':
-            dpr = dpr.rename({'attacker_name': 'name', 'dmg_health_real': 'stat_weapon_damage'})
+            dpr = dpr.rename(columns={'attacker_name': 'name', 'dmg_health_real': 'stat_weapon_damage'})
         elif damage_type == 'nade':
-            dpr = dpr.rename({'attacker_name': 'name', 'dmg_health_real': 'stat_nade_damage'})
+            dpr = dpr.rename(columns={'attacker_name': 'name', 'dmg_health_real': 'stat_nade_damage'})
 
         # Increase the round number by 1, as the damages are calculated when the round is over
-        dpr = dpr.with_columns([
-            (pl.col('round') + 1).alias('round')
-        ])
+        dpr['round'] += 1
+        dpr = pl.from_pandas(dpr)
 
         return dpr
 
@@ -1903,9 +1900,13 @@ class POLARSTabularGraphSnapshot:
             pl.lit(0).alias('stat_SPR'),
         ])
 
+        # Calculate stat_survives
+        pf = pf.with_columns(
+            (pl.col('round') - pl.col('stat_deaths')).alias('stat_survives')
+        )
+        
         # Calculate other stats
         pf = pf.with_columns([
-            (pl.col('round') - pl.col('stat_deaths')).alias('stat_survives'),
             (pl.col('stat_kills') / pl.col('round')).alias('stat_KPR'),
             (pl.col('stat_damage') / pl.col('round')).alias('stat_ADR'),
             (pl.col('stat_deaths') / pl.col('round')).alias('stat_DPR'),
