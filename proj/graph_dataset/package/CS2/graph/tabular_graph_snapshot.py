@@ -1941,8 +1941,10 @@ class POLARSTabularGraphSnapshot:
         for weapon in inventory_weapons:
             weapon_name = weapon.replace('inventory_', '')
             pf = pf.with_columns(
-                pl.when(pl.col('inventory').str.contains(weapon_name))
-                .then(1).otherwise(0).alias(weapon)
+                pl.when(pl.col('inventory').list.contains(weapon_name))
+                .then(1)
+                .otherwise(0)
+                .alias(weapon)
             )
 
         return pf
@@ -1954,19 +1956,19 @@ class POLARSTabularGraphSnapshot:
 
         # Handle null values
         pf = pf.with_columns(
-            pl.when(pl.col('active_weapon_name').is_null())
-            .then('')
-            .otherwise(pl.col('active_weapon_name'))
-            .alias('active_weapon_name')
+            pl.col('active_weapon_name').fill_null('').alias('active_weapon_name')
         )
+
         
         # Handle "Knife" active weapon case
         pf = pf.with_columns(
-            pl.when(pl.col('active_weapon_name').str.contains('knife', case=False))
-            .then('Knife')
-            .otherwise(pl.col('active_weapon_name'))
-            .alias('active_weapon_name')
-        )    
+            pl.when(pl.col("active_weapon_name").str.to_lowercase().str.contains("knife"))
+            .then(pl.lit("Knife"))
+            .otherwise(pl.col("active_weapon_name"))
+            .alias("active_weapon_name")
+        )
+
+           
         # Active weapons
         active_weapons = [
             # Other
