@@ -1,8 +1,12 @@
 from .graph.tabular_graph_snapshot import TabularGraphSnapshot
+from .graph.tabular_graph_snapshot import POLARSTabularGraphSnapshot
 from .graph.hetero_graph_snapshot import HeteroGraphSnapshot
+
 from .token.tokenizer import Tokenizer
+
 from .preprocess.normalize_position import NormalizePosition
 from .preprocess.normalizer_dictionary import Dictionary
 from .preprocess.normalize_tabular_graph_snapshot import NormalizeTabularGraphSnapshot
 from .preprocess.impute_tabular_graph_snapshot import ImputeTabularGraphSnapshot
+
 from .visualize.hetero_graph_visualizer import HeteroGraphVisualizer
