@@ -10,6 +10,7 @@ The list of tasks that are currently under development or are future upgrade pla
 
 ----
 
+
 ### 1. Python kernels (ASUS ROG Zepgyrus G16)
   - 3.11: *awpy* is installed on it for CSGO match parsing.
   - 3.12: *awpy2a9* is installed on it for CS2 match parsing.
