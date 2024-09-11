@@ -1,0 +1,1 @@
+from .hltv_demo_scraper import HLTV_Demo_Scraper

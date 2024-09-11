@@ -1,11 +1,17 @@
 # Data
 pandas
 numpy==1.26.4
+
 # Model
 scikit-learn
 scipy
 torch_geometric
+torch_geometric_temporal
+
 # Visualization
 matplotlib
 seaborn
 plotly
+
+# Other
+patool
