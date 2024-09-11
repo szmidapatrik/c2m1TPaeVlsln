@@ -1,8 +1,10 @@
-# BUGFIXES
+<div style="width: 100%; display: flex; justify-content: center; margin-bottom: 20px;">
+      <span style="font-size: 32px; color: lightblue">BUGFIXES</span>
+</div>
 
-This documents hold information about some bugs found that are unrelated to the code content of this library (e.g. Pytorch error). These issues are listed below as well as the solutions (if there is one).
+This documents holds information about some bugs found during working on this project, that are unrelated to the code content of this repository. It's focus is on package-related issues, e.g. a PyG Temporal import error. These issues are collected into the list below with *descriptions*, *error messages*, *reasons* of failiure (if found out) as well as the solutions (if there are any).
 
-----------
+<div style="min-height: 5px"></div>
 
 ## 1. PyG Temporal - Import error (2024. 09. 10.)
 
@@ -46,7 +48,7 @@ ModuleNotFoundError: No module named 'torch_geometric.utils.to_dense_adj'
 ```
 
 
-*Reason*: The version of PyG is ```2.5.3```, but PyG temporal does not support PyG ```2.5.X```, only below.
+*Reason*: The version of PyG is ```2.5.3```, but PyG Temporal does not support PyG ```2.5.X```, only below.
 
 *Solution*: The issue is caused because one function in PyG that is used in PyG Temporal was moved while PyG updated to ```2.5.X```. Fixing it consists of the following steps:
 
@@ -74,5 +76,11 @@ ModuleNotFoundError: No module named 'torch_geometric.utils.to_dense_adj'
   from torch_geometric.utils import to_dense_adj  # <----- this is the correct version
   import torch.nn.functional as F
   ...
-
   ```
+
+  After this correction the package was working as intended.
+  <div style="width: 100%; display: flex; justify-content: flex-end; margin-top: 15px; margin-bottom: 10px;">
+      2024.09.11.
+  </div>
+
+  -----

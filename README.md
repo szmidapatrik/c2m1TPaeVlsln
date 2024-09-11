@@ -1,10 +1,14 @@
 # Counter Strike Player Action Evaluation Using Graph Neual Networks
 
-### ***TODO***s
+
+<span style="color: red; font-size: 16px">IMPORTANT!<span><span style="color: white"> If any errors would occure during the use of this project, read the [BUGFIX.md](BUGFIX.md) file, which contains solutions to some of the previously found problems.<span> 
+
+
+
+
+### 0. ***TODO***s
 
 The list of tasks that are currently under development or are future upgrade plans.
-
-  - Tabular snapshot creator: improve time by iterating *round-by-round* on the ***damages*** dataframe instead of *row-by-row*
 
 <div style="min-height: 40px"></div>
 
