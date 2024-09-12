@@ -137,6 +137,9 @@ class TabularGraphSnapshot:
             tabular_df_dict = self._FINAL_build_dictionary(tabular_df)
 
         # 17.
+        tabular_df = self._EXT_filter_bomb_defused_rows(tabular_df)
+
+        # 18.
         self._FINAL_free_memory(ticks, kills, rounds, bomb, damages, smokes, infernos)
 
         # Return
@@ -1407,10 +1410,18 @@ class TabularGraphSnapshot:
         })
 
         return df_dict
-    
 
 
-    # 17. Free memory
+
+    # 17. Drop rows where the bomb is already defused
+    def _EXT_filter_bomb_defused_rows(self, df):
+
+        df = df.loc[df['UNIVERSAL_is_bomb_defused'] == 0]
+        return df
+
+
+
+    # 18. Free memory
     def _FINAL_free_memory(self, ticks, kills, rounds, bomb, damages, smokes, infernos):
         del ticks
         del kills
@@ -1420,6 +1431,27 @@ class TabularGraphSnapshot:
         del smokes
         del infernos
         gc.collect()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class POLARSTabularGraphSnapshot:
 

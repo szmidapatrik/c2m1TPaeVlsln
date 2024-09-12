@@ -1,3 +1,4 @@
 from .tabular_graph_snapshot import TabularGraphSnapshot
 from .tabular_graph_snapshot import POLARSTabularGraphSnapshot
 from .hetero_graph_snapshot import HeteroGraphSnapshot
+from .temporal_hetero_graph_snapshot import TemporalHeteroGraphSnapshot

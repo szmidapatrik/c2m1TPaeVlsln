@@ -1,6 +1,7 @@
 from .graph.tabular_graph_snapshot import TabularGraphSnapshot
 from .graph.tabular_graph_snapshot import POLARSTabularGraphSnapshot
 from .graph.hetero_graph_snapshot import HeteroGraphSnapshot
+from .graph.temporal_hetero_graph_snapshot import TemporalHeteroGraphSnapshot
 
 from .token.tokenizer import Tokenizer
 
