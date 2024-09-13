@@ -2088,24 +2088,24 @@ class POLARSTabularGraphSnapshot:
     # 6. Create player dataset
     def _PLAYER_player_datasets(self, pf):
     
-        startAsCTPlayerNames = pf[(pf['is_CT'] == True)  & (pf['round'] == 1)]['name'].drop_duplicates().tolist()
-        startAsTPlayerNames  = pf[(pf['is_CT'] == False) & (pf['round'] == 1)]['name'].drop_duplicates().tolist()
+        startAsCTPlayerNames = pf.filter((pl.col('is_CT') == True) & (pl.col('round') == 1)).select('name').unique().to_series().to_list()
+        startAsTPlayerNames  = pf.filter((pl.col('is_CT') == False) & (pl.col('round') == 1)).select('name').unique().to_series().to_list()
 
         players = {}
 
         # Team 1: start on CT side
-        players[0] = pf[pf['name'] == startAsCTPlayerNames[0]].iloc[::self.__nth_tick__].copy()
-        players[1] = pf[pf['name'] == startAsCTPlayerNames[1]].iloc[::self.__nth_tick__].copy()
-        players[2] = pf[pf['name'] == startAsCTPlayerNames[2]].iloc[::self.__nth_tick__].copy()
-        players[3] = pf[pf['name'] == startAsCTPlayerNames[3]].iloc[::self.__nth_tick__].copy()
-        players[4] = pf[pf['name'] == startAsCTPlayerNames[4]].iloc[::self.__nth_tick__].copy()
+        players[0] = pf.filter(pl.col('name') == startAsCTPlayerNames[0]).gather_every(self.__nth_tick__).clone()
+        players[1] = pf.filter(pl.col('name') == startAsCTPlayerNames[1]).gather_every(self.__nth_tick__).clone()
+        players[2] = pf.filter(pl.col('name') == startAsCTPlayerNames[2]).gather_every(self.__nth_tick__).clone()
+        players[3] = pf.filter(pl.col('name') == startAsCTPlayerNames[3]).gather_every(self.__nth_tick__).clone()
+        players[4] = pf.filter(pl.col('name') == startAsCTPlayerNames[4]).gather_every(self.__nth_tick__).clone()
 
         # Team 2: start on T side
-        players[5] = pf[pf['name'] == startAsTPlayerNames[0]].iloc[::self.__nth_tick__].copy()
-        players[6] = pf[pf['name'] == startAsTPlayerNames[1]].iloc[::self.__nth_tick__].copy()
-        players[7] = pf[pf['name'] == startAsTPlayerNames[2]].iloc[::self.__nth_tick__].copy()
-        players[8] = pf[pf['name'] == startAsTPlayerNames[3]].iloc[::self.__nth_tick__].copy()
-        players[9] = pf[pf['name'] == startAsTPlayerNames[4]].iloc[::self.__nth_tick__].copy()
+        players[5] = pf.filter(pl.col('name') == startAsTPlayerNames[0]).gather_every(self.__nth_tick__).clone()
+        players[6] = pf.filter(pl.col('name') == startAsTPlayerNames[1]).gather_every(self.__nth_tick__).clone()
+        players[7] = pf.filter(pl.col('name') == startAsTPlayerNames[2]).gather_every(self.__nth_tick__).clone()
+        players[8] = pf.filter(pl.col('name') == startAsTPlayerNames[3]).gather_every(self.__nth_tick__).clone()
+        players[9] = pf.filter(pl.col('name') == startAsTPlayerNames[4]).gather_every(self.__nth_tick__).clone()
         
         return players
     
