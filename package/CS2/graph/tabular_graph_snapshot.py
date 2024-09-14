@@ -594,6 +594,9 @@ class TabularGraphSnapshot:
         startAsCTPlayerNames = pf[(pf['is_CT'] == True)  & (pf['round'] == 1)]['name'].drop_duplicates().tolist()
         startAsTPlayerNames  = pf[(pf['is_CT'] == False) & (pf['round'] == 1)]['name'].drop_duplicates().tolist()
 
+        startAsCTPlayerNames.sort()
+        startAsTPlayerNames.sort()
+
         players = {}
 
         # Team 1: start on CT side
@@ -884,6 +887,7 @@ class TabularGraphSnapshot:
         graph_data_concatenated = pd.concat([graph_data, match_id_df], axis=1)
 
         return graph_data_concatenated
+    
 
 
     # 9. Add bomb information to the dataset
@@ -1025,18 +1029,6 @@ class TabularGraphSnapshot:
         df = pd.concat([df, new_columns], axis=1)
         
         df.loc[(df['is_bomb_planted_at_A_site'] == 1) | (df['is_bomb_planted_at_B_site'] == 1), 'bomb_mx_pos'] = df.apply(self.__EXT_INFERNO_get_bomb_mx_coordinate__, axis=1)
-
-        # Dummify the bomb_mx_pos column and drop the original column
-        # Poor performance
-        # df['bomb_mx_pos1'] = 0
-        # df['bomb_mx_pos2'] = 0
-        # df['bomb_mx_pos3'] = 0
-        # df['bomb_mx_pos4'] = 0
-        # df['bomb_mx_pos5'] = 0
-        # df['bomb_mx_pos6'] = 0
-        # df['bomb_mx_pos7'] = 0
-        # df['bomb_mx_pos8'] = 0
-        # df['bomb_mx_pos9'] = 0
 
         new_columns = pd.DataFrame({
             'bomb_mx_pos1': 0,
@@ -2091,6 +2083,9 @@ class POLARSTabularGraphSnapshot:
         startAsCTPlayerNames = pf.filter((pl.col('is_CT') == True) & (pl.col('round') == 1)).select('name').unique().to_series().to_list()
         startAsTPlayerNames  = pf.filter((pl.col('is_CT') == False) & (pl.col('round') == 1)).select('name').unique().to_series().to_list()
 
+        startAsCTPlayerNames.sort()
+        startAsTPlayerNames.sort()
+
         players = {}
 
         # Team 1: start on CT side
@@ -2112,79 +2107,79 @@ class POLARSTabularGraphSnapshot:
 
 
     # 7. Insert universal player statistics into player dataset
-    def __EXT_insert_columns_into_player_dataframes__(self, stat_df, players_df):
+    def __EXT_insert_columns_into_player_dataframes__(self, stat_df: pl.DataFrame, players_df: pl.DataFrame) -> pl.DataFrame:
         for col in stat_df.columns:
             if col != 'player_name':
-                players_df[col] = stat_df.loc[stat_df['player_name'] == players_df['name'].iloc[0]][col].iloc[0]
+                value = stat_df.filter(pl.col('player_name') == players_df['name'][0])[col].item()
+                players_df = players_df.with_columns(pl.lit(value).alias(col))
         return players_df
 
     def _PLAYER_hltv_statistics(self, players):
-        
+
         # Needed columns
         needed_stats = ['player_name', 'rating_2.0', 'DPR', 'KAST', 'Impact', 'ADR', 'KPR','total_kills', 'HS%', 'total_deaths', 'KD_ratio', 'dmgPR',
         'grenade_dmgPR', 'maps_played', 'saved_by_teammatePR', 'saved_teammatesPR','opening_kill_rating', 'team_W%_after_opening',
         'opening_kill_in_W_rounds', 'rating_1.0_all_Career', 'clutches_1on1_ratio', 'clutches_won_1on1', 'clutches_won_1on2', 'clutches_won_1on3', 'clutches_won_1on4', 'clutches_won_1on5']
         
-        stats = pd.read_csv(self.PLAYER_STATS_DATA_PATH).drop_duplicates()
+        stats = pl.from_pandas(pd.read_csv(self.PLAYER_STATS_DATA_PATH).drop_duplicates())
 
+        # Try to select needed stats, and if clutches_1on1_ratio is missing, calculate it
         try:
-            stats = stats[needed_stats]
-
-        # If clutches_1on1_ratio column is missing, calculate it here
-        except:
-            stats['clutches_1on1_ratio'] = stats['clutches_won_1on1'] / stats['clutches_lost_1on1']
-            stats['clutches_1on1_ratio'] = stats['clutches_1on1_ratio'].fillna(0)
-            stats = stats[needed_stats]
+            stats = stats.select(needed_stats)
+        except Exception:
+            stats = stats.with_columns(
+                (pl.col('clutches_won_1on1') / pl.col('clutches_lost_1on1')).fill_null(0).alias('clutches_1on1_ratio')
+            )
+            stats = stats.select(needed_stats)
 
         # Stats dataframe basic formatting
         for col in stats.columns:
             if col != 'player_name':
-                stats[col] = stats[col].astype('float32')
-                stats.rename(columns={col: "hltv_" + col}, inplace=True)
-        
+                stats = stats.with_columns(pl.col(col).cast(pl.Float32).alias(col))
+                stats = stats.rename({col: "hltv_" + col})
+
         # Merge stats with players
-        for idx in range(0,len(players)):
-            # If the stats dataframe contains the player related informations, do the merge
-            if len(stats.loc[stats['player_name'] == players[idx]['name'].iloc[0]]) == 1:
+        for idx in range(len(players)):
+            player_name = players[idx]['name'][0]
+
+            # If stats contain player information, merge
+            if stats.filter(pl.col('player_name') == player_name).height == 1:
                 players[idx] = self.__EXT_insert_columns_into_player_dataframes__(stats, players[idx])
 
-            # If the stats dataframe does not contain the player related informations, check if the missing_players_df contains the player
+            # If stats do not contain player information, check missing_players_df
             else:
+                mpdf = pl.read_csv(self.MISSING_PLAYER_STATS_DATA_PATH)
 
-                mpdf = pd.read_csv(self.MISSING_PLAYER_STATS_DATA_PATH)
-                
                 try:
-                    mpdf = mpdf[needed_stats]
-                    
-                # If clutches_1on1_ratio column is missing, calculate it here
-                except:
-                    mpdf['clutches_1on1_ratio'] = mpdf['clutches_won_1on1'] / mpdf['clutches_lost_1on1']
-                    mpdf['clutches_1on1_ratio'] = mpdf['clutches_1on1_ratio'].fillna(0)
-                    mpdf = mpdf[needed_stats]
-                
+                    mpdf = mpdf.select(needed_stats)
+                except Exception:
+                    mpdf = mpdf.with_columns(
+                        (pl.col('clutches_won_1on1') / pl.col('clutches_lost_1on1')).fill_null(0).alias('clutches_1on1_ratio')
+                    )
+                    mpdf = mpdf.select(needed_stats)
+
                 for col in mpdf.columns:
                     if col != 'player_name':
-                        mpdf[col] = mpdf[col].astype('float32')
-                        mpdf.rename(columns={col: "hltv_" + col}, inplace=True)
-                        
-                # If the missing_players_df contains the player related informations, do the merge
-                if len(mpdf.loc[mpdf['player_name'] == players[idx]['name'].iloc[0]]) == 1:
+                        mpdf = mpdf.with_columns(pl.col(col).cast(pl.Float32).alias(col))
+                        mpdf = mpdf.rename({col: "hltv_" + col})
+
+                # If missing_players_df contains player information, merge
+                if mpdf.filter(pl.col('player_name') == player_name).height == 1:
                     players[idx] = self.__EXT_insert_columns_into_player_dataframes__(mpdf, players[idx])
 
-                # Else get imputed values for the player from missing_players_df and do the merge
+                # Else impute values from missing_players_df and merge
                 else:
-                    first_anonim_pro_index = mpdf.index[mpdf['player_name'] == 'anonim_pro'].min()
-                    mpdf.at[first_anonim_pro_index, 'player_name'] = players[idx]['name'].iloc[0]
+                    first_anonim_pro_index = mpdf.filter(pl.col('player_name') == 'anonim_pro').select(pl.first().over('player_name')).row(0)[0]
+                    mpdf = mpdf.with_row_at_idx(first_anonim_pro_index, {'player_name': player_name})
                     players[idx] = self.__EXT_insert_columns_into_player_dataframes__(mpdf, players[idx])
-                    
+
                     # Reverse the column renaming - remove the 'hltv_' prefix
                     for col in mpdf.columns:
                         if col.startswith('hltv_'):
-                            new_col = col[len('hltv_'):]
-                            mpdf.rename(columns={col: new_col}, inplace=True)
+                            mpdf = mpdf.rename({col: col[len('hltv_'):]})
 
-                    mpdf.to_csv(self.MISSING_PLAYER_STATS_DATA_PATH, index=False)
-            
+                    mpdf.write_csv(self.MISSING_PLAYER_STATS_DATA_PATH)
+
         return players
     
 
@@ -2226,86 +2221,38 @@ class POLARSTabularGraphSnapshot:
         else:
             return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum()
 
-    def __EXT_delete_useless_columns__(self, graph_data):
+    def __EXT_delete_useless_columns__(self, graph_data: pl.DataFrame) -> pl.DataFrame:
 
-        del graph_data['player0_equi_val_alive']
-        del graph_data['player1_equi_val_alive']
-        del graph_data['player2_equi_val_alive']
-        del graph_data['player3_equi_val_alive']
-        del graph_data['player4_equi_val_alive']
-        del graph_data['player5_equi_val_alive']
-        del graph_data['player6_equi_val_alive']
-        del graph_data['player7_equi_val_alive']
-        del graph_data['player8_equi_val_alive']
-        del graph_data['player9_equi_val_alive']
+        columns_to_drop = [
+            'player0_equi_val_alive', 'player1_equi_val_alive', 'player2_equi_val_alive', 'player3_equi_val_alive', 'player4_equi_val_alive',
+            'player5_equi_val_alive', 'player6_equi_val_alive', 'player7_equi_val_alive', 'player8_equi_val_alive', 'player9_equi_val_alive',
+            
+            'player0_freeze_end', 'player1_freeze_end', 'player2_freeze_end', 'player3_freeze_end', 'player4_freeze_end',
+            'player5_freeze_end', 'player6_freeze_end', 'player7_freeze_end', 'player8_freeze_end', 'player9_freeze_end',
+            
+            'player0_end', 'player1_end', 'player2_end', 'player3_end', 'player4_end',
+            'player5_end', 'player6_end', 'player7_end', 'player8_end', 'player9_end',
+            
+            'player0_winner', 'player1_winner', 'player2_winner', 'player3_winner', 'player4_winner',
+            'player5_winner', 'player6_winner', 'player7_winner', 'player8_winner', 'player9_winner',
+
+            'player1_ct_losing_streak', 'player2_ct_losing_streak', 'player3_ct_losing_streak', 'player4_ct_losing_streak',
+            'player5_ct_losing_streak', 'player6_ct_losing_streak', 'player7_ct_losing_streak', 'player8_ct_losing_streak', 'player9_ct_losing_streak',
+
+            'player1_t_losing_streak', 'player2_t_losing_streak', 'player3_t_losing_streak', 'player4_t_losing_streak',
+            'player5_t_losing_streak', 'player6_t_losing_streak', 'player7_t_losing_streak', 'player8_t_losing_streak', 'player9_t_losing_streak',
+
+            'player1_is_bomb_dropped', 'player2_is_bomb_dropped', 'player3_is_bomb_dropped', 'player4_is_bomb_dropped',
+            'player5_is_bomb_dropped', 'player6_is_bomb_dropped', 'player7_is_bomb_dropped', 'player8_is_bomb_dropped', 'player9_is_bomb_dropped'
+        ]
+
+        # Drop the columns from the dataframe
+        graph_data = graph_data.drop(columns_to_drop)
         
-        del graph_data['player0_freeze_end']
-        del graph_data['player1_freeze_end']
-        del graph_data['player2_freeze_end']
-        del graph_data['player3_freeze_end']
-        del graph_data['player4_freeze_end']
-        del graph_data['player5_freeze_end']
-        del graph_data['player6_freeze_end']
-        del graph_data['player7_freeze_end']
-        del graph_data['player8_freeze_end']
-        del graph_data['player9_freeze_end']
-        
-        del graph_data['player0_end']
-        del graph_data['player1_end']
-        del graph_data['player2_end']
-        del graph_data['player3_end']
-        del graph_data['player4_end']
-        del graph_data['player5_end']
-        del graph_data['player6_end']
-        del graph_data['player7_end']
-        del graph_data['player8_end']
-        del graph_data['player9_end']
-        
-        del graph_data['player0_winner']
-        del graph_data['player1_winner']
-        del graph_data['player2_winner']
-        del graph_data['player3_winner']
-        del graph_data['player4_winner']
-        del graph_data['player5_winner']
-        del graph_data['player6_winner']
-        del graph_data['player7_winner']
-        del graph_data['player8_winner']
-        del graph_data['player9_winner']
-
-        del graph_data['player1_ct_losing_streak']
-        del graph_data['player2_ct_losing_streak']
-        del graph_data['player3_ct_losing_streak']
-        del graph_data['player4_ct_losing_streak']
-        del graph_data['player5_ct_losing_streak']
-        del graph_data['player6_ct_losing_streak']
-        del graph_data['player7_ct_losing_streak']
-        del graph_data['player8_ct_losing_streak']
-        del graph_data['player9_ct_losing_streak']
-
-        del graph_data['player1_t_losing_streak']
-        del graph_data['player2_t_losing_streak']
-        del graph_data['player3_t_losing_streak']
-        del graph_data['player4_t_losing_streak']
-        del graph_data['player5_t_losing_streak']
-        del graph_data['player6_t_losing_streak']
-        del graph_data['player7_t_losing_streak']
-        del graph_data['player8_t_losing_streak']
-        del graph_data['player9_t_losing_streak']
-
-        del graph_data['player1_is_bomb_dropped']
-        del graph_data['player2_is_bomb_dropped']
-        del graph_data['player3_is_bomb_dropped']
-        del graph_data['player4_is_bomb_dropped']
-        del graph_data['player5_is_bomb_dropped']
-        del graph_data['player6_is_bomb_dropped']
-        del graph_data['player7_is_bomb_dropped']
-        del graph_data['player8_is_bomb_dropped']
-        del graph_data['player9_is_bomb_dropped']
-
         return graph_data
 
     def __EXT_calculate_time_remaining__(self, row):
-        return 115.0 - ((row['tick'] - row['freeze_end']) / 64.0)
+        return 115.0 - ((row["tick"] - row["freeze_end"]) / 64.0)
 
     def _TABULAR_initial_dataset(self, players, rounds, match_id):
         """
@@ -2319,432 +2266,486 @@ class POLARSTabularGraphSnapshot:
 
         # Copy players object
         graph_players = {}
-        for idx in range(0,len(players)):
-            graph_players[idx] = players[idx].copy()
+        for idx in range(len(players)):
+            graph_players[idx] = players[idx].clone()
 
         colsNotToRename = ['tick', 'round']
 
         # Rename columns except for tick, roundNum, seconds, floorSec
-        for idx in range(0,len(graph_players)):
-            
+        for idx in range(len(graph_players)):
             for col in graph_players[idx].columns:
                 if col not in colsNotToRename:
-                    graph_players[idx].rename(columns={col: "player" + str(idx) + "_" + col}, inplace=True)
+                    graph_players[idx] = graph_players[idx].rename({col: f"player{idx}_{col}"})
 
         # Create a graph dataframe to store all players in 1 row per second
-        graph_data = graph_players[0].copy()
+        graph_data = graph_players[0].clone()
 
         # Merge dataframes
         for i in range(1, len(graph_players)):
-            graph_data = graph_data.merge(graph_players[i], on=colsNotToRename)
+            graph_data = graph_data.join(graph_players[i], on=colsNotToRename)
 
-        graph_data = graph_data.merge(rounds, on=['round'])
-        graph_data['CT_wins'] = graph_data.apply(lambda x: 1 if (x['winner'] == 'CT') else 0, axis=1)
+        graph_data = graph_data.join(rounds, on=['round'])
+        graph_data = graph_data.with_columns([
+            (graph_data['winner'] == 'CT').cast(pl.Int8).alias('CT_wins')
+        ])
 
-        graph_data['player0_equi_val_alive'] = graph_data['player0_current_equip_value'] * graph_data['player0_is_alive']
-        graph_data['player1_equi_val_alive'] = graph_data['player1_current_equip_value'] * graph_data['player1_is_alive']
-        graph_data['player2_equi_val_alive'] = graph_data['player2_current_equip_value'] * graph_data['player2_is_alive']
-        graph_data['player3_equi_val_alive'] = graph_data['player3_current_equip_value'] * graph_data['player3_is_alive']
-        graph_data['player4_equi_val_alive'] = graph_data['player4_current_equip_value'] * graph_data['player4_is_alive']
-        graph_data['player5_equi_val_alive'] = graph_data['player5_current_equip_value'] * graph_data['player5_is_alive']
-        graph_data['player6_equi_val_alive'] = graph_data['player6_current_equip_value'] * graph_data['player6_is_alive']
-        graph_data['player7_equi_val_alive'] = graph_data['player7_current_equip_value'] * graph_data['player7_is_alive']
-        graph_data['player8_equi_val_alive'] = graph_data['player8_current_equip_value'] * graph_data['player8_is_alive']
-        graph_data['player9_equi_val_alive'] = graph_data['player9_current_equip_value'] * graph_data['player9_is_alive']
+        for i in range(10):
+            graph_data = graph_data.with_columns([
+                (graph_data[f'player{i}_current_equip_value'] * graph_data[f'player{i}_is_alive']).alias(f'player{i}_equi_val_alive')
+            ])
 
-        graph_data['CT_alive_num'] = graph_data.apply(self.__EXT_calculate_ct_alive_num__, axis=1)
-        graph_data['T_alive_num']  = graph_data.apply(self.__EXT_calculate_t_alive_num__, axis=1)
+        graph_data = graph_data.with_columns(
+            [pl.col(f'player{idx}_is_alive').cast(pl.Int64) for idx in range(10)]
+        )
+
+        # CT and T players alive
+        graph_data = graph_data.with_columns(
+            pl.when(pl.col('player0_is_CT').cast(pl.Boolean))
+            .then(
+                pl.col('player0_is_alive') + 
+                pl.col('player1_is_alive') + 
+                pl.col('player2_is_alive') + 
+                pl.col('player3_is_alive') + 
+                pl.col('player4_is_alive')
+            )
+            .otherwise(
+                pl.col('player5_is_alive') + 
+                pl.col('player6_is_alive') + 
+                pl.col('player7_is_alive') + 
+                pl.col('player8_is_alive') + 
+                pl.col('player9_is_alive')
+            )
+            .alias('CT_alive_num')
+        )
+
+        graph_data = graph_data.with_columns(
+            pl.when(pl.col('player0_is_CT').cast(pl.Boolean))
+            .then(
+                pl.col('player5_is_alive') + 
+                pl.col('player6_is_alive') + 
+                pl.col('player7_is_alive') + 
+                pl.col('player8_is_alive') + 
+                pl.col('player9_is_alive')
+            )
+            .otherwise(
+                pl.col('player0_is_alive') + 
+                pl.col('player1_is_alive') + 
+                pl.col('player2_is_alive') + 
+                pl.col('player3_is_alive') + 
+                pl.col('player4_is_alive')
+            )
+            .alias('T_alive_num')
+        )
+
+
+        # CT and T total health
+        graph_data = graph_data.with_columns(
+            pl.when(pl.col('player0_is_CT').cast(pl.Boolean))
+            .then(
+                pl.col('player0_health') + 
+                pl.col('player1_health') + 
+                pl.col('player2_health') + 
+                pl.col('player3_health') + 
+                pl.col('player4_health')
+            )
+            .otherwise(
+                pl.col('player5_health') + 
+                pl.col('player6_health') + 
+                pl.col('player7_health') + 
+                pl.col('player8_health') + 
+                pl.col('player9_health')
+            )
+            .alias('CT_total_hp')
+        )
         
-        graph_data['CT_total_hp'] = graph_data.apply(self.__EXT_calculate_ct_total_hp__, axis=1)
-        graph_data['T_total_hp']  = graph_data.apply(self.__EXT_calculate_t_total_hp__, axis=1)
+        graph_data = graph_data.with_columns(
+            pl.when(pl.col('player0_is_CT').cast(pl.Boolean))
+            .then(
+                pl.col('player5_health') + 
+                pl.col('player6_health') + 
+                pl.col('player7_health') + 
+                pl.col('player8_health') + 
+                pl.col('player9_health')
+            )
+            .otherwise(
+                pl.col('player0_health') + 
+                pl.col('player1_health') + 
+                pl.col('player2_health') + 
+                pl.col('player3_health') + 
+                pl.col('player4_health')
+            )
+            .alias('T_total_hp')
+        )
 
-        graph_data['CT_equipment_value'] = graph_data.apply(self.__EXT_calculate_ct_equipment_value__, axis=1)
-        graph_data['T_equipment_value'] = graph_data.apply(self.__EXT_calculate_t_equipment_value__, axis=1)
 
-        graph_data = graph_data.rename(columns={
+        # CT and T equipment value
+        graph_data = graph_data.with_columns(
+            pl.when(pl.col('player0_is_CT').cast(pl.Boolean))
+            .then(
+                pl.col('player0_equi_val_alive') + 
+                pl.col('player1_equi_val_alive') + 
+                pl.col('player2_equi_val_alive') + 
+                pl.col('player3_equi_val_alive') + 
+                pl.col('player4_equi_val_alive')
+            )
+            .otherwise(
+                pl.col('player5_equi_val_alive') + 
+                pl.col('player6_equi_val_alive') + 
+                pl.col('player7_equi_val_alive') + 
+                pl.col('player8_equi_val_alive') + 
+                pl.col('player9_equi_val_alive')
+            )
+            .alias('CT_equipment_value')
+        )
+        
+        graph_data = graph_data.with_columns(
+            pl.when(pl.col('player0_is_CT').cast(pl.Boolean))
+            .then(
+                pl.col('player5_equi_val_alive') + 
+                pl.col('player6_equi_val_alive') + 
+                pl.col('player7_equi_val_alive') + 
+                pl.col('player8_equi_val_alive') + 
+                pl.col('player9_equi_val_alive')
+            )
+            .otherwise(
+                pl.col('player0_equi_val_alive') + 
+                pl.col('player1_equi_val_alive') + 
+                pl.col('player2_equi_val_alive') + 
+                pl.col('player3_equi_val_alive') + 
+                pl.col('player4_equi_val_alive')
+            )
+            .alias('T_equipment_value')
+        )
+
+        
+
+        graph_data = graph_data.rename({
             'player0_ct_losing_streak': 'CT_losing_streak', 
             'player0_t_losing_streak': 'T_losing_streak', 
-            'player0_is_bomb_dropped': 'is_bomb_dropped',
+            'player0_is_bomb_dropped': 'is_bomb_dropped'
         })
 
         graph_data = self.__EXT_delete_useless_columns__(graph_data)
 
         # Add time remaining column
-        new_columns = pd.DataFrame({
-            'time': 0.0,
-        }, index=graph_data.index)
-        graph_data = pd.concat([graph_data, new_columns], axis=1)
-        graph_data['time'] = graph_data.apply(self.__EXT_calculate_time_remaining__, axis=1)
+        graph_data = graph_data.with_columns(
+            (115.0 - ((graph_data['tick'] - graph_data['freeze_end']) / 64.0)).alias('time')
+        )
 
         # Create a DataFrame with a single column for match_id
-        match_id_df = pd.DataFrame({'match_id': str(match_id)}, index=graph_data.index)
-        graph_data_concatenated = pd.concat([graph_data, match_id_df], axis=1)
+        match_id_df = pl.DataFrame({'match_id': [str(match_id)] * len(graph_data)})
+        graph_data_concatenated = pl.concat([graph_data, match_id_df], how='horizontal')
 
         return graph_data_concatenated
 
 
+
     # 9. Add bomb information to the dataset
-    def __EXT_calculate_is_bomb_being_planted__(self, row):
-        for i in range(0,10):
-            if row['player{}_active_weapon_C4'.format(i)] == 1:
-                if row['player{}_is_in_bombsite'.format(i)] == 1:
-                    if row['player{}_is_shooting'.format(i)] == 1:
-                        return 1
-        return 0
-    
-    def __EXT_calculate_is_bomb_being_defused__(self, row):
-        return row['player0_is_defusing'] + row['player1_is_defusing'] + row['player2_is_defusing'] + row['player3_is_defusing'] + row['player4_is_defusing'] + \
-               row['player5_is_defusing'] + row['player6_is_defusing'] + row['player7_is_defusing'] + row['player8_is_defusing'] + row['player9_is_defusing']
+    def _TABULAR_bomb_info(self, tabular_df: pl.DataFrame, bombdf: pl.DataFrame) -> pl.DataFrame:
+        
+        # New columns
+        tabular_df = tabular_df.with_columns([
+            pl.lit(0).alias('is_bomb_being_planted'),
+            pl.lit(0).alias('is_bomb_being_defused'),
+            pl.lit(0).alias('is_bomb_defused'),
+            pl.lit(0).alias('is_bomb_planted_at_A_site'),
+            pl.lit(0).alias('is_bomb_planted_at_B_site'),
+            pl.lit(0).alias('plant_tick'),
+            pl.lit(0.0).alias('bomb_X'),
+            pl.lit(0.0).alias('bomb_Y'),
+            pl.lit(0.0).alias('bomb_Z'),
+        ])
 
-    def _TABULAR_bomb_info(self, tabular_df, bombdf):
+        # Calculate 'is_bomb_being_planted' and 'is_bomb_being_defused'
+        for i in range(10):
+            active_weapon_C4 = f'player{i}_active_weapon_C4'
+            is_in_bombsite = f'player{i}_is_in_bombsite'
+            is_shooting = f'player{i}_is_shooting'
 
-        new_columns = pd.DataFrame({
-            'is_bomb_being_planted': 0,
-            'is_bomb_being_defused': 0,
-            'is_bomb_defused': 0,
-            'is_bomb_planted_at_A_site': 0,
-            'is_bomb_planted_at_B_site': 0,
-            'plant_tick': 0,
-            'bomb_X': 0.0,
-            'bomb_Y': 0.0,
-            'bomb_Z': 0.0
-        }, index=tabular_df.index)
+            tabular_df = tabular_df.with_columns([
+                # Check if the bomb is being planted
+                pl.when(
+                    (pl.col(active_weapon_C4) == 1) & (pl.col(is_in_bombsite) == 1) & (pl.col(is_shooting) == 1)
+                ).then(1).otherwise(pl.col('is_bomb_being_planted')).alias('is_bomb_being_planted'),
+            ])
 
-        tabular_df = pd.concat([tabular_df, new_columns], axis=1)
 
-        tabular_df['is_bomb_being_planted'] = tabular_df.apply(self.__EXT_calculate_is_bomb_being_planted__, axis=1)
-        tabular_df['is_bomb_being_defused'] = tabular_df.apply(self.__EXT_calculate_is_bomb_being_defused__, axis=1)
+        # Sum up all 'is_defusing' columns
+        tabular_df = tabular_df.with_columns(
+            pl.sum_horizontal([pl.col(f'player{i}_is_defusing') for i in range(10)])
+            .alias("is_bomb_being_defused")
+        )
+            
 
-        for _, row in bombdf.iterrows():
+        # Process bomb-related events
+        for row in bombdf.iter_rows(named=True):
+            if row['event'] == 'planted':
+                site_column = 'is_bomb_planted_at_A_site' if row['site'] == 'BombsiteA' else 'is_bomb_planted_at_B_site'
+                tabular_df = tabular_df.with_columns([
+                    pl.when(
+                        (pl.col('round') == row['round']) & (pl.col('tick') >= row['tick'])
+                    ).then(1).otherwise(pl.col(site_column)).alias(site_column),
+                    pl.when(
+                        (pl.col('round') == row['round']) & (pl.col('tick') >= row['tick'])
+                    ).then(row['X']).otherwise(pl.col('bomb_X')).alias('bomb_X'),
+                    pl.when(
+                        (pl.col('round') == row['round']) & (pl.col('tick') >= row['tick'])
+                    ).then(row['Y']).otherwise(pl.col('bomb_Y')).alias('bomb_Y'),
+                    pl.when(
+                        (pl.col('round') == row['round']) & (pl.col('tick') >= row['tick'])
+                    ).then(row['Z']).otherwise(pl.col('bomb_Z')).alias('bomb_Z'),
+                    pl.when(
+                        pl.col('round') == row['round']
+                    ).then(row['tick']).otherwise(pl.col('plant_tick')).alias('plant_tick')
+                ])
 
-            if (row['event'] == 'planted'):
-                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_planted_at_A_site'] = 1 if row['site'] == 'BombsiteA' else 0
-                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_planted_at_B_site'] = 1 if row['site'] == 'BombsiteB' else 0
-                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'bomb_X'] = row['X']
-                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'bomb_Y'] = row['Y']
-                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'bomb_Z'] = row['Z']
-                tabular_df.loc[(tabular_df['round'] == row['round']), 'plant_tick'] = row['tick']
+            elif row['event'] == 'defused':
+                tabular_df = tabular_df.with_columns([
+                    pl.when(
+                        (pl.col('round') == row['round']) & (pl.col('tick') >= row['tick'])
+                    ).then(0).otherwise(pl.col('is_bomb_being_defused')).alias('is_bomb_being_defused'),
+                    pl.when(
+                        (pl.col('round') == row['round']) & (pl.col('tick') >= row['tick'])
+                    ).then(1).otherwise(pl.col('is_bomb_defused')).alias('is_bomb_defused')
+                ])
 
-            if (row['event'] == 'defused'):
-                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_being_defused'] = 0
-                tabular_df.loc[(tabular_df['round'] == row['round']) & (tabular_df['tick'] >= row['tick']), 'is_bomb_defused'] = 1
-
-        # Time remaining including the plant time
-        tabular_df['remaining_time'] = tabular_df['time']
-        tabular_df.loc[tabular_df['is_bomb_planted_at_A_site'] == 1, 'remaining_time'] = 40.0 - ((tabular_df['tick'] - tabular_df['plant_tick']) / 64.0)
-        tabular_df.loc[tabular_df['is_bomb_planted_at_B_site'] == 1, 'remaining_time'] = 40.0 - ((tabular_df['tick'] - tabular_df['plant_tick']) / 64.0)
-
+        # Calculate remaining time after the bomb is planted
+        tabular_df = tabular_df.with_columns([
+            pl.when(
+                (pl.col('is_bomb_planted_at_A_site') == 1) | (pl.col('is_bomb_planted_at_B_site') == 1)
+            ).then(
+                40.0 - ((pl.col('tick') - pl.col('plant_tick')) / 64.0)
+            ).otherwise(
+                pl.col('time')
+            ).alias('remaining_time')
+        ])
 
         return tabular_df
 
 
 
     # 10. Split the bombsites by 3x3 matrix for bomb position feature
-    def __EXT_INFERNO_get_bomb_mx_coordinate__(self, row):
-        # If bomb is planted on A
-        if row['is_bomb_planted_at_A_site'] == 1:
-                # 1st row
-                if row['bomb_Y'] >= 650:
-                    # 1st column
-                    if row['bomb_X'] < 1900:
-                        return 1
-                    # 2nd column
-                    if row['bomb_X'] >= 1900 and row['bomb_X'] < 2050:
-                        return 2
-                    # 3rd column
-                    if row['bomb_X'] >= 2050:
-                        return 3
-                # 2nd row
-                if row['bomb_Y'] < 650 and row['bomb_Y'] >= 325: 
-                    # 1st column
-                    if row['bomb_X'] < 1900:
-                        return 4
-                    # 2nd column
-                    if row['bomb_X'] >= 1900 and row['bomb_X'] < 2050:
-                        return 5
-                    # 3rd column
-                    if row['bomb_X'] >= 2050:
-                        return 6
-                # 3rd row
-                if row['bomb_Y'] < 325: 
-                    # 1st column
-                    if row['bomb_X'] < 1900:
-                        return 7
-                    # 2nd column
-                    if row['bomb_X'] >= 1900 and row['bomb_X'] < 2050:
-                        return 8
-                    # 3rd column
-                    if row['bomb_X'] >= 2050:
-                        return 9
+    def __EXT_get_bomb_mx_coordinate_expr(self, is_bomb_planted_at_A_site, is_bomb_planted_at_B_site, bomb_X, bomb_Y):
+        expr = pl.when(is_bomb_planted_at_A_site == 1).then(
+            pl.when(bomb_Y >= 650).then(
+                pl.when(bomb_X < 1900).then(1)
+                .when(bomb_X >= 1900).then(pl.when(bomb_X < 2050).then(2).otherwise(3))
+                .otherwise(3)
+            ).when(bomb_Y >= 325).then(
+                pl.when(bomb_X < 1900).then(4)
+                .when(bomb_X >= 1900).then(pl.when(bomb_X < 2050).then(5).otherwise(6))
+                .otherwise(6)
+            ).when(bomb_Y < 325).then(
+                pl.when(bomb_X < 1900).then(7)
+                .when(bomb_X >= 1900).then(pl.when(bomb_X < 2050).then(8).otherwise(9))
+                .otherwise(9)
+            )
+        ).when(is_bomb_planted_at_B_site == 1).then(
+            pl.when(bomb_Y >= 2900).then(
+                pl.when(bomb_X < 275).then(1)
+                .when(bomb_X >= 275).then(pl.when(bomb_X < 400).then(2).otherwise(3))
+                .otherwise(3)
+            ).when(bomb_Y >= 2725).then(
+                pl.when(bomb_X < 275).then(4)
+                .when(bomb_X >= 275).then(pl.when(bomb_X < 400).then(5).otherwise(6))
+                .otherwise(6)
+            ).when(bomb_Y < 2725).then(
+                pl.when(bomb_X < 275).then(7)
+                .when(bomb_X >= 275).then(pl.when(bomb_X < 400).then(8).otherwise(9))
+                .otherwise(9)
+            )
+        ).otherwise(0)
+
+        return expr
+
+    def _TABULAR_INFERNO_bombsite_3x3_split(self, tabular_df):
+
+        tabular_df = tabular_df.with_columns(
+            self.__EXT_get_bomb_mx_coordinate_expr(
+                tabular_df['is_bomb_planted_at_A_site'],
+                tabular_df['is_bomb_planted_at_B_site'],
+                tabular_df['bomb_X'],
+                tabular_df['bomb_Y']
+            ).alias('bomb_mx_pos')
+        )
+
+        # Create the binary columns
+        for i in range(1, 10):
+            tabular_df = tabular_df.with_columns(
+                (pl.col('bomb_mx_pos') == i).cast(pl.Int32).alias(f'bomb_mx_pos{i}')
+            )
         
-        # If bomb is planted on B
-        if row['is_bomb_planted_at_B_site'] == 1:
-                # 1st row
-                if row['bomb_Y'] >= 2900:
-                    # 1st column
-                    if row['bomb_X'] < 275:
-                        return 1
-                    # 2nd column
-                    if row['bomb_X'] >= 275 and row['bomb_X'] < 400:
-                        return 2
-                    # 3rd column
-                    if row['bomb_X'] >= 400:
-                        return 3
-                # 2nd row
-                if row['bomb_Y'] < 2900 and row['bomb_Y'] >= 2725: 
-                    # 1st column
-                    if row['bomb_X'] < 275:
-                        return 4
-                    # 2nd column
-                    if row['bomb_X'] >= 275 and row['bomb_X'] < 400:
-                        return 5
-                    # 3rd column
-                    if row['bomb_X'] >= 400:
-                        return 6
-                # 3rd row
-                if row['bomb_Y'] < 2725: 
-                    # 1st column
-                    if row['bomb_X'] < 275:
-                        return 7
-                    # 2nd column
-                    if row['bomb_X'] >= 275 and row['bomb_X'] < 400:
-                        return 8
-                    # 3rd column
-                    if row['bomb_X'] >= 400:
-                        return 9
+        # Drop the intermediate column
+        tabular_df = tabular_df.drop('bomb_mx_pos')
 
-    def _TABULAR_INFERNO_bombsite_3x3_split(self, df):
-            
-        new_columns = pd.DataFrame({
-            'bomb_mx_pos': 0
-        }, index=df.index)
-
-        df = pd.concat([df, new_columns], axis=1)
-        
-        df.loc[(df['is_bomb_planted_at_A_site'] == 1) | (df['is_bomb_planted_at_B_site'] == 1), 'bomb_mx_pos'] = df.apply(self.__EXT_INFERNO_get_bomb_mx_coordinate__, axis=1)
-
-        # Dummify the bomb_mx_pos column and drop the original column
-        # Poor performance
-        # df['bomb_mx_pos1'] = 0
-        # df['bomb_mx_pos2'] = 0
-        # df['bomb_mx_pos3'] = 0
-        # df['bomb_mx_pos4'] = 0
-        # df['bomb_mx_pos5'] = 0
-        # df['bomb_mx_pos6'] = 0
-        # df['bomb_mx_pos7'] = 0
-        # df['bomb_mx_pos8'] = 0
-        # df['bomb_mx_pos9'] = 0
-
-        new_columns = pd.DataFrame({
-            'bomb_mx_pos1': 0,
-            'bomb_mx_pos2': 0,
-            'bomb_mx_pos3': 0,
-            'bomb_mx_pos4': 0,
-            'bomb_mx_pos5': 0,
-            'bomb_mx_pos6': 0,
-            'bomb_mx_pos7': 0,
-            'bomb_mx_pos8': 0,
-            'bomb_mx_pos9': 0
-        }, index=df.index)
-
-        df = pd.concat([df, new_columns], axis=1)
-
-        df.loc[df['bomb_mx_pos'] == 1, 'bomb_mx_pos1'] = 1
-        df.loc[df['bomb_mx_pos'] == 2, 'bomb_mx_pos2'] = 1
-        df.loc[df['bomb_mx_pos'] == 3, 'bomb_mx_pos3'] = 1
-        df.loc[df['bomb_mx_pos'] == 4, 'bomb_mx_pos4'] = 1
-        df.loc[df['bomb_mx_pos'] == 5, 'bomb_mx_pos5'] = 1
-        df.loc[df['bomb_mx_pos'] == 6, 'bomb_mx_pos6'] = 1
-        df.loc[df['bomb_mx_pos'] == 7, 'bomb_mx_pos7'] = 1
-        df.loc[df['bomb_mx_pos'] == 8, 'bomb_mx_pos8'] = 1
-        df.loc[df['bomb_mx_pos'] == 9, 'bomb_mx_pos9'] = 1
-
-        df = df.drop(columns=['bomb_mx_pos'])
-
-        return df
+        return tabular_df
     
 
 
     # 11. Handle smoke and molotov grenades
-    def _TABULAR_smokes_HEs_infernos(self, df, smokes, he_grenades, infernos):
-
-        # Active infernos, smokes and HE explosions dataframe
+    def _TABULAR_smokes_HEs_infernos(self, df: pl.DataFrame, smokes: pl.DataFrame, he_grenades: pl.DataFrame, infernos: pl.DataFrame):
+    
+        # Active infernos, smokes and HE explosions DataFrames
         active_infernos = None
         active_smokes = None
         active_he_smokes = None
-        
 
         # Handle smokes
-        # The round check is necessary because the smokes dataframe contains smokes with the end_tick values being NaN
-        for _, row in smokes.iterrows():
-
-            temp_smoke = df[['tick', 'round']].copy()
-            temp_smoke = pd.concat([temp_smoke, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
-
+        for row in smokes.iter_rows(named=True):
+            
             startTick = row['start_tick']
             endTick = row['end_tick'] - 112
-            temp_smoke.loc[(temp_smoke['round'] == row['round']) & (temp_smoke['tick'] >= startTick) & (temp_smoke['tick'] <= endTick), 'X'] = row['X']
-            temp_smoke.loc[(temp_smoke['round'] == row['round']) & (temp_smoke['tick'] >= startTick) & (temp_smoke['tick'] <= endTick), 'Y'] = row['Y']
-            temp_smoke.loc[(temp_smoke['round'] == row['round']) & (temp_smoke['tick'] >= startTick) & (temp_smoke['tick'] <= endTick), 'Z'] = row['Z']
+            round_value = row['round']
+            X = row['X']
+            Y = row['Y']
+            Z = row['Z']
 
-            temp_smoke = temp_smoke.dropna()
+            temp_smoke = df.select(['tick', 'round']).clone()
+            temp_smoke = temp_smoke.with_columns([
+                pl.lit(None).alias('X'),
+                pl.lit(None).alias('Y'),
+                pl.lit(None).alias('Z')
+            ])
+
+            temp_smoke = temp_smoke.with_columns([
+                pl.when((pl.col('round') == round_value) & 
+                        (pl.col('tick') >= startTick) & 
+                        (pl.col('tick') <= endTick)).then(pl.lit(X)).otherwise(pl.col('X')).alias('X'),
+                pl.when((pl.col('round') == round_value) & 
+                        (pl.col('tick') >= startTick) & 
+                        (pl.col('tick') <= endTick)).then(pl.lit(Y)).otherwise(pl.col('Y')).alias('Y'),
+                pl.when((pl.col('round') == round_value) & 
+                        (pl.col('tick') >= startTick) & 
+                        (pl.col('tick') <= endTick)).then(pl.lit(Z)).otherwise(pl.col('Z')).alias('Z')
+            ])
+
+            temp_smoke = temp_smoke.drop_nulls()
 
             if active_smokes is None:
                 active_smokes = temp_smoke
             else:
-                active_smokes = pd.concat([active_smokes, temp_smoke])
+                active_smokes = pl.concat([active_smokes, temp_smoke])
 
         # Handle HE grenades
-        for _, row in he_grenades.iterrows():
-                
-            temp_HE = df[['tick', 'round']].copy()
-            temp_HE = pd.concat([temp_HE, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
-
+        for row in he_grenades.iter_rows(named=True):
+            
             startTick = row['tick']
             endTick = startTick + 128
-            temp_HE.loc[(temp_HE['round'] == row['round']) & (temp_HE['tick'] >= startTick) & (temp_HE['tick'] <= endTick), 'X'] = row['X']
-            temp_HE.loc[(temp_HE['round'] == row['round']) & (temp_HE['tick'] >= startTick) & (temp_HE['tick'] <= endTick), 'Y'] = row['Y']
-            temp_HE.loc[(temp_HE['round'] == row['round']) & (temp_HE['tick'] >= startTick) & (temp_HE['tick'] <= endTick), 'Z'] = row['Z']
-        
-            temp_HE = temp_HE.dropna()
+            round_value = row['round']
+            X = row['X']
+            Y = row['Y']
+            Z = row['Z']
+
+            temp_HE = df.select(['tick', 'round']).clone()
+            temp_HE = temp_HE.with_columns([
+                pl.lit(None).alias('X'),
+                pl.lit(None).alias('Y'),
+                pl.lit(None).alias('Z')
+            ])
+
+            temp_HE = temp_HE.with_columns([
+                pl.when((pl.col('round') == round_value) & 
+                        (pl.col('tick') >= startTick) & 
+                        (pl.col('tick') <= endTick)).then(pl.lit(X)).otherwise(pl.col('X')).alias('X'),
+                pl.when((pl.col('round') == round_value) & 
+                        (pl.col('tick') >= startTick) & 
+                        (pl.col('tick') <= endTick)).then(pl.lit(Y)).otherwise(pl.col('Y')).alias('Y'),
+                pl.when((pl.col('round') == round_value) & 
+                        (pl.col('tick') >= startTick) & 
+                        (pl.col('tick') <= endTick)).then(pl.lit(Z)).otherwise(pl.col('Z')).alias('Z')
+            ])
+
+            temp_HE = temp_HE.drop_nulls()
 
             if active_he_smokes is None:
                 active_he_smokes = temp_HE
             else:
-                active_he_smokes = pd.concat([active_he_smokes, temp_HE])
+                active_he_smokes = pl.concat([active_he_smokes, temp_HE])
 
         # Handle infernos
-        for _, row in infernos.iterrows():
-
-            temp_inf = df[['tick', 'round']].copy()
-            temp_inf = pd.concat([temp_inf, pd.DataFrame(columns=['X', 'Y', 'Z'])], axis=1)
-
+        for row in infernos.iter_rows(named=True):
+            
             startTick = row['start_tick']
             endTick = row['end_tick']
-            temp_inf.loc[(temp_inf['round'] == row['round']) & (temp_inf['tick'] >= startTick) & (temp_inf['tick'] <= endTick), 'X'] = row['X']
-            temp_inf.loc[(temp_inf['round'] == row['round']) & (temp_inf['tick'] >= startTick) & (temp_inf['tick'] <= endTick), 'Y'] = row['Y']
-            temp_inf.loc[(temp_inf['round'] == row['round']) & (temp_inf['tick'] >= startTick) & (temp_inf['tick'] <= endTick), 'Z'] = row['Z']
+            round_value = row['round']
+            X = row['X']
+            Y = row['Y']
+            Z = row['Z']
 
-            temp_inf = temp_inf.dropna()
+            temp_inf = df.select(['tick', 'round']).clone()
+            temp_inf = temp_inf.with_columns([
+                pl.lit(None).alias('X'),
+                pl.lit(None).alias('Y'),
+                pl.lit(None).alias('Z')
+            ])
+
+            temp_inf = temp_inf.with_columns([
+                pl.when((pl.col('round') == round_value) & 
+                        (pl.col('tick') >= startTick) & 
+                        (pl.col('tick') <= endTick)).then(pl.lit(X)).otherwise(pl.col('X')).alias('X'),
+                pl.when((pl.col('round') == round_value) & 
+                        (pl.col('tick') >= startTick) & 
+                        (pl.col('tick') <= endTick)).then(pl.lit(Y)).otherwise(pl.col('Y')).alias('Y'),
+                pl.when((pl.col('round') == round_value) & 
+                        (pl.col('tick') >= startTick) & 
+                        (pl.col('tick') <= endTick)).then(pl.lit(Z)).otherwise(pl.col('Z')).alias('Z')
+            ])
+
+            temp_inf = temp_inf.drop_nulls()
 
             if active_infernos is None:
                 active_infernos = temp_inf
             else:
-                active_infernos = pd.concat([active_infernos, temp_inf])
+                active_infernos = pl.concat([active_infernos, temp_inf])
 
         return active_infernos, active_smokes, active_he_smokes
 
 
 
     # 12. Add numerical match id
-    def _TABULAR_numerical_match_id(self, tabular_df):
-
-        if type(self.numerical_match_id) is not int:
+    def _TABULAR_numerical_match_id(self, tabular_df: pl.DataFrame) -> pl.DataFrame:
+    
+        if not isinstance(self.numerical_match_id, int):
             raise ValueError("Numerical match id must be an integer.")
         
-        new_columns = pd.DataFrame({
-            'numerical_match_id': self.numerical_match_id
-        }, index=tabular_df.index)
-        tabular_df = pd.concat([tabular_df, new_columns], axis=1)
+        # Create a new column with the numerical_match_id value
+        tabular_df = tabular_df.with_columns([
+            pl.lit(self.numerical_match_id).alias('numerical_match_id'),
+        ])
+
 
         return tabular_df
 
 
 
-    # 13. Function to extend the dataframe with copies of the rounds with varied player permutations
-    def _TABULAR_player_permutation(self, df, num_permutations_per_round=3):
-        """
-        Function to extend the dataframe with copies of the rounds with varied player permutations.
-
-        Parameters:
-            - df: the dataframe to extend.
-            - num_permutations_per_round: the number of permutations to create per round.
-        """
-
-        # Get the unique rounds and store team 1 and two player numbers
-        team_1_indicies = [0, 1, 2, 3, 4]
-        team_2_indicies = [5, 6, 7, 8, 9]
-        rounds = df['round'].unique()
-
-        for rnd in rounds:
-            for _permutation in range(num_permutations_per_round):
-                # Get the round dataframe
-                round_df = df[df['round'] == rnd].copy()
-                round_df = round_df.reset_index(drop=True)
-
-                # Rename all columns starting with 'player' to start with 'playerPERM'
-                player_cols = [col for col in round_df.columns if col.startswith('player')]
-                for col in player_cols:
-                    round_df.rename(columns={col: 'playerPERM' + col[6:]}, inplace=True)
-
-                # Get random permutations for both teams
-                random.shuffle(team_1_indicies)
-                random.shuffle(team_1_indicies)
-
-                # Player columns
-                player_0_cols = [col for col in round_df.columns if col.startswith('playerPERM0')]
-                player_1_cols = [col for col in round_df.columns if col.startswith('playerPERM1')]
-                player_2_cols = [col for col in round_df.columns if col.startswith('playerPERM2')]
-                player_3_cols = [col for col in round_df.columns if col.startswith('playerPERM3')]
-                player_4_cols = [col for col in round_df.columns if col.startswith('playerPERM4')]
-
-                player_5_cols = [col for col in round_df.columns if col.startswith('playerPERM5')]
-                player_6_cols = [col for col in round_df.columns if col.startswith('playerPERM6')]
-                player_7_cols = [col for col in round_df.columns if col.startswith('playerPERM7')]
-                player_8_cols = [col for col in round_df.columns if col.startswith('playerPERM8')]
-                player_9_cols = [col for col in round_df.columns if col.startswith('playerPERM9')]
-
-                # Rewrite the player columns with the new permutations
-                for col in player_0_cols:
-                    round_df.rename(columns={col: 'player' + str(team_1_indicies[0]) + col[11:]}, inplace=True)
-                for col in player_1_cols:
-                    round_df.rename(columns={col: 'player' + str(team_1_indicies[1]) + col[11:]}, inplace=True)
-                for col in player_2_cols:
-                    round_df.rename(columns={col: 'player' + str(team_1_indicies[2]) + col[11:]}, inplace=True)
-                for col in player_3_cols:
-                    round_df.rename(columns={col: 'player' + str(team_1_indicies[3]) + col[11:]}, inplace=True)
-                for col in player_4_cols:
-                    round_df.rename(columns={col: 'player' + str(team_1_indicies[4]) + col[11:]}, inplace=True)
-
-                for col in player_5_cols:
-                    round_df.rename(columns={col: 'player' + str(team_2_indicies[0]) + col[11:]}, inplace=True)
-                for col in player_6_cols:
-                    round_df.rename(columns={col: 'player' + str(team_2_indicies[1]) + col[11:]}, inplace=True)
-                for col in player_7_cols:
-                    round_df.rename(columns={col: 'player' + str(team_2_indicies[2]) + col[11:]}, inplace=True)
-                for col in player_8_cols:
-                    round_df.rename(columns={col: 'player' + str(team_2_indicies[3]) + col[11:]}, inplace=True)
-                for col in player_9_cols:
-                    round_df.rename(columns={col: 'player' + str(team_2_indicies[4]) + col[11:]}, inplace=True)
-
-                # Append the new round to the dataframe
-                df = pd.concat([df, round_df])
-
-        return df
-
-
-
-    # 14. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
-    def _TABULAR_refactor_player_columns(self, df):
+    # 13. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
+    def _TABULAR_refactor_player_columns(self, df: pl.DataFrame) -> pl.DataFrame:
 
         # Separate the CT and T halves
-        team_1_ct = df.loc[df['player0_is_CT'] == True].copy()
-        team_2_ct = df.loc[df['player0_is_CT'] == False].copy()
+        team_1_ct = df.filter(pl.col('player0_is_CT') == True).clone()
+        team_2_ct = df.filter(pl.col('player0_is_CT') == False).clone()
 
-        # Rename the columns for team_1_ct
-        for col in team_1_ct.columns:
-            if col.startswith('player') and int(col[6]) < 5:
-                team_1_ct.rename(columns={col: col.replace('player', 'CT')}, inplace=True)
-            elif col.startswith('player') and int(col[6]) >= 5:
-                team_1_ct.rename(columns={col: col.replace('player', 'T')}, inplace=True)
+        # Rename columns for team_1_ct
+        team_1_ct = team_1_ct.rename({
+            col: col.replace('player', 'CT') for col in team_1_ct.columns
+            if col.startswith('player') and int(col[6]) < 5
+        })
 
-        # Rename the columns for team_2_ct
-        for col in team_2_ct.columns:
-            if col.startswith('player') and int(col[6]) <= 4:
-                team_2_ct.rename(columns={col: col.replace('player' + col[6],  'T' + str(int(col[6]) + 5))}, inplace=True)
-            elif col.startswith('player') and int(col[6]) > 4:
-                team_2_ct.rename(columns={col: col.replace('player' + col[6], 'CT' + str(int(col[6]) - 5))}, inplace=True)
+        team_1_ct = team_1_ct.rename({
+            col: col.replace('player', 'T') for col in team_1_ct.columns
+            if col.startswith('player') and int(col[6]) >= 5
+        })
 
+        # Rename columns for team_2_ct
+        team_2_ct = team_2_ct.rename({
+            col: col.replace(f'player{col[6]}', f'T{int(col[6]) + 5}') for col in team_2_ct.columns
+            if col.startswith('player') and int(col[6]) <= 4
+        })
+
+        team_2_ct = team_2_ct.rename({
+            col: col.replace(f'player{col[6]}', f'CT{int(col[6]) - 5}') for col in team_2_ct.columns
+            if col.startswith('player') and int(col[6]) > 4
+        })
 
         # Column order
         col_order = [
@@ -2836,78 +2837,97 @@ class POLARSTabularGraphSnapshot:
         ]
 
         # Rearrange the column order
-        team_1_ct = team_1_ct[col_order]
-        team_2_ct = team_2_ct[col_order]
+        team_1_ct = team_1_ct.select(col_order)
+        team_2_ct = team_2_ct.select(col_order)
 
-        # Concatenate the two dataframes
-        renamed_df = pd.concat([team_1_ct, team_2_ct])
+        # Concatenate the two DataFrames
+        renamed_df = pl.concat([team_1_ct, team_2_ct])
 
         # Add a temporary column
-        new_columns = pd.DataFrame({
-            'temp_CT_score': 0,
-        }, index=renamed_df.index)
-        renamed_df = pd.concat([renamed_df, new_columns], axis=1)
-        renamed_df['temp_CT_score'] = renamed_df['CT_score']
+        renamed_df = renamed_df.with_columns([
+            pl.lit(0).alias('temp_CT_score')
+        ])
 
         # Swap the CT_score and T_score values for the second half
-        renamed_df.loc[renamed_df['round'] > 12, 'CT_score'] = renamed_df.loc[renamed_df['round'] > 12, 'T_score']
-        renamed_df.loc[renamed_df['round'] > 12, 'T_score'] = renamed_df.loc[renamed_df['round'] > 12, 'temp_CT_score']
+        renamed_df = renamed_df.with_columns([
+            pl.when(pl.col('round') > 12)
+            .then(pl.col('T_score'))
+            .otherwise(pl.col('CT_score')).alias('CT_score'),
+            pl.when(pl.col('round') > 12)
+            .then(pl.col('CT_score'))
+            .otherwise(pl.col('T_score')).alias('T_score')
+        ])
 
         # Drop the temporary column
-        renamed_df = renamed_df.drop(columns=['temp_CT_score'])
+        renamed_df = renamed_df.drop(['temp_CT_score'])
 
         # Universal clan names
-        renamed_df['CT_clan_name'] =  renamed_df['CT0_team_clan_name']
-        renamed_df['T_clan_name'] =  renamed_df['T5_team_clan_name']
+        renamed_df = renamed_df.with_columns([
+            pl.col('CT0_team_clan_name').alias('CT_clan_name'),
+            pl.col('T5_team_clan_name').alias('T_clan_name')
+        ])
 
         # Drop the original columns
-        for player_idx in range(10):
-            if player_idx < 5:
-                renamed_df = renamed_df.drop(columns=[f'CT{player_idx}_team_clan_name'])
-            else:
-                renamed_df = renamed_df.drop(columns=[f'T{player_idx}_team_clan_name'])
-
+        renamed_df = renamed_df.drop([
+            f'CT{player_idx}_team_clan_name' for player_idx in range(5)
+        ] + [
+            f'T{player_idx}_team_clan_name' for player_idx in range(5, 10)
+        ])
 
         return renamed_df
 
 
 
-    # 15. Rename overall columns
-    def _TABULAR_prefix_universal_columns(self, df):
+    # 14. Rename overall columns
+    def _TABULAR_prefix_universal_columns(self, df: pl.DataFrame) -> pl.DataFrame:
 
         # Get universal columns
-        universal_columns = [col for col in df.columns if not col.startswith('CT0') and not col.startswith('T5')
-                                                      and not col.startswith('CT1') and not col.startswith('T6')
-                                                      and not col.startswith('CT2') and not col.startswith('T7')
-                                                      and not col.startswith('CT3') and not col.startswith('T8')
-                                                      and not col.startswith('CT4') and not col.startswith('T9')
-                                                      and col != 'numerical_match_id' and col != 'match_id']
+        universal_columns = [col for col in df.columns if not (col.startswith('CT0') or col.startswith('T5') or 
+                                                               col.startswith('CT1') or col.startswith('T6') or 
+                                                               col.startswith('CT2') or col.startswith('T7') or 
+                                                               col.startswith('CT3') or col.startswith('T8') or 
+                                                               col.startswith('CT4') or col.startswith('T9') or 
+                                                               col in ['numerical_match_id', 'match_id'])]
 
         # Rename the columns
-        df = df.rename(columns={col: 'UNIVERSAL_' + col for col in universal_columns})
+        df = df.rename({col: 'UNIVERSAL_' + col for col in universal_columns})
 
         # Rename the match_id and numerical_match_id columns
-        df = df.rename(columns={'match_id': 'MATCH_ID', 'numerical_match_id': 'NUMERICAL_MATCH_ID'})
+        df = df.rename({'match_id': 'MATCH_ID', 'numerical_match_id': 'NUMERICAL_MATCH_ID'})
 
         return df
 
 
 
-    # 16. Build column dictionary
-    def _FINAL_build_dictionary(self, df):
+    # 15. Build column dictionary
+    def _FINAL_build_dictionary(self, df: pl.DataFrame) -> pl.DataFrame:
 
         # Get the numerical columns
-        numeric_cols = [col for col in df.columns if '_name' not in col and col not in ['MATCH_ID', 'NUMERICAL_MATCH_ID' 'UNIVERSAL_smokes_active', 'UNIVERSAL_infernos_active']]
+        numeric_cols = [col for col in df.columns if '_name' not in col and col not in ['MATCH_ID', 'NUMERICAL_MATCH_ID', 'UNIVERSAL_smokes_active', 'UNIVERSAL_infernos_active']]
 
-        # Create dictionary dataset
-        df_dict = pd.DataFrame(data={
+        # Create min and max values in Polars
+        min_values = df.select([pl.col(col).min().alias(f'min_{col}') for col in numeric_cols])
+        max_values = df.select([pl.col(col).max().alias(f'max_{col}') for col in numeric_cols])
+
+        # Extract values and create dictionary DataFrame
+        min_values_list = min_values.to_numpy().flatten()
+        max_values_list = max_values.to_numpy().flatten()
+
+        df_dict = pl.DataFrame({
             'column': numeric_cols, 
-            'min': df[numeric_cols].min().values, 
-            'max': df[numeric_cols].max().values
+            'min': min_values_list, 
+            'max': max_values_list
         })
 
         return df_dict
     
+
+
+    # 16. Drop the rows where the bomb is defused
+    def _EXT_filter_bomb_defused_rows(self, df):
+        df = df.filter(pl.col('UNIVERSAL_is_bomb_defused') == 0)
+        return df
+
 
 
     # 17. Free memory
