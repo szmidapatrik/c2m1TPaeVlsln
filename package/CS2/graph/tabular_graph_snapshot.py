@@ -54,6 +54,8 @@ class TabularGraphSnapshot:
         numerical_match_id: int = None,
         num_permutations_per_round: int = 1,
         build_dictionary: bool = True,
+
+        package: str = 'pandas'
     ):
         """
         Formats the match data and creates the tabular game-snapshot dataset.
@@ -68,6 +70,7 @@ class TabularGraphSnapshot:
             - numerical_match_id (optional): numerical match id to add to the dataset. If value is None, no numerical match id will be added. Default is None.
             - num_permutations_per_round (optional): number of different player permutations to create for the snapshots per round. Default is 1.
             - build_dictionary (optional): whether to build and return a dictionary with the min and max column values. Default is True.
+            - package (optional): the package to use for the dataframe parsing. Values: 'pandas' or 'polars'. Default is 'pandas'.
         """
 
         # INPUT
@@ -82,62 +85,123 @@ class TabularGraphSnapshot:
         self.num_permutations_per_round = num_permutations_per_round
         self.build_dictionary = build_dictionary
 
-        # 0. Ticks per second operations
+
+
+        # 0. Ticks per second operations and package validation
         self.__PREP_ticks_per_second_operations__()
+        self.__PREP_validate_package__(package)
 
-        # 1.
-        ticks, kills, rounds, bomb, damages, smokes, infernos, he_grenades = self._INIT_dataframes()
+        if package == 'polars':
 
-        # 2.
-        pf = self._PLAYER_ingame_stats(ticks, kills, rounds, damages)
+            # 1.
+            ticks, kills, rounds, bomb, damages, smokes, infernos, he_grenades = self._POLARS_INIT_dataframes()
 
-        # 3.
-        pf = self._PLAYER_inventory(pf)
-        
-        # 4.
-        pf = self._PLAYER_active_weapons(pf)
+            # 2.
+            pf = self._POLARS_PLAYER_ingame_stats(ticks, kills, rounds, damages)
 
-        # 5.
-        pf = self._PLAYER_weapon_ammo_info(pf)
-
-        # 6.
-        players = self._PLAYER_player_datasets(pf)
-
-        # 7.
-        players = self._PLAYER_hltv_statistics(players)
-
-        # 8.
-        tabular_df = self._TABULAR_initial_dataset(players, rounds, self.MATCH_PATH)
-
-        # 9.
-        tabular_df = self._TABULAR_bomb_info(tabular_df, bomb)
-
-        # 10.
-        tabular_df = self._TABULAR_INFERNO_bombsite_3x3_split(tabular_df)
-
-        # 11.
-        active_infernos, active_smokes, active_he_smokes = self._TABULAR_smokes_HEs_infernos(tabular_df, smokes, he_grenades, infernos)
-
-        # 12.
-        if self.numerical_match_id is not None:
-            tabular_df = self._TABULAR_numerical_match_id(tabular_df)
-
-        # 13.
-        if num_permutations_per_round > 1:
-            tabular_df = self._TABULAR_player_permutation(tabular_df, self.num_permutations_per_round)
+            # 3.
+            pf = self._POLARS_PLAYER_inventory(pf)
             
-        # 14.
-        tabular_df = self._TABULAR_refactor_player_columns(tabular_df)
+            # 4.
+            pf = self._POLARS_PLAYER_active_weapons(pf)
 
-        # 15.
-        tabular_df = self._TABULAR_prefix_universal_columns(tabular_df)
+            # 5.
+            pf = self._POLARS_PLAYER_weapon_ammo_info(pf)
 
-        # 16.
-        if build_dictionary:
-            tabular_df_dict = self._FINAL_build_dictionary(tabular_df)
+            # 6.
+            players = self._POLARS_PLAYER_player_datasets(pf)
 
-        # 17.
-        tabular_df = self._EXT_filter_bomb_defused_rows(tabular_df)
+            # 7.
+            players = self._POLARS_PLAYER_hltv_statistics(players)
+
+            # 8.
+            tabular_df = self._POLARS_TABULAR_initial_dataset(players, rounds, self.MATCH_PATH)
+
+            # 9.
+            tabular_df = self._POLARS_TABULAR_bomb_info(tabular_df, bomb)
+
+            # 10.
+            tabular_df = self._POLARS_TABULAR_INFERNO_bombsite_3x3_split(tabular_df)
+
+            # 11.
+            active_infernos, active_smokes, active_he_smokes = self._POLARS_TABULAR_smokes_HEs_infernos(tabular_df, smokes, he_grenades, infernos)
+
+            # 12.
+            if self.numerical_match_id is not None:
+                tabular_df = self._POLARS_TABULAR_numerical_match_id(tabular_df)
+
+            # 13.
+            # Player permutation is not available in Polars
+                
+            # 14.
+            tabular_df = self._POLARS_TABULAR_refactor_player_columns(tabular_df)
+
+            # 15.
+            tabular_df = self._POLARS_TABULAR_prefix_universal_columns(tabular_df)
+
+            # 16.
+            if build_dictionary:
+                tabular_df_dict = self._POLARS_FINAL_build_dictionary(tabular_df)
+
+            # 17.
+            tabular_df = self._POLARS_EXT_filter_bomb_defused_rows(tabular_df)
+             
+        # Pandas
+        else:
+
+            # 1.
+            ticks, kills, rounds, bomb, damages, smokes, infernos, he_grenades = self._INIT_dataframes()
+
+            # 2.
+            pf = self._PLAYER_ingame_stats(ticks, kills, rounds, damages)
+
+            # 3.
+            pf = self._PLAYER_inventory(pf)
+            
+            # 4.
+            pf = self._PLAYER_active_weapons(pf)
+
+            # 5.
+            pf = self._PLAYER_weapon_ammo_info(pf)
+
+            # 6.
+            players = self._PLAYER_player_datasets(pf)
+
+            # 7.
+            players = self._PLAYER_hltv_statistics(players)
+
+            # 8.
+            tabular_df = self._TABULAR_initial_dataset(players, rounds, self.MATCH_PATH)
+
+            # 9.
+            tabular_df = self._TABULAR_bomb_info(tabular_df, bomb)
+
+            # 10.
+            tabular_df = self._TABULAR_INFERNO_bombsite_3x3_split(tabular_df)
+
+            # 11.
+            active_infernos, active_smokes, active_he_smokes = self._TABULAR_smokes_HEs_infernos(tabular_df, smokes, he_grenades, infernos)
+
+            # 12.
+            if self.numerical_match_id is not None:
+                tabular_df = self._TABULAR_numerical_match_id(tabular_df)
+
+            # 13.
+            if num_permutations_per_round > 1:
+                tabular_df = self._TABULAR_player_permutation(tabular_df, self.num_permutations_per_round)
+                
+            # 14.
+            tabular_df = self._TABULAR_refactor_player_columns(tabular_df)
+
+            # 15.
+            tabular_df = self._TABULAR_prefix_universal_columns(tabular_df)
+
+            # 16.
+            if build_dictionary:
+                tabular_df_dict = self._FINAL_build_dictionary(tabular_df)
+
+            # 17.
+            tabular_df = self._EXT_filter_bomb_defused_rows(tabular_df)
 
         # 18.
         self._FINAL_free_memory(ticks, kills, rounds, bomb, damages, smokes, infernos)
@@ -151,7 +215,7 @@ class TabularGraphSnapshot:
 
 
     # --------------------------------------------------------------------------------------------
-    # REGION: Process_match private methods
+    # REGION: Process_match private methods - PANDAS
     # --------------------------------------------------------------------------------------------
 
     # 0. Ticks per second operations
@@ -163,6 +227,12 @@ class TabularGraphSnapshot:
         
         # Set the nth_tick value (the type must be integer)
         self.__nth_tick__ = int(64 / self.ticks_per_second)
+
+    def __PREP_validate_package__(self, package):
+            
+            # Check if the package is valid
+            if package not in ['pandas', 'polars']:
+                raise ValueError("Invalid package value. Please choose one of the following: 'pandas' or 'polars'.")
 
 
 
@@ -1428,167 +1498,12 @@ class TabularGraphSnapshot:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class POLARSTabularGraphSnapshot:
-
-    # INPUT
-    # Folder path constants
-    MATCH_PATH = None
-    PLAYER_STATS_DATA_PATH = None
-    MISSING_PLAYER_STATS_DATA_PATH = None
-    WEAPON_DATA_PATH = None
-
-    
-    # Optional variables
-    ticks_per_second = 1
-    numerical_match_id = None
-    num_permutations_per_round = 1
-    build_dictionary = True
-
-    # Other variables
-    __nth_tick__ = 1
-
-
-
     # --------------------------------------------------------------------------------------------
-    # REGION: Constructor
-    # --------------------------------------------------------------------------------------------
-
-    def __init__(self):
-        pass
-        
-
-
-    # --------------------------------------------------------------------------------------------
-    # REGION: Public functions
-    # --------------------------------------------------------------------------------------------
-
-    def process_match(
-        self,
-        match_path: str,
-        player_stats_data_path: str, 
-        missing_player_stats_data_path: str,
-        weapon_data_path: str,
-
-        ticks_per_second: int = 1,
-        numerical_match_id: int = None,
-        num_permutations_per_round: int = 1,
-        build_dictionary: bool = True,
-    ):
-        """
-        Formats the match data and creates the tabular game-snapshot dataset.
-        
-        Parameters:
-            - match_path: name of the match file,
-            - player_stats_data_path: path of the player statistics data,
-            - missing_player_stats_data_path: path of the missing player statistics data,
-            - weapon_data_path: path of the weapon information dataset for the ammo and total ammo left columns,
-
-            - ticks_per_second (optional): how many ticks should be returned for each second. Values: 1, 2, 4, 8, 16, 32 and 64. Default is 1.
-            - numerical_match_id (optional): numerical match id to add to the dataset. If value is None, no numerical match id will be added. Default is None.
-            - num_permutations_per_round (optional): number of different player permutations to create for the snapshots per round. Default is 1.
-            - build_dictionary (optional): whether to build and return a dictionary with the min and max column values. Default is True.
-        """
-
-        # INPUT
-        self.MATCH_PATH = match_path
-        self.PLAYER_STATS_DATA_PATH = player_stats_data_path
-        self.MISSING_PLAYER_STATS_DATA_PATH = missing_player_stats_data_path
-        self.WEAPON_DATA_PATH = weapon_data_path
-
-        # Other variables
-        self.ticks_per_second = ticks_per_second
-        self.numerical_match_id = numerical_match_id
-        self.num_permutations_per_round = num_permutations_per_round
-        self.build_dictionary = build_dictionary
-
-        # 0. Ticks per second operations
-        self.__PREP_ticks_per_second_operations__()
-
-        # 1.
-        ticks, kills, rounds, bomb, damages, smokes, infernos, he_grenades = self._INIT_dataframes()
-
-        # 2.
-        pf = self._PLAYER_ingame_stats(ticks, kills, rounds, damages)
-
-        # 3.
-        pf = self._PLAYER_inventory(pf)
-        
-        # 4.
-        pf = self._PLAYER_active_weapons(pf)
-
-        # 5.
-        pf = self._PLAYER_weapon_ammo_info(pf)
-
-        # 6.
-        players = self._PLAYER_player_datasets(pf)
-
-        # 7.
-        players = self._PLAYER_hltv_statistics(players)
-
-        # 8.
-        tabular_df = self._TABULAR_initial_dataset(players, rounds, self.MATCH_PATH)
-
-        # 9.
-        tabular_df = self._TABULAR_bomb_info(tabular_df, bomb)
-
-        # 10.
-        tabular_df = self._TABULAR_INFERNO_bombsite_3x3_split(tabular_df)
-
-        # 11.
-        active_infernos, active_smokes, active_he_smokes = self._TABULAR_smokes_HEs_infernos(tabular_df, smokes, he_grenades, infernos)
-
-        # 12.
-        if self.numerical_match_id is not None:
-            tabular_df = self._TABULAR_numerical_match_id(tabular_df)
-
-        # 13.
-        if num_permutations_per_round > 1:
-            tabular_df = self._TABULAR_player_permutation(tabular_df, self.num_permutations_per_round)
-            
-        # 14.
-        tabular_df = self._TABULAR_refactor_player_columns(tabular_df)
-
-        # 15.
-        tabular_df = self._TABULAR_prefix_universal_columns(tabular_df)
-
-        # 16.
-        if build_dictionary:
-            tabular_df_dict = self._FINAL_build_dictionary(tabular_df)
-
-        # 17.
-        self._FINAL_free_memory(ticks, kills, rounds, bomb, damages, smokes, infernos)
-
-        # Return
-        if build_dictionary:
-            return tabular_df, tabular_df_dict, active_infernos, active_smokes, active_he_smokes
-        else:
-            return tabular_df, active_infernos, active_smokes, active_he_smokes
-
-
-
-    # --------------------------------------------------------------------------------------------
-    # REGION: Process_match private methods
+    # REGION: Process_match private methods - POLARS
     # --------------------------------------------------------------------------------------------
 
     # 0. Ticks per second operations
-    def __PREP_ticks_per_second_operations__(self):
+    def __POLARS_PREP_ticks_per_second_operations__(self):
         
         # Check if the ticks_per_second is valid
         if self.ticks_per_second not in [1, 2, 4, 8, 16, 32, 64]:
@@ -1600,7 +1515,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 1. Get needed dataframes
-    def __EXT_fill_smoke_NaNs__(self, smokes, rounds):
+    def __POLARS_EXT_fill_smoke_NaNs__(self, smokes, rounds):
         
         # Temporary rounds dataframe with the ending tick of each round
         rounds_temp = rounds[['round', 'official_end']].copy()
@@ -1614,7 +1529,7 @@ class POLARSTabularGraphSnapshot:
 
         return smokes
     
-    def __EXT_fill_infernos_NaNs__(self, infernos, rounds):
+    def __POLARS_EXT_fill_infernos_NaNs__(self, infernos, rounds):
         
         # Temporary rounds dataframe with the ending tick of each round
         rounds_temp = rounds[['round', 'official_end']].copy()
@@ -1628,7 +1543,7 @@ class POLARSTabularGraphSnapshot:
 
         return infernos
 
-    def _INIT_dataframes(self):
+    def _POLARS_INIT_dataframes(self):
 
         player_cols = [
             'X',
@@ -1709,8 +1624,8 @@ class POLARSTabularGraphSnapshot:
                         .drop_duplicates(subset=['entity_id'], keep='last')
         
         # Fill the NaN values of the smokes and infernos dataframes
-        smokes = self.__EXT_fill_smoke_NaNs__(smokes, rounds)
-        infernos = self.__EXT_fill_infernos_NaNs__(infernos, rounds)
+        smokes = self.__POLARS_EXT_fill_smoke_NaNs__(smokes, rounds)
+        infernos = self.__POLARS_EXT_fill_infernos_NaNs__(infernos, rounds)
 
         # Create columns to follow the game scores
         rounds['CT_score'] = 0
@@ -1767,7 +1682,7 @@ class POLARSTabularGraphSnapshot:
 
 
 
-    def __EXT_damage_per_round_df__(self, damages: pl.DataFrame, damage_type: str = 'all') -> pl.DataFrame:
+    def __POLARS_EXT_damage_per_round_df__(self, damages: pl.DataFrame, damage_type: str = 'all') -> pl.DataFrame:
         """
         Calculates the damages per round for the players.
         
@@ -1811,7 +1726,7 @@ class POLARSTabularGraphSnapshot:
 
         return dpr
 
-    def _PLAYER_ingame_stats(self, ticks: pl.DataFrame, kills: pl.DataFrame, rounds: pl.DataFrame, damages: pl.DataFrame):
+    def _POLARS_PLAYER_ingame_stats(self, ticks: pl.DataFrame, kills: pl.DataFrame, rounds: pl.DataFrame, damages: pl.DataFrame):
 
         # Merge ticks with rounds
         pf = ticks.join(rounds, on='round')
@@ -1897,9 +1812,9 @@ class POLARSTabularGraphSnapshot:
                 )
 
         # Create damages per round dataframe for the players for all types of damages
-        dpr = self.__EXT_damage_per_round_df__(damages, 'all')
-        wdpr = self.__EXT_damage_per_round_df__(damages, 'weapon')
-        ndpr = self.__EXT_damage_per_round_df__(damages, 'nade')
+        dpr = self.__POLARS_EXT_damage_per_round_df__(damages, 'all')
+        wdpr = self.__POLARS_EXT_damage_per_round_df__(damages, 'weapon')
+        ndpr = self.__POLARS_EXT_damage_per_round_df__(damages, 'nade')
 
         # Merge the damages per round dataframe with the player dataframe
         pf = pf.join(dpr, on=['round', 'name'], how='left')
@@ -1943,7 +1858,7 @@ class POLARSTabularGraphSnapshot:
     
     
     # 3. Inventory
-    def _PLAYER_inventory(self, pf: pl.DataFrame) -> pl.DataFrame:
+    def _POLARS_PLAYER_inventory(self, pf: pl.DataFrame) -> pl.DataFrame:
 
         # Inventory weapons
         inventory_weapons = [
@@ -1976,7 +1891,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 4. Handle active weapon column
-    def _PLAYER_active_weapons(self, pf: pl.DataFrame) -> pl.DataFrame:
+    def _POLARS_PLAYER_active_weapons(self, pf: pl.DataFrame) -> pl.DataFrame:
 
         # Handle null values
         pf = pf.with_columns(
@@ -2020,7 +1935,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 5. Handle weapon ammo info
-    def _PLAYER_weapon_ammo_info(self, pf):
+    def _POLARS_PLAYER_weapon_ammo_info(self, pf):
 
         # Read weapon data
         weapon_data = pl.read_csv(self.WEAPON_DATA_PATH)
@@ -2078,7 +1993,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 6. Create player dataset
-    def _PLAYER_player_datasets(self, pf):
+    def _POLARS_PLAYER_player_datasets(self, pf):
     
         startAsCTPlayerNames = pf.filter((pl.col('is_CT') == True) & (pl.col('round') == 1)).select('name').unique().to_series().to_list()
         startAsTPlayerNames  = pf.filter((pl.col('is_CT') == False) & (pl.col('round') == 1)).select('name').unique().to_series().to_list()
@@ -2107,14 +2022,14 @@ class POLARSTabularGraphSnapshot:
 
 
     # 7. Insert universal player statistics into player dataset
-    def __EXT_insert_columns_into_player_dataframes__(self, stat_df: pl.DataFrame, players_df: pl.DataFrame) -> pl.DataFrame:
+    def __POLARS_EXT_insert_columns_into_player_dataframes__(self, stat_df: pl.DataFrame, players_df: pl.DataFrame) -> pl.DataFrame:
         for col in stat_df.columns:
             if col != 'player_name':
                 value = stat_df.filter(pl.col('player_name') == players_df['name'][0])[col].item()
                 players_df = players_df.with_columns(pl.lit(value).alias(col))
         return players_df
 
-    def _PLAYER_hltv_statistics(self, players):
+    def _POLARS_PLAYER_hltv_statistics(self, players):
 
         # Needed columns
         needed_stats = ['player_name', 'rating_2.0', 'DPR', 'KAST', 'Impact', 'ADR', 'KPR','total_kills', 'HS%', 'total_deaths', 'KD_ratio', 'dmgPR',
@@ -2144,7 +2059,7 @@ class POLARSTabularGraphSnapshot:
 
             # If stats contain player information, merge
             if stats.filter(pl.col('player_name') == player_name).height == 1:
-                players[idx] = self.__EXT_insert_columns_into_player_dataframes__(stats, players[idx])
+                players[idx] = self.__POLARS_EXT_insert_columns_into_player_dataframes__(stats, players[idx])
 
             # If stats do not contain player information, check missing_players_df
             else:
@@ -2165,13 +2080,13 @@ class POLARSTabularGraphSnapshot:
 
                 # If missing_players_df contains player information, merge
                 if mpdf.filter(pl.col('player_name') == player_name).height == 1:
-                    players[idx] = self.__EXT_insert_columns_into_player_dataframes__(mpdf, players[idx])
+                    players[idx] = self.__POLARS_EXT_insert_columns_into_player_dataframes__(mpdf, players[idx])
 
                 # Else impute values from missing_players_df and merge
                 else:
                     first_anonim_pro_index = mpdf.filter(pl.col('player_name') == 'anonim_pro').select(pl.first().over('player_name')).row(0)[0]
                     mpdf = mpdf.with_row_at_idx(first_anonim_pro_index, {'player_name': player_name})
-                    players[idx] = self.__EXT_insert_columns_into_player_dataframes__(mpdf, players[idx])
+                    players[idx] = self.__POLARS_EXT_insert_columns_into_player_dataframes__(mpdf, players[idx])
 
                     # Reverse the column renaming - remove the 'hltv_' prefix
                     for col in mpdf.columns:
@@ -2185,43 +2100,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 8. Create tabular dataset - first version (1 row - 1 graph)
-    def __EXT_calculate_ct_equipment_value__(self, row):
-        if row['player0_is_CT']:
-            return row[['player0_equi_val_alive', 'player1_equi_val_alive', 'player2_equi_val_alive', 'player3_equi_val_alive', 'player4_equi_val_alive']].sum()
-        else:
-            return row[['player5_equi_val_alive', 'player6_equi_val_alive', 'player7_equi_val_alive', 'player8_equi_val_alive', 'player9_equi_val_alive']].sum()
-
-    def __EXT_calculate_t_equipment_value__(self, row):
-        if row['player0_is_CT'] == False:
-            return row[['player0_equi_val_alive', 'player1_equi_val_alive', 'player2_equi_val_alive', 'player3_equi_val_alive', 'player4_equi_val_alive']].sum()
-        else:
-            return row[['player5_equi_val_alive', 'player6_equi_val_alive', 'player7_equi_val_alive', 'player8_equi_val_alive', 'player9_equi_val_alive']].sum()
-
-    def __EXT_calculate_ct_total_hp__(self, row):
-        if row['player0_is_CT']:
-            return row[['player0_health','player1_health','player2_health','player3_health','player4_health']].sum()
-        else:
-            return row[['player5_health','player6_health','player7_health','player8_health','player9_health']].sum()
-
-    def __EXT_calculate_t_total_hp__(self, row):
-        if row['player0_is_CT'] == False:
-            return row[['player0_health','player1_health','player2_health','player3_health','player4_health']].sum()
-        else:
-            return row[['player5_health','player6_health','player7_health','player8_health','player9_health']].sum()
-
-    def __EXT_calculate_ct_alive_num__(self, row):
-        if row['player0_is_CT']:
-            return row[['player0_is_alive','player1_is_alive','player2_is_alive','player3_is_alive','player4_is_alive']].sum()
-        else:
-            return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum()
-
-    def __EXT_calculate_t_alive_num__(self, row):
-        if row['player0_is_CT'] == False:
-            return row[['player0_is_alive','player1_is_alive','player2_is_alive','player3_is_alive','player4_is_alive']].sum()
-        else:
-            return row[['player5_is_alive','player6_is_alive','player7_is_alive','player8_is_alive','player9_is_alive']].sum()
-
-    def __EXT_delete_useless_columns__(self, graph_data: pl.DataFrame) -> pl.DataFrame:
+    def __POLARS_EXT_delete_useless_columns__(self, graph_data: pl.DataFrame) -> pl.DataFrame:
 
         columns_to_drop = [
             'player0_equi_val_alive', 'player1_equi_val_alive', 'player2_equi_val_alive', 'player3_equi_val_alive', 'player4_equi_val_alive',
@@ -2251,10 +2130,7 @@ class POLARSTabularGraphSnapshot:
         
         return graph_data
 
-    def __EXT_calculate_time_remaining__(self, row):
-        return 115.0 - ((row["tick"] - row["freeze_end"]) / 64.0)
-
-    def _TABULAR_initial_dataset(self, players, rounds, match_id):
+    def _POLARS_TABULAR_initial_dataset(self, players, rounds, match_id):
         """
         Creates the first version of the dataset for the graph model.
         
@@ -2425,7 +2301,7 @@ class POLARSTabularGraphSnapshot:
             'player0_is_bomb_dropped': 'is_bomb_dropped'
         })
 
-        graph_data = self.__EXT_delete_useless_columns__(graph_data)
+        graph_data = self.__POLARS_EXT_delete_useless_columns__(graph_data)
 
         # Add time remaining column
         graph_data = graph_data.with_columns(
@@ -2441,7 +2317,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 9. Add bomb information to the dataset
-    def _TABULAR_bomb_info(self, tabular_df: pl.DataFrame, bombdf: pl.DataFrame) -> pl.DataFrame:
+    def _POLARS_TABULAR_bomb_info(self, tabular_df: pl.DataFrame, bombdf: pl.DataFrame) -> pl.DataFrame:
         
         # New columns
         tabular_df = tabular_df.with_columns([
@@ -2525,7 +2401,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 10. Split the bombsites by 3x3 matrix for bomb position feature
-    def __EXT_get_bomb_mx_coordinate_expr(self, is_bomb_planted_at_A_site, is_bomb_planted_at_B_site, bomb_X, bomb_Y):
+    def __POLARS_EXT_get_bomb_mx_coordinate_expr(self, is_bomb_planted_at_A_site, is_bomb_planted_at_B_site, bomb_X, bomb_Y):
         expr = pl.when(is_bomb_planted_at_A_site == 1).then(
             pl.when(bomb_Y >= 650).then(
                 pl.when(bomb_X < 1900).then(1)
@@ -2558,10 +2434,10 @@ class POLARSTabularGraphSnapshot:
 
         return expr
 
-    def _TABULAR_INFERNO_bombsite_3x3_split(self, tabular_df):
+    def _POLARS_TABULAR_INFERNO_bombsite_3x3_split(self, tabular_df):
 
         tabular_df = tabular_df.with_columns(
-            self.__EXT_get_bomb_mx_coordinate_expr(
+            self.__POLARS_EXT_get_bomb_mx_coordinate_expr(
                 tabular_df['is_bomb_planted_at_A_site'],
                 tabular_df['is_bomb_planted_at_B_site'],
                 tabular_df['bomb_X'],
@@ -2583,7 +2459,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 11. Handle smoke and molotov grenades
-    def _TABULAR_smokes_HEs_infernos(self, df: pl.DataFrame, smokes: pl.DataFrame, he_grenades: pl.DataFrame, infernos: pl.DataFrame):
+    def _POLARS_TABULAR_smokes_HEs_infernos(self, df: pl.DataFrame, smokes: pl.DataFrame, he_grenades: pl.DataFrame, infernos: pl.DataFrame):
     
         # Active infernos, smokes and HE explosions DataFrames
         active_infernos = None
@@ -2703,7 +2579,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 12. Add numerical match id
-    def _TABULAR_numerical_match_id(self, tabular_df: pl.DataFrame) -> pl.DataFrame:
+    def _POLARS_TABULAR_numerical_match_id(self, tabular_df: pl.DataFrame) -> pl.DataFrame:
     
         if not isinstance(self.numerical_match_id, int):
             raise ValueError("Numerical match id must be an integer.")
@@ -2719,7 +2595,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 13. Rearrange the player columns so that the CTs are always from 0 to 4 and Ts are from 5 to 9
-    def _TABULAR_refactor_player_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _POLARS_TABULAR_refactor_player_columns(self, df: pl.DataFrame) -> pl.DataFrame:
 
         # Separate the CT and T halves
         team_1_ct = df.filter(pl.col('player0_is_CT') == True).clone()
@@ -2879,7 +2755,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 14. Rename overall columns
-    def _TABULAR_prefix_universal_columns(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _POLARS_TABULAR_prefix_universal_columns(self, df: pl.DataFrame) -> pl.DataFrame:
 
         # Get universal columns
         universal_columns = [col for col in df.columns if not (col.startswith('CT0') or col.startswith('T5') or 
@@ -2900,7 +2776,7 @@ class POLARSTabularGraphSnapshot:
 
 
     # 15. Build column dictionary
-    def _FINAL_build_dictionary(self, df: pl.DataFrame) -> pl.DataFrame:
+    def _POLARS_FINAL_build_dictionary(self, df: pl.DataFrame) -> pl.DataFrame:
 
         # Get the numerical columns
         numeric_cols = [col for col in df.columns if '_name' not in col and col not in ['MATCH_ID', 'NUMERICAL_MATCH_ID', 'UNIVERSAL_smokes_active', 'UNIVERSAL_infernos_active']]
@@ -2924,21 +2800,8 @@ class POLARSTabularGraphSnapshot:
 
 
     # 16. Drop the rows where the bomb is defused
-    def _EXT_filter_bomb_defused_rows(self, df):
+    def _POLARS_EXT_filter_bomb_defused_rows(self, df):
         df = df.filter(pl.col('UNIVERSAL_is_bomb_defused') == 0)
         return df
-
-
-
-    # 17. Free memory
-    def _FINAL_free_memory(self, ticks, kills, rounds, bomb, damages, smokes, infernos):
-        del ticks
-        del kills
-        del rounds
-        del bomb
-        del damages
-        del smokes
-        del infernos
-        gc.collect()
 
 
