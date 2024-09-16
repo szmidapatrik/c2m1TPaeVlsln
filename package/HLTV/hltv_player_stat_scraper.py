@@ -258,10 +258,10 @@ class HLTV_Player_Stat_Scraper:
         
         for _, url_player in enumerate(players):
 
-            url_player = url_player.split('?')[0] + "?startDate={}-01-01&endDate={}-12-31".format(year, year)
+            url_player = url_player.split('?')[0] + "?startDate={}-01-01&endDate={}-12-31&matchType=BigEvents".format(year, year)
 
             # Check wether the demo is alreay parsed
-            txt_file_path = './{}'.format(txt_file_path)
+            txt_file_path = txt_file_path
             with open(txt_file_path) as f:
                 lines = f.read().splitlines()
                 if url_player in lines:
@@ -278,6 +278,7 @@ class HLTV_Player_Stat_Scraper:
                 stats = self._get_clutch_stats(url_player, stats)
                 
                 self._write_to_csv(stats, csv_file_path)
-            except:
+            except Exception as e:
+                print(e)
                 self._handle_scrape_error(url_player, error_txt_path)
             self._write_url_done(url_player, txt_file_path)
