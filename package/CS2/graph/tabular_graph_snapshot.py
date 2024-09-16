@@ -369,15 +369,31 @@ class TabularGraphSnapshot:
 
         # Filter columns
         rounds = rounds[['round', 'freeze_end', 'end', 'CT_score', 'T_score', 'winner']]
-        ticks = ticks[[
-            'tick', 'round', 'team_name', 'team_clan_name', 'name',
-            'X', 'Y', 'Z', 'pitch', 'yaw', 'velocity_X', 'velocity_Y', 'velocity_Z', 'inventory',
-            'health', 'armor_value', 'active_weapon_name', 'active_weapon_ammo', 'total_ammo_left',
-            'is_alive', 'in_crouch', 'ducking', 'in_duck_jump', 'is_walking', 'spotted', 'is_scoped', 'is_defusing', 'is_in_reload', 'in_bomb_zone',
-            'zoom_lvl', 'flash_duration', 'flash_max_alpha', 'mvps',
-            'velo_modifier', 'balance', 'current_equip_value', 'round_start_equip_value', 'total_cash_spent', 'cash_spent_this_round',
-            'ct_losing_streak', 't_losing_streak', 'is_bomb_dropped', 'FIRE'
-        ]]
+
+        try:
+            ticks = ticks[[
+                'tick', 'round', 'team_name', 'team_clan_name', 'name',
+                'X', 'Y', 'Z', 'pitch', 'yaw', 'velocity_X', 'velocity_Y', 'velocity_Z', 'inventory',
+                'health', 'armor_value', 'active_weapon_name', 'active_weapon_ammo', 'total_ammo_left',
+                'is_alive', 'in_crouch', 'ducking', 'in_duck_jump', 'is_walking', 'spotted', 'is_scoped', 'is_defusing', 'is_in_reload', 'in_bomb_zone',
+                'zoom_lvl', 'flash_duration', 'flash_max_alpha', 'mvps',
+                'velo_modifier', 'balance', 'current_equip_value', 'round_start_equip_value', 'total_cash_spent', 'cash_spent_this_round',
+                'ct_losing_streak', 't_losing_streak', 'is_bomb_dropped', 'FIRE'
+            ]]
+        except:
+            ticks = ticks[[
+                'tick', 'round', 'team_name', 'team_clan_name', 'name',
+                'X', 'Y', 'Z', 'pitch', 'yaw', 'velocity_X', 'velocity_Y', 'velocity_Z', 'inventory',
+                'health', 'armor_value', 'active_weapon_name', 'active_weapon_ammo', 'total_ammo_left',
+                'is_alive', 'is_walking', 'spotted', 'is_scoped', 'is_defusing', 'is_in_reload', 'in_bomb_zone',
+                'zoom_lvl', 'flash_duration', 'flash_max_alpha', 'mvps',
+                'velo_modifier', 'balance', 'current_equip_value', 'round_start_equip_value', 'total_cash_spent', 'cash_spent_this_round',
+                'ct_losing_streak', 't_losing_streak', 'is_bomb_dropped', 'FIRE'
+            ]]
+            ticks['in_crouch'] = 0
+            ticks['ducking'] = 0
+            ticks['in_duck_jump'] = 0
+
         
         ticks = ticks.rename(columns={
             'in_crouch'     : 'is_crouching',
