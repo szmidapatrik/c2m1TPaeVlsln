@@ -390,9 +390,13 @@ class TabularGraphSnapshot:
                 'velo_modifier', 'balance', 'current_equip_value', 'round_start_equip_value', 'total_cash_spent', 'cash_spent_this_round',
                 'ct_losing_streak', 't_losing_streak', 'is_bomb_dropped', 'FIRE'
             ]]
-            ticks['in_crouch'] = 0
-            ticks['ducking'] = 0
-            ticks['in_duck_jump'] = 0
+            
+            missing_columns = pd.DataFrame({
+                'in_crouch': 0,
+                'ducking': 0,
+                'in_duck_jump': 0,
+            }, index=ticks.index)
+            ticks = pd.concat([ticks, missing_columns], axis=1)
 
             print(colored('Warning:', "yellow", attrs=["bold"]) + ' [\'in_crouch\', \'ducking\', \'in_duck_jump\'] columns were missing during the parse. Added the missing columns with values 0.')
 
