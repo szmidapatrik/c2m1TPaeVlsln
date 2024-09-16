@@ -1,5 +1,5 @@
 /data/demo-parsed
 /data/matches-raw
-/data/graph-dataset/*
+/_/graph-dataset/*
 /_/_graph-dataset/datasets/*
 /_/awpy2/data/*
