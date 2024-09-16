@@ -1,13 +1,12 @@
 from awpy import Demo
 
-from sklearn.preprocessing import MinMaxScaler
-
 import pandas as pd
 import polars as pl
 import numpy as np
 
-import gc
+from termcolor import colored
 import random
+import gc
 
 class TabularGraphSnapshot:
 
@@ -380,6 +379,7 @@ class TabularGraphSnapshot:
                 'velo_modifier', 'balance', 'current_equip_value', 'round_start_equip_value', 'total_cash_spent', 'cash_spent_this_round',
                 'ct_losing_streak', 't_losing_streak', 'is_bomb_dropped', 'FIRE'
             ]]
+
         except:
             ticks = ticks[[
                 'tick', 'round', 'team_name', 'team_clan_name', 'name',
@@ -393,6 +393,8 @@ class TabularGraphSnapshot:
             ticks['in_crouch'] = 0
             ticks['ducking'] = 0
             ticks['in_duck_jump'] = 0
+
+            print(colored('Warning:', "yellow", attrs=["bold"]) + ' [\'in_crouch\', \'ducking\', \'in_duck_jump\'] columns were missing during the parse. Added the missing columns with values 0.')
 
         
         ticks = ticks.rename(columns={
