@@ -2084,8 +2084,15 @@ class TabularGraphSnapshot:
 
                 # Else impute values from missing_players_df and merge
                 else:
-                    first_anonim_pro_index = mpdf.filter(pl.col('player_name') == 'anonim_pro').select(pl.first().over('player_name')).row(0)[0]
-                    mpdf = mpdf.with_row_at_idx(first_anonim_pro_index, {'player_name': player_name})
+                    first_anonim_pro_index = mpdf.with_row_index().filter(pl.col("player_name") == "anonim_pro").select("index").to_series()[0]
+
+                    mpdf = mpdf.with_columns(
+                        pl.when(pl.arange(0, pl.count()).alias("index") == first_anonim_pro_index)
+                        .then(pl.lit(player_name))
+                        .otherwise(pl.col("player_name"))
+                        .alias("player_name")
+                    )
+                    
                     players[idx] = self.__POLARS_EXT_insert_columns_into_player_dataframes__(mpdf, players[idx])
 
                     # Reverse the column renaming - remove the 'hltv_' prefix
