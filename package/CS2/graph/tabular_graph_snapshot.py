@@ -522,12 +522,10 @@ class TabularGraphSnapshot:
         for _, row in first_kills.iterrows():
 
             # Opening-kills
-            if row['tick'] == kills.loc[kills['round'] == row['round']].iloc[0]['tick']:
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_opening_kills'] += 1
+            pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_opening_kills'] += 1
 
             # Opening deaths
-            if row['tick'] == kills.loc[kills['round'] == row['round']].iloc[0]['tick']:
-                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['victim_name']), 'stat_opening_deaths'] += 1
+            pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['victim_name']), 'stat_opening_deaths'] += 1
 
 
         # Create damages per round dataframe for the players for all types of damages
