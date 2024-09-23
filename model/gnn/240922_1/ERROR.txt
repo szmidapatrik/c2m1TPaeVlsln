@@ -1,0 +1,1 @@
+IMPORTANT: There was no activation function used in the dense layers of this neural network while training.
