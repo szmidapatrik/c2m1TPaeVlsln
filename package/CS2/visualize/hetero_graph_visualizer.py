@@ -37,7 +37,7 @@ class HeteroGraphVisualizer:
     # --------------------------------------------------------------------------------------------
 
     # Visualize a heterogeneous graph snapshot
-    def visualize_snapshot(self, graph: HeteroData, map: str, style='light') -> None:
+    def visualize_snapshot(self, graph: HeteroData, map: str, style='light', plt_title=None, plt_legend=True) -> None:
         """
         Visualize a heterogeneous graph snapshot.
         Parameters:
@@ -76,48 +76,78 @@ class HeteroGraphVisualizer:
         fig, ax = plt.subplots(figsize=(10, 10))
 
         # Set title
-        ax.set_title(f'Round: {round(graph.y['round'] * 24)}\nRemaining time: {round(graph.y['remaining_time'] * (115 + -4.78125))}', fontsize=20)
+        if plt_title is not None:
+            fig.suptitle(plt_title, fontsize=18)
+            ax.set_title(f'Round: {round(graph.y['round'] * 24)}\nRemaining time: {round(graph.y['remaining_time'] * (115 + -4.78125))} sec', fontsize=12)
+            plt.subplots_adjust(top=0.925)
+        else:
+            ax.set_title(f'Round: {round(graph.y['round'] * 24)}\nRemaining time: {round(graph.y['remaining_time'] * (115 + -4.78125))} sec', fontsize=16)
 
         # Plot map image
         ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.5)
 
+
+
+        
 
         # Visualize map with light style
         if style == 'light' or style == 'l':
             
             # Plot map nodes and edges
             for edge in map_edges.T:
-                ax.plot(map_nodes[edge, 0], map_nodes[edge, 1], c='black', linewidth=0.5)
-            ax.scatter(map_nodes[:, 0], map_nodes[:, 1], s=10, c='black')
-            ax.scatter(graph['map'].x[graph['map'].x[:, -2] == 1][:, 1], graph['map'].x[graph['map'].x[:, -2] == 1][:, 2], s=500, c='firebrick', alpha=0.3)
-            ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='dimgray', alpha=0.3)
+                ax.plot(map_nodes[edge, 0], map_nodes[edge, 1], c='black', linewidth=0.5, zorder=1)
+            ax.scatter(map_nodes[:, 0], map_nodes[:, 1], s=10, c='black', zorder=1, label='Map Nodes')
+            ax.scatter(graph['map'].x[graph['map'].x[:, -2] == 1][:, 1], graph['map'].x[graph['map'].x[:, -2] == 1][:, 2], s=500, c='firebrick', alpha=0.3, zorder=1, label='Burning map nodes')
+            ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='dimgray', alpha=0.3, zorder=1, label='Smoked map nodes')
 
         # Visualize map with dark style
         elif style == 'dark' or style == 'd':
 
             # Plot map nodes and edges
             for edge in map_edges.T:
-                ax.plot(map_nodes[edge, 0], map_nodes[edge, 1], c='white', linewidth=0.5, alpha=0.5)
-            ax.scatter(map_nodes[:, 0], map_nodes[:, 1], s=10, c='white', alpha=0.5)
-            ax.scatter(graph['map'].x[graph['map'].x[:, -2] == 1][:, 1], graph['map'].x[graph['map'].x[:, -2] == 1][:, 2], s=500, c='darkred', alpha=0.3)
-            ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='lightgray', alpha=0.3)
+                ax.plot(map_nodes[edge, 0], map_nodes[edge, 1], c='white', linewidth=0.5, alpha=0.5, zorder=1)
+            ax.scatter(map_nodes[:, 0], map_nodes[:, 1], s=10, c='white', alpha=0.5, zorder=1, label='Map Nodes')
+            ax.scatter(graph['map'].x[graph['map'].x[:, -2] == 1][:, 1], graph['map'].x[graph['map'].x[:, -2] == 1][:, 2], s=500, c='darkred', alpha=0.3, zorder=1, label='Burning map nodes')
+            ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='lightgray', alpha=0.3, zorder=1, label='Smoked map nodes')
+
+
+
+
 
         # Visualize players with light style
         if style == 'light' or style == 'l':
 
             # Plot players
-            ax.scatter(players[:5, 0], players[:5, 1], s=15, c='dodgerblue')
-            ax.scatter(players[5:, 0], players[5:, 1], s=15, c='darkorange')
+            ax.scatter(players[:5, 0], players[:5, 1], s=20, zorder=3, c='dodgerblue', label='Player nodes (Defenders)')
+            ax.scatter(players[5:, 0], players[5:, 1], s=20, zorder=3, c='darkorange', label='Player nodes (Attackers)')
 
         # Visualize players with dark style
         elif style == 'dark' or style == 'd':
 
             # Plot players
-            ax.scatter(players[:5, 0], players[:5, 1], s=15, c='cyan')
-            ax.scatter(players[5:, 0], players[5:, 1], s=15, c='mediumvioletred')
+            ax.scatter(players[:5, 0], players[:5, 1], s=20, zorder=3, c='cyan', label='Player nodes (Defenders)')
+            ax.scatter(players[5:, 0], players[5:, 1], s=20, zorder=3, c='mediumvioletred', label='Player nodes (Attackers)')
 
         for edge in player_edges.T:
-            ax.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='grey', linewidth=0.5)
+            if edge[0] < 5:
+                if style == 'light' or style == 'l':
+                    ax.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='dodgerblue', alpha=0.5, linewidth=2, zorder=2)
+                elif style == 'dark' or style == 'd':
+                    ax.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='cyan', alpha=0.5, linewidth=2, zorder=2)
+            else:
+                if style == 'light' or style == 'l':
+                    ax.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='darkorange', alpha=0.5, linewidth=2, zorder=2)
+                elif style == 'dark' or style == 'd':
+                    ax.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='mediumvioletred', alpha=0.5, linewidth=2, zorder=2)
+
+
+
+
+
+
+
+        if plt_legend:
+            plt.legend(loc='upper left', labelspacing=1)
 
         plt.show()
 
