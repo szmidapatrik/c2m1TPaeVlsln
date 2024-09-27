@@ -349,25 +349,100 @@ class TabularGraphSnapshot:
         infernos = self.__EXT_fill_infernos_NaNs__(infernos, rounds)
 
         # Create columns to follow the game scores
-        rounds['CT_score'] = 0
-        rounds['T_score'] = 0
+        rounds['team1_score'] = 0
+        rounds['team2_score'] = 0
 
         # Calculate the team scores in the rounds dataframe
         for idx, row in rounds.iterrows():
-            if row['winner'] == 'CT':
+            if row['winner'] == 'CT' or row['winner'] == 3:
                 if row['round'] <= 12:
-                    rounds.loc[idx+1:, 'CT_score'] += 1
-                elif row['round'] > 12:
-                    rounds.loc[idx+1:, 'T_score'] += 1
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 12 and row['round'] <= 24:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 24 and row['round'] <= 27:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 27 and row['round'] <= 30:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 30 and row['round'] <= 33:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 33 and row['round'] <= 36:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 36 and row['round'] <= 39:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 39 and row['round'] <= 42:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 42 and row['round'] <= 45:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 45 and row['round'] <= 48:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 48 and row['round'] <= 51:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 51 and row['round'] <= 54:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
 
-            elif row['winner'] == 'T':
+            elif row['winner'] == 'T' or row['winner'] == 2:
                 if row['round'] <= 12:
-                    rounds.loc[idx+1:, 'T_score'] += 1
-                elif row['round'] > 12:
-                    rounds.loc[idx+1:, 'CT_score'] += 1
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 12 and row['round'] <= 24:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 24 and row['round'] <= 27:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 27 and row['round'] <= 30:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 30 and row['round'] <= 33:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 33 and row['round'] <= 36:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 36 and row['round'] <= 39:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 39 and row['round'] <= 42:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 42 and row['round'] <= 45:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 45 and row['round'] <= 48:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                elif row['round'] > 48 and row['round'] <= 51:
+                    rounds.loc[idx+1:, 'team2_score'] += 1
+                elif row['round'] > 51 and row['round'] <= 54:
+                    rounds.loc[idx+1:, 'team1_score'] += 1
+                
+        
+        rounds['CT_score'] = rounds.apply(lambda x: 
+            x['team1_score'] if x['round'] <= 12 else
+            x['team2_score'] if x['round'] > 12 and x['round'] <= 24 else
+            x['team1_score'] if x['round'] > 24 and x['round'] <= 27 else
+            x['team2_score'] if x['round'] > 27 and x['round'] <= 30 else
+            x['team1_score'] if x['round'] > 30 and x['round'] <= 33 else
+            x['team2_score'] if x['round'] > 33 and x['round'] <= 36 else
+            x['team1_score'] if x['round'] > 36 and x['round'] <= 39 else
+            x['team2_score'] if x['round'] > 39 and x['round'] <= 42 else
+            x['team1_score'] if x['round'] > 42 and x['round'] <= 45 else
+            x['team2_score'] if x['round'] > 45 and x['round'] <= 48 else
+            x['team1_score'] if x['round'] > 48 and x['round'] <= 51 else
+            x['team2_score'] if x['round'] > 51 and x['round'] <= 54 else
+            0, axis=1)
+        
+        rounds['T_score'] = rounds.apply(lambda x:
+            x['team2_score'] if x['round'] <= 12 else
+            x['team1_score'] if x['round'] > 12 and x['round'] <= 24 else
+            x['team2_score'] if x['round'] > 24 and x['round'] <= 27 else
+            x['team1_score'] if x['round'] > 27 and x['round'] <= 30 else
+            x['team2_score'] if x['round'] > 30 and x['round'] <= 33 else
+            x['team1_score'] if x['round'] > 33 and x['round'] <= 36 else
+            x['team2_score'] if x['round'] > 36 and x['round'] <= 39 else
+            x['team1_score'] if x['round'] > 39 and x['round'] <= 42 else
+            x['team2_score'] if x['round'] > 42 and x['round'] <= 45 else
+            x['team1_score'] if x['round'] > 45 and x['round'] <= 48 else
+            x['team2_score'] if x['round'] > 48 and x['round'] <= 51 else
+            x['team1_score'] if x['round'] > 51 and x['round'] <= 54 else
+            0, axis=1)
+        
+        del rounds['team1_score']
+        del rounds['team2_score']
+
 
         # Filter columns
-        rounds = rounds[['round', 'freeze_end', 'end', 'CT_score', 'T_score', 'winner']]
+        rounds = rounds[['round', 'freeze_end', 'CT_score', 'T_score', 'winner', 'reason']]
 
         try:
             ticks = ticks[[
@@ -935,6 +1010,8 @@ class TabularGraphSnapshot:
             graph_data = graph_data.merge(graph_players[i], on=colsNotToRename)
 
         graph_data = graph_data.merge(rounds, on=['round'])
+
+        # TODO: BIG ERROR IN OUTPUT VARIABLE
         graph_data['CT_wins'] = graph_data.apply(lambda x: 1 if (x['winner'] == 'CT') else 0, axis=1)
 
         graph_data['player0_equi_val_alive'] = graph_data['player0_current_equip_value'] * graph_data['player0_is_alive']
