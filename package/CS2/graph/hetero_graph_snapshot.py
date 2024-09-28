@@ -43,7 +43,8 @@ class HeteroGraphSnapshot:
         active_he_explosions: pd.DataFrame,
         CONFIG_MOLOTOV_RADIUS: dict,
         CONFIG_SMOKE_RADIUS: dict,
-        player_edges_num: int = 1
+        player_edges_num: int = 1,
+        player_self_edges: bool = True
     ):
         """
         Create graphs from the rows of a tabular snapshot dataframe.
@@ -147,6 +148,9 @@ class HeteroGraphSnapshot:
             # Create edge data
             data['map', 'connected_to', 'map'].edge_index = torch.tensor(edges.values.T, dtype=torch.int16)
             data['player', 'closest_to', 'map'].edge_index = torch.tensor(player_edges_tensor, dtype=torch.int16)
+            if player_self_edges:
+                data['player', 'is', 'player'].edge_index = torch.torch.tensor([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]], dtype=torch.int16)
+
 
             # Define the graph-level features
             data.y = {
@@ -157,6 +161,8 @@ class HeteroGraphSnapshot:
                 'remaining_time': row['UNIVERSAL_remaining_time'].astype('float32'),
                 'freeze_end': row['UNIVERSAL_freeze_end'].astype('float32'),
                 'end': row['UNIVERSAL_end'].astype('float32'),
+                'CT_score': row['UNIVERSAL_CT_score'].astype('float32'),
+                'T_score': row['UNIVERSAL_T_score'].astype('float32'),
                 'CT_alive_num': row['UNIVERSAL_CT_alive_num'].astype('float32'),
                 'T_alive_num': row['UNIVERSAL_T_alive_num'].astype('float32'),
                 'CT_total_hp': row['UNIVERSAL_CT_total_hp'].astype('float32'),
