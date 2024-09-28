@@ -348,6 +348,23 @@ class TabularGraphSnapshot:
         smokes = self.__EXT_fill_smoke_NaNs__(smokes, rounds)
         infernos = self.__EXT_fill_infernos_NaNs__(infernos, rounds)
 
+
+
+        # Output variable handle
+        output_variable_values = rounds['winner'].unique().tolist()
+        if output_variable_values != ['CT', 'T'] and \
+           output_variable_values != ['T', 'CT'] and \
+           output_variable_values != [2, 3] and \
+           output_variable_values != [3, 2]:
+            
+            print(colored('Error:', "red", attrs=["bold"]) + f' Incorrect output variable values: {output_variable_values}. Contact the developer for further info.')
+            raise ValueError(f"Incorrect output variable values {output_variable_values}. Contact the developer for further info.")
+
+        print(colored('Info:', "light_blue", attrs=["bold"]) + f' The output variable values are {output_variable_values}.')
+        rounds['winner'] = rounds['winner'].apply(lambda x: 'CT' if x == 3 else 'T' if x == 2 else x)
+
+
+
         # Create columns to follow the game scores
         rounds['team1_score'] = 0
         rounds['team2_score'] = 0
@@ -405,7 +422,6 @@ class TabularGraphSnapshot:
                     rounds.loc[idx+1:, 'team2_score'] += 1
                 elif row['round'] > 51 and row['round'] <= 54:
                     rounds.loc[idx+1:, 'team1_score'] += 1
-                
         
         rounds['CT_score'] = rounds.apply(lambda x: 
             x['team1_score'] if x['round'] <= 12 else
@@ -442,7 +458,7 @@ class TabularGraphSnapshot:
 
 
         # Filter columns
-        rounds = rounds[['round', 'freeze_end', 'CT_score', 'T_score', 'winner', 'reason']]
+        rounds = rounds[['round', 'freeze_end', 'end', 'CT_score', 'T_score', 'winner']]
 
         try:
             ticks = ticks[[
@@ -456,6 +472,9 @@ class TabularGraphSnapshot:
             ]]
 
         except:
+
+            print(colored('Warning:', "yellow", attrs=["bold"]) + ' [\'in_crouch\', \'ducking\', \'in_duck_jump\'] columns were missing during the parse. Added the missing columns with values 0.')
+            
             ticks = ticks[[
                 'tick', 'round', 'team_name', 'team_clan_name', 'name',
                 'X', 'Y', 'Z', 'pitch', 'yaw', 'velocity_X', 'velocity_Y', 'velocity_Z', 'inventory',
@@ -472,8 +491,6 @@ class TabularGraphSnapshot:
                 'in_duck_jump': 0,
             }, index=ticks.index)
             ticks = pd.concat([ticks, missing_columns], axis=1)
-
-            print(colored('Warning:', "yellow", attrs=["bold"]) + ' [\'in_crouch\', \'ducking\', \'in_duck_jump\'] columns were missing during the parse. Added the missing columns with values 0.')
 
         
         ticks = ticks.rename(columns={
@@ -549,6 +566,24 @@ class TabularGraphSnapshot:
 
         # Rename the mvps column
         pf = pf.rename(columns={'mvps': 'stat_MVPs'})
+
+        # Player team_name column validation
+        team_name_values = pf['team_name'].unique().tolist()
+        if team_name_values != ['CT', 'TERRORIST'] and team_name_values != ['TERRORIST', 'CT']:
+            
+            if team_name_values == ['CT', 'TERRORIST', None] or team_name_values == ['TERRORIST', 'CT', None] or \
+               team_name_values == ['CT', None, 'TERRORIST'] or team_name_values == ['TERRORIST', None, 'CT'] or \
+               team_name_values == [None, 'CT', 'TERRORIST'] or team_name_values == [None, 'TERRORIST', 'CT']:
+                
+                team_name_missing_ticks = ticks.loc[(ticks['team_name'].isna())]['tick'].unique().tolist()
+                print(colored('Warning:', "red", attrs=["bold"]) + f' None value found in team_name column ({team_name_values}) at ticks {team_name_missing_ticks}. Removing ticks.')
+                if len(team_name_missing_ticks) > 10:
+                    print(colored('Warning:', "red", attrs=["bold"]) + f' More than 10 ticks are corrupted ({len(team_name_missing_ticks)}). Consider not using the data of the whole match.')
+                ticks = ticks[~ticks['tick'].isin(team_name_missing_ticks)]
+
+            else:
+                print(colored('Error:', "red", attrs=["bold"]) + f' Incorrect player team variable values: {team_name_values}. Contact the developer for further info.')
+                raise ValueError(f"Incorrect output variable values {team_name_values}. Contact the developer for further info.")
 
         # Format CT information
         pf['is_CT'] = pf.apply(lambda x: 1 if x['team_name'] == 'CT' else 0, axis=1)
@@ -1504,23 +1539,12 @@ class TabularGraphSnapshot:
         # Concatenate the two dataframes
         renamed_df = pd.concat([team_1_ct, team_2_ct])
 
-        # Add a temporary column
-        new_columns = pd.DataFrame({
-            'temp_CT_score': 0,
-        }, index=renamed_df.index)
-        renamed_df = pd.concat([renamed_df, new_columns], axis=1)
-        renamed_df['temp_CT_score'] = renamed_df['CT_score']
-
-        # Swap the CT_score and T_score values for the second half
-        renamed_df.loc[renamed_df['round'] > 12, 'CT_score'] = renamed_df.loc[renamed_df['round'] > 12, 'T_score']
-        renamed_df.loc[renamed_df['round'] > 12, 'T_score'] = renamed_df.loc[renamed_df['round'] > 12, 'temp_CT_score']
-
-        # Drop the temporary column
-        renamed_df = renamed_df.drop(columns=['temp_CT_score'])
-
         # Universal clan names
-        renamed_df['CT_clan_name'] =  renamed_df['CT0_team_clan_name']
-        renamed_df['T_clan_name'] =  renamed_df['T5_team_clan_name']
+        team_clan_names = pd.DataFrame({
+            'CT_clan_name': renamed_df['CT0_team_clan_name'],
+            'T_clan_name': renamed_df['T5_team_clan_name']
+        })
+        renamed_df = pd.concat([renamed_df, team_clan_names], axis=1)
 
         # Drop the original columns
         for player_idx in range(10):
@@ -1529,6 +1553,8 @@ class TabularGraphSnapshot:
             else:
                 renamed_df = renamed_df.drop(columns=[f'T{player_idx}_team_clan_name'])
 
+        # Order the dataset by tick
+        renamed_df = renamed_df.sort_values(by='tick')
 
         return renamed_df
 
@@ -1598,6 +1624,8 @@ class TabularGraphSnapshot:
     # --------------------------------------------------------------------------------------------
     # REGION: Process_match private methods - POLARS
     # --------------------------------------------------------------------------------------------
+    # TODO: Implement the fixes done in the pandas version: output variable error and team_name column error check
+
 
     # 0. Ticks per second operations
     def __POLARS_PREP_ticks_per_second_operations__(self):
