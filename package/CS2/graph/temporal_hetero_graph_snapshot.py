@@ -129,7 +129,7 @@ class TemporalHeteroGraphSnapshot:
             round_graphs = round_graphs[(len(round_graphs) % interval):]
 
             # Iterate over the remaining snapshots
-            for snpshot_idx in range(0, len(round_graphs), 5):
+            for snpshot_idx in range(0, len(round_graphs), interval):
 
                 # Create dynamic graphs and add them to the dynamic_graphs list
                 dynamic_graph = self.create_dynamic_graph(round_graphs[snpshot_idx: snpshot_idx + interval])
