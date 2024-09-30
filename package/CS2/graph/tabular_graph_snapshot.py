@@ -1046,7 +1046,7 @@ class TabularGraphSnapshot:
 
         graph_data = graph_data.merge(rounds, on=['round'])
 
-        # TODO: BIG ERROR IN OUTPUT VARIABLE
+        # Output variable
         graph_data['CT_wins'] = graph_data.apply(lambda x: 1 if (x['winner'] == 'CT') else 0, axis=1)
 
         graph_data['player0_equi_val_alive'] = graph_data['player0_current_equip_value'] * graph_data['player0_is_alive']
