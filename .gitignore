@@ -5,3 +5,4 @@
 /_/awpy2/data/*
 /proj/graph_nn/temp_data/*
 /model/gnn/*
+!/model/gnn/240930_5
