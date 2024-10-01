@@ -1,6 +1,10 @@
 # Counter Strike Player Action Evaluation Using Graph Neual Networks
 
 
+<span style="color: cornflowerblue; font-size: 16px">MIT Sloan: <span><span style="color: white">The MIT Sloan related information are stored in the [MIT-SLOAN-README.md](MIT-SLOAN-README.md) file.<span> 
+
+---
+
 <span style="color: red; font-size: 16px">IMPORTANT!<span><span style="color: white"> If any errors would occure during the use of this project, read the [BUGFIX.md](BUGFIX.md) file, which contains solutions to some of the previously found problems.<span> 
 
 
