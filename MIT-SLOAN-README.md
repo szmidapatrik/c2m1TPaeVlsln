@@ -14,9 +14,9 @@ As mentioned in the abstract, a data transformation process is introduced in the
 
 The parse process is done using the *./package* folder of the root project. This package colects all the necessary functionalities related to parsing CS2 matches, collected to classes. The *./package/CS2/graph* folder holds the classes responsible for creating the heterogeneous graph datasets available below. In the *CS2/preprocess* folder, different data imputation and normalization functions/classes are located, essential for the data transformation process.
 
-The ***training dataset*** of the GNN (13.5 GB) is available on [this link]() (Google Drive).
+The ***training dataset*** of the GNN (13.5 GB) is available on [this link](https://drive.google.com/drive/folders/1KeuvyCsqKCSFk6k9k1jQiHVtNR0kK5sq?usp=drive_link) (Google Drive).
 
-The ***validation dataset*** (4.1 GB) is stored in [this folder]() (Google Drive).
+The ***validation dataset*** (4.1 GB) is stored in [this folder](https://drive.google.com/drive/folders/1BQnRP2xySBx3kPGt0nLLJmfhODJGl6Tr?usp=drive_link) (Google Drive).
 
 ### 1.2 Models
 
