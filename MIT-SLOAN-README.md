@@ -23,6 +23,7 @@ The ***validation dataset*** (4.1 GB) is stored in [this folder](https://drive.g
 The models used for prediction are stored under the *./models/gnn* folder, with the folder names indicating the date of training. The current best model, used for the player action evaluation plot in the abstract, is located in the *240930_5* folder, with all information related to the training saved. The training was done in the *./proj/graph_nn* folder, the jupyter notebooks contain the results of some of the latest trainings.
 
 Current best model (used in the abstract): ***./model/gnn/240930_5/epoch_3.pt***.
+COMMENT (2024. 10. 03.): ***./model/gnn/240930_5/epoch_2.pt*** is justnas good, if not better.
 
 ### 1.3 Plots and visualization
 
