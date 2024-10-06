@@ -10,3 +10,4 @@ from .preprocess.normalize_tabular_graph_snapshot import NormalizeTabularGraphSn
 from .preprocess.impute_tabular_graph_snapshot import ImputeTabularGraphSnapshot
 
 from .visualize.hetero_graph_visualizer import HeteroGraphVisualizer
+from .visualize.hetero_gnn_round_analyzer import HeteroGNNRoundAnalyzer

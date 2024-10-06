@@ -1,7 +1,7 @@
 import torch
 from torch_geometric.data import HeteroData
 from torch_geometric_temporal.signal import DynamicHeteroGraphTemporalSignal
-
+from termcolor import colored
 
 class TemporalHeteroGraphSnapshot:
 
@@ -43,6 +43,7 @@ class TemporalHeteroGraphSnapshot:
             # Edge indices (relations)
             map_map_edge_index = graph_data[('map', 'connected_to', 'map')]['edge_index']
             player_map_edge_index = graph_data[('player', 'closest_to', 'map')]['edge_index']
+            player_player_edge_index = graph_data[('player', 'is', 'player')]['edge_index']
 
             # Time information
             time = graph_data['y']['remaining_time']
@@ -50,6 +51,7 @@ class TemporalHeteroGraphSnapshot:
             # Grapg level features
             graph_features = graph_data['y'].copy()
             del graph_features['remaining_time']
+            del graph_features['time']
             del graph_features['CT_wins']
 
 
@@ -104,36 +106,59 @@ class TemporalHeteroGraphSnapshot:
     def process_match(
         self, 
         match_graphs: list[HeteroData],
-        interval: int = 10
+        interval: int = 10,
+        shifted_intervals: bool = False,
+        parse_rate: int = 16
     ):
         """
         Process the rounds of a match and create a dynamic graph with fixed length intervals.
         Parameters:
         - match_graphs: the list of snapshots for a match.
         - interval: the number of snapshots to include in a single dynamic graph.
+        - shifted_intervals: whether additional shifted intervals should be created by shifting the interval window by itnerval/2 frames. Only works if interval is even.
+        - parse_rate: the time between two snapshots in tick number. Default is 16 (4 ticks per second).
         """
 
         # Collect all dynamic graphs here
         dynamic_graphs = []
 
         # Get round numbers
-        rounds = self.__EXT_get_round_number_list_(match_graphs)
+        rounds = self._EXT_get_round_number_list_(match_graphs)
 
         # Iterate over the rounds
         for round_number in rounds:
 
             # Get the graph snapshots of the round
-            round_graphs = self.__EXT_get_round_graphs_(match_graphs, round_number)
+            round_graphs = self._EXT_get_round_graphs_(match_graphs, round_number)
 
             # It is probable that the number of snapshots is not devidable by the interval number, thus drop the first n snapshots to make it devidable
-            round_graphs = round_graphs[(len(round_graphs) % interval):]
+            default_round_graphs = round_graphs[(len(round_graphs) % interval):]
 
             # Iterate over the remaining snapshots
-            for snpshot_idx in range(0, len(round_graphs), interval):
+            for snpshot_idx in range(0, len(default_round_graphs), interval):
+
+                # Tick control variables
+                first_tick = default_round_graphs[snpshot_idx].y['tick']
+                last_tick = default_round_graphs[snpshot_idx + interval - 1].y['tick']
+                actual_tick = default_round_graphs[snpshot_idx].y['tick']
+
+                # Skip sequence control variable
+                SKIP_SEQUENCE = False
+
+                # VALIDATION - Check if there are missing ticks in the graph sequence
+                for graph in default_round_graphs[snpshot_idx: snpshot_idx + interval]:
+                    if graph.y['tick'] != actual_tick :
+                        print(colored('Error:', "red", attrs=["bold"]) + f'Error: There are missing ticks in the graph sequence. The error occured while parsing match {graph.y["numerical_match_id"]} at round \
+                            {graph.y["round_number"]} between ticks {first_tick}-{last_tick}. Skipping the sequence.')
+                        actual_tick += parse_rate
+                        SKIP_SEQUENCE = True
+                        break
+                    actual_tick += parse_rate
 
                 # Create dynamic graphs and add them to the dynamic_graphs list
-                dynamic_graph = self.create_dynamic_graph(round_graphs[snpshot_idx: snpshot_idx + interval])
-                dynamic_graphs.append(dynamic_graph)
+                if not SKIP_SEQUENCE:
+                    dynamic_graph = self.create_dynamic_graph(default_round_graphs[snpshot_idx: snpshot_idx + interval])
+                    dynamic_graphs.append(dynamic_graph)
 
         return dynamic_graphs
 
@@ -145,7 +170,7 @@ class TemporalHeteroGraphSnapshot:
     # REGION: Private methods
     # --------------------------------------------------------------------------------------------
 
-    def __EXT_get_round_number_list_(self, graphs):
+    def _EXT_get_round_number_list_(self, graphs):
 
         # Store the unique round numbers
         round_numbers = []
@@ -159,7 +184,7 @@ class TemporalHeteroGraphSnapshot:
     
 
 
-    def __EXT_get_round_graphs_(self, graphs, round_number):
+    def _EXT_get_round_graphs_(self, graphs, round_number):
 
         # Store the graphs of the round
         round_graphs = []
