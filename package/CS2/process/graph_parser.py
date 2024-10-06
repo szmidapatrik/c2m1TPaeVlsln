@@ -189,6 +189,6 @@ class GraphParser:
                 raise ValueError('Parameter \'CONFIG_SMOKE_RADIUS\' is invalid.')
         
         
-        # Lwftover: PATH_EDGES validation
+        # Leftover: PATH_EDGES validation
         if PATH_EDGES == None or PATH_EDGES == '':
             raise ValueError('Parameter \'PATH_EDGES\' is invalid.')
