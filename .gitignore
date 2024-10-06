@@ -4,3 +4,4 @@
 /_/_graph-dataset/datasets/*
 /_/awpy2/data/*
 /proj/graph_nn/temp_data/*
+/deploy/test_data/*
