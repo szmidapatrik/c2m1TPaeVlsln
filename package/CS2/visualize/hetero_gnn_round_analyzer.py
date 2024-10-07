@@ -74,7 +74,7 @@ class HeteroGNNRoundAnalyzer:
 
 
             # Other plot params
-            plt.xticks(range(115 - ceil(len(selected_round)/4), 115), fontsize=25)
+            plt.xticks(range(115 - ceil(len(selected_round)/4), 115), fontsize=8)
             plt.ylim(0, 100);
             plt.xlim(115 - ceil(len(selected_round)/4), 115);
             plt.xlabel('Remaining time (seconds)', fontsize=12)
