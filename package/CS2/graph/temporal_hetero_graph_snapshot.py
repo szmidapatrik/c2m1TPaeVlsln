@@ -131,6 +131,12 @@ class TemporalHeteroGraphSnapshot:
             # Get the graph snapshots of the round
             round_graphs = self._EXT_get_round_graphs_(match_graphs, round_number)
 
+
+
+            # ---------------------------------------------------------------------------
+            #                        Default interval splits
+            # ---------------------------------------------------------------------------
+
             # It is probable that the number of snapshots is not devidable by the interval number, thus drop the first n snapshots to make it devidable
             default_round_graphs = round_graphs[(len(round_graphs) % interval):]
 
@@ -155,10 +161,55 @@ class TemporalHeteroGraphSnapshot:
                         break
                     actual_tick += parse_rate
 
-                # Create dynamic graphs and add them to the dynamic_graphs list
+                # Create dynamic graphs and add them to the dynamic_graphs list i
                 if not SKIP_SEQUENCE:
                     dynamic_graph = self.create_dynamic_graph(default_round_graphs[snpshot_idx: snpshot_idx + interval])
                     dynamic_graphs.append(dynamic_graph)
+
+            # ---------------------------------------------------------------------------
+            #                        Shifted interval splits
+            # ---------------------------------------------------------------------------
+            
+            if shifted_intervals and interval % 2 == 0:
+
+                # It is probable that the number of snapshots is not devidable by the interval number, thus drop the first n snapshots to make it devidable
+                remaining_graphs_len = len(round_graphs) % interval
+
+                if remaining_graphs_len < interval/2:
+                    start_idx = int(remaining_graphs_len + interval/2)
+
+                if remaining_graphs_len >= interval/2:
+                    start_idx = int(remaining_graphs_len - interval/2)
+                
+                end_idx = int(len(round_graphs) - interval/2)
+
+                # Iterate over the remaining snapshots
+                for snpshot_idx in range(start_idx, end_idx, interval):
+
+                    # Tick control variables
+                    first_tick = round_graphs[snpshot_idx].y['tick']
+                    last_tick = round_graphs[snpshot_idx + interval - 1].y['tick']
+                    actual_tick = round_graphs[snpshot_idx].y['tick']
+
+                    # Skip sequence control variable
+                    SKIP_SEQUENCE = False
+
+                    # VALIDATION - Check if there are missing ticks in the graph sequence
+                    for graph in round_graphs[snpshot_idx: snpshot_idx + interval]:
+                        if graph.y['tick'] != actual_tick :
+                            print(colored('Error:', "red", attrs=["bold"]) + f'Error: There are missing ticks in the graph sequence. The error occured while parsing match {graph.y["numerical_match_id"]} at round \
+                                {graph.y["round_number"]} between ticks {first_tick}-{last_tick}. Skipping the sequence.')
+                            actual_tick += parse_rate
+                            SKIP_SEQUENCE = True
+                            break
+                        actual_tick += parse_rate
+
+                    # Create dynamic graphs and add them to the dynamic_graphs list i
+                    if not SKIP_SEQUENCE:
+                        dynamic_graph = self.create_dynamic_graph(round_graphs[snpshot_idx: snpshot_idx + interval])
+                        dynamic_graphs.append(dynamic_graph)
+                
+
 
         return dynamic_graphs
 
