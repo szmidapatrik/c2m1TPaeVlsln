@@ -155,7 +155,7 @@ class TemporalHeteroGraphSnapshot:
                 for graph in default_round_graphs[snpshot_idx: snpshot_idx + interval]:
                     if graph.y['tick'] != actual_tick :
                         print(colored('Error:', "red", attrs=["bold"]) + f'Error: There are missing ticks in the graph sequence. The error occured while parsing match {graph.y["numerical_match_id"]} at round \
-                            {graph.y["round_number"]} between ticks {first_tick}-{last_tick}. Skipping the sequence.')
+                            {graph.y["round"]} between ticks {first_tick}-{last_tick}. Skipping the sequence.')
                         actual_tick += parse_rate
                         SKIP_SEQUENCE = True
                         break
@@ -198,7 +198,7 @@ class TemporalHeteroGraphSnapshot:
                     for graph in round_graphs[snpshot_idx: snpshot_idx + interval]:
                         if graph.y['tick'] != actual_tick :
                             print(colored('Error:', "red", attrs=["bold"]) + f'Error: There are missing ticks in the graph sequence. The error occured while parsing match {graph.y["numerical_match_id"]} at round \
-                                {graph.y["round_number"]} between ticks {first_tick}-{last_tick}. Skipping the sequence.')
+                                {graph.y["round"]} between ticks {first_tick}-{last_tick}. Skipping the sequence.')
                             actual_tick += parse_rate
                             SKIP_SEQUENCE = True
                             break
