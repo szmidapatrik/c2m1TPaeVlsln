@@ -31,6 +31,26 @@ class TemporalHeteroGraphSnapshot:
         """
 
         # Collect all time slices here
+        discrete_time_dynamic_graph = []
+
+        # Iterate over the snapshots from which the dynamic graph is to be constructed
+        for graph_data in graphs: 
+            discrete_time_dynamic_graph.append(graph_data)
+
+        return discrete_time_dynamic_graph
+
+    def create_dynamic_graph_pyg_temporal(
+        self,
+        graphs: list[HeteroData]
+    ):
+        """
+        Create a dynamic graph from a list of snapshots.
+        
+        Parameters:
+        - graphs: the list of snapshots.
+        """
+
+        # Collect all time slices here
         time_slices = []
 
         # Iterate over the snapshots from which the dynamic graph is to be constructed
@@ -103,12 +123,15 @@ class TemporalHeteroGraphSnapshot:
 
 
 
+
+
     def process_match(
         self, 
         match_graphs: list[HeteroData],
         interval: int = 10,
         shifted_intervals: bool = False,
-        parse_rate: int = 16
+        parse_rate: int = 16,
+        use_pyg_temporal: bool = False
     ):
         """
         Process the rounds of a match and create a dynamic graph with fixed length intervals.
@@ -117,7 +140,12 @@ class TemporalHeteroGraphSnapshot:
         - interval: the number of snapshots to include in a single dynamic graph.
         - shifted_intervals: whether additional shifted intervals should be created by shifting the interval window by itnerval/2 frames. Only works if interval is even.
         - parse_rate: the time between two snapshots in tick number. Default is 16 (4 ticks per second).
+        - use_pyg_temporal: whether to use PyG Temporal data model for creating the dynamic graphs.
         """
+
+        # If shifted_intervals is True, interval must be even
+        if shifted_intervals and interval % 2 != 0:
+            raise ValueError("The interval must be even when shifted_intervals is set to True.")
 
         # Collect all dynamic graphs here
         dynamic_graphs = []
@@ -163,7 +191,10 @@ class TemporalHeteroGraphSnapshot:
 
                 # Create dynamic graphs and add them to the dynamic_graphs list i
                 if not SKIP_SEQUENCE:
-                    dynamic_graph = self.create_dynamic_graph(default_round_graphs[snpshot_idx: snpshot_idx + interval])
+                    if use_pyg_temporal:
+                        dynamic_graph = self.create_dynamic_graph_pyg_temporal(default_round_graphs[snpshot_idx: snpshot_idx + interval])
+                    else:
+                        dynamic_graph = self.create_dynamic_graph(default_round_graphs[snpshot_idx: snpshot_idx + interval])
                     dynamic_graphs.append(dynamic_graph)
 
             # ---------------------------------------------------------------------------
@@ -206,7 +237,10 @@ class TemporalHeteroGraphSnapshot:
 
                     # Create dynamic graphs and add them to the dynamic_graphs list i
                     if not SKIP_SEQUENCE:
-                        dynamic_graph = self.create_dynamic_graph(round_graphs[snpshot_idx: snpshot_idx + interval])
+                        if use_pyg_temporal:
+                            dynamic_graph = self.create_dynamic_graph_pyg_temporal(default_round_graphs[snpshot_idx: snpshot_idx + interval])
+                        else:
+                            dynamic_graph = self.create_dynamic_graph(default_round_graphs[snpshot_idx: snpshot_idx + interval])
                         dynamic_graphs.append(dynamic_graph)
                 
 
