@@ -3,5 +3,5 @@
 /_/graph-dataset/*
 /_/_graph-dataset/datasets/*
 /_/awpy2/data/*
-/proj/graph_nn/temp_data/*
+/proj/graph_nn/_/temp_data/*
 /deploy/test_data/*
