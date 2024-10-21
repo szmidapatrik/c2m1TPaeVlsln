@@ -23,7 +23,7 @@ class HeteroGNNRoundAnalyzer:
     # --------------------------------------------------------------------------------------------
 
     # Analyze team win probabilities in a round
-    def analyze_round(self, graphs, model, round_number: int, style: str = 'dark', plt_title=None, plt_legend=True, save_path: str = None) -> None:
+    def analyze_round(self, graphs, model, round_number: int, style: str = 'dark', model_code: str = None, plt_title=None, plt_legend=True, save_path: str = None) -> None:
         """
         Analyze team win probabilities in a round.
         Parameters:
@@ -36,12 +36,31 @@ class HeteroGNNRoundAnalyzer:
         if style not in ['light', 'l', 'dark', 'd']:
             raise ValueError('Invalid style. Must be "light" (or "l" for short) or "dark" (or "d" for short).')
 
+        # If the model code is not provided, use the model class name
+        if model_code is not None and model_code != '':
+            exec('model_code')
+
+        IS_TEMPORAL = False
+
+        # Check if the dataset is temporal
+        if 'TemporalHeterogeneousGNN' in str(model):
+            IS_TEMPORAL = True
+
+
 
         # Get the round data
-        selected_round = self._EXT_get_round_data(graphs, round_number)
+        if IS_TEMPORAL:
+            selected_round = self._EXT_get_round_data_temporal(graphs, round_number)
+        else:
+            selected_round = self._EXT_get_round_data(graphs, round_number)
 
         # Get the predictions
-        predictions, _, remaining_time = self._EXT_get_round_predictions(selected_round, model)
+        if IS_TEMPORAL:
+            predictions, remaining_time = self._EXT_get_round_predictions_temporal(selected_round, model)
+        else:
+            predictions, _, remaining_time = self._EXT_get_round_predictions(selected_round, model)
+
+
 
         if style in ['light', 'l']:
 
@@ -69,17 +88,16 @@ class HeteroGNNRoundAnalyzer:
 
             # Proba plots
             plt.axhline(y=50, color='white', linestyle='--', label='50%')
-            plt.plot(np.array(remaining_time), np.array(predictions) * 100, color='cyan', lw=2, label='Defender team win probability')
-            plt.plot(np.array(remaining_time), (1 - np.array(predictions)) * 100, color='mediumvioletred', lw=2, label='Attacker team win probability')
+            plt.plot(range(len(predictions)), np.array(predictions) * 100, color='cyan', lw=2, label='Defender team win probability')
+            plt.plot(range(len(predictions)), (1 - np.array(predictions)) * 100, color='mediumvioletred', lw=2, label='Attacker team win probability')
 
 
             # Other plot params
-            plt.xticks(range(115 - ceil(len(selected_round)/4), 115), fontsize=8)
+            plt.xticks(ticks=range(0, len(remaining_time), 20), labels=[round(remaining_time[i]) for i in range(0, len(remaining_time), 20)])
+            plt.ylim(0, len(predictions));
             plt.ylim(0, 100);
-            plt.xlim(115 - ceil(len(selected_round)/4), 115);
             plt.xlabel('Remaining time (seconds)', fontsize=12)
             plt.ylabel('Win probability (%)', fontsize=12)
-            plt.gca().invert_xaxis()
 
         if plt_title is not None:
             plt.title(plt_title, fontsize=14)
@@ -141,6 +159,57 @@ class HeteroGNNRoundAnalyzer:
             remaining_times.append(time * (115 + 7.98) - 7.98)
 
         return predictions, targets, remaining_times
+
+
+
+
+    def _EXT_get_round_data_temporal(self, dyn_graphs, round_number: int) -> dict:
+
+        selected_round = []
+
+        # Store the last graph's remaining time, as there might be overlapping dynamic graphs
+        last_graph_remaining_time = 1
+
+        # Select round data
+        for dyn_graph in dyn_graphs:
+
+            dyn_graph_round = round(dyn_graph[0].y['round'], 2)
+            user_input_round = round(round_number/24, 2)
+
+            if np.float32(dyn_graph_round) == np.float32(user_input_round):
+                dyn_graph_last_remaining_time = dyn_graph[-1].y['remaining_time']
+                if (dyn_graph_last_remaining_time < last_graph_remaining_time) or \
+                   (dyn_graph_last_remaining_time > last_graph_remaining_time and dyn_graph_last_remaining_time < 0.9):
+                    selected_round.append(dyn_graph)
+                    last_graph_remaining_time = dyn_graph[-1].y['remaining_time']
+                else:
+                    break
+
+
+        return selected_round
+
+    def _EXT_get_round_predictions_temporal(self, selected_round, model) -> dict:
+
+        selected_round_loader = CSTemporalDataLoader(selected_round, batch_size=1, shuffle=False)
+
+        model.eval()
+        predictions = []
+        rem_times = []
+
+        with torch.no_grad():
+            for dyn_graph  in selected_round_loader:
+
+                for graph in dyn_graph[0]:
+                    rem_times.append(graph.y['remaining_time'])
+                
+                out = model(dyn_graph, len(dyn_graph), len(dyn_graph[0])).float()
+                predictions.extend(torch.sigmoid(out.squeeze()).float().cpu().numpy())
+
+        remaining_times = []
+        for time in rem_times:
+            remaining_times.append(time * (115 + 7.98) - 7.98)
+
+        return predictions, remaining_times
 
 
 
@@ -358,3 +427,30 @@ class HeterogeneousGNN(torch.nn.Module):
         
         return actual_x_dict, actual_edge_index_dict
     
+class CSTemporalDataLoader(DataLoader):
+
+    def __init__(self, dataset, batch_size=1, shuffle=False, *args, **kwargs):
+        super().__init__(dataset, batch_size=batch_size, shuffle=shuffle, *args, **kwargs)
+
+        self._dataset = dataset
+        self._batch_size = batch_size
+        self._shuffle = shuffle
+
+    def __iter__(self):
+        # Optionally shuffle the dataset
+        indices = list(range(len(self._dataset)))
+        if self._shuffle:
+            torch.random.manual_seed(42)  # Ensure reproducibility if needed
+            indices = torch.randperm(len(self._dataset)).tolist()
+
+        # Yield batches of DTDGs
+        batch = []
+        for idx in indices:
+            batch.append(self._dataset[idx])
+            if len(batch) == self._batch_size:
+                yield batch
+                batch = []
+
+        # Yield the last smaller batch if it exists
+        if batch:
+            yield batch
