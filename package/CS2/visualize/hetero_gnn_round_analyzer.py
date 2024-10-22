@@ -28,8 +28,12 @@ class HeteroGNNRoundAnalyzer:
         Analyze team win probabilities in a round.
         Parameters:
         - graphs: the dataset containing the match graphs.
-        - round: the round to analyze.
-        - style: the plot style. Can be 'light' or 'dark'. Default is 'light'.
+        - model: the model to use for the analysis.
+        - round_number: the round to analyze.
+        - style: the plot style. Can be 'light' ('l' for short) or 'dark' ('d' for short). Default is 'light'.
+        - plt_title: the title of the plot. Default is None.
+        - plt_legend: whether to show the plot legend. Default is True.
+        - save_path: the path to save the plot. Default is None.
         """
 
         # Validate style
