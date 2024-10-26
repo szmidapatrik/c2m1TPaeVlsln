@@ -23,7 +23,7 @@ class HeteroGNNRoundAnalyzer:
     # --------------------------------------------------------------------------------------------
 
     # Analyze team win probabilities in a round
-    def analyze_round(self, graphs, model, round_number: int, style: str = 'dark', model_code: str = None, plt_title=None, plt_legend=True, save_path: str = None) -> None:
+    def analyze_round(self, graphs, model, round_number: int, style: str = 'dark', model_code: str = None, plt_title=None, plt_legend=True, save_path: str = None, return_predictions: bool = False) -> None:
         """
         Analyze team win probabilities in a round.
         Parameters:
@@ -64,7 +64,9 @@ class HeteroGNNRoundAnalyzer:
         else:
             predictions, _, remaining_time = self._EXT_get_round_predictions(selected_round, model)
 
-
+        # If return_predictions is True, return the predictions without plotting
+        if return_predictions:
+            return predictions
 
         if style in ['light', 'l']:
 
@@ -113,6 +115,7 @@ class HeteroGNNRoundAnalyzer:
             plt.savefig(save_path)
         else:
             plt.show()
+
 
 
 
