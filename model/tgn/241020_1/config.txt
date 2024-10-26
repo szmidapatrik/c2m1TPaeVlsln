@@ -43,6 +43,8 @@ player_dims: [20, 5]
 map_dims: [20, 10, 5]
 player_attention_heads: None
 map_attention_heads: None
+player_K: 2
+map_K: 3
 trainable_params: 83999
 optimizer: AdamW (
 Parameter Group 0
