@@ -17,7 +17,8 @@ class HeteroGraphVisualizer:
     __file_path = os.path.dirname(os.path.abspath(__file__))
 
     # Map image path constants
-    INFERNO_LIGHT = '/radar/inferno.png'
+    INFERNO = '/radar/inferno.png'
+    INFERNO_LIGHT  = '/radar/inferno_light.png'
     INFERNO_DARK  = '/radar/inferno_dark.png'
 
 
@@ -27,6 +28,7 @@ class HeteroGraphVisualizer:
     # --------------------------------------------------------------------------------------------
 
     def __init__(self):
+        self.INFERNO = self.__file_path + self.INFERNO
         self.INFERNO_LIGHT = self.__file_path + self.INFERNO_LIGHT
         self.INFERNO_DARK = self.__file_path + self.INFERNO_DARK
 
@@ -43,12 +45,12 @@ class HeteroGraphVisualizer:
         Parameters:
         - graph: the HeteroData graph to visualize.
         - map: the map on which the match was held.
-        - style: the plot style. Can be 'light' or 'dark'. Default is 'light'.
+        - style: the plot style. Can be 'light', 'dark' or 'cs'. Default is 'light'.
         """
 
         # Validate style
-        if style not in ['light', 'l', 'dark', 'd']:
-            raise ValueError('Invalid style. Must be "light" (or "l" for short) or "dark" (or "d" for short).')
+        if style not in ['light', 'l', 'dark', 'd', 'cs']:
+            raise ValueError('Invalid style. Must be "light" (or "l" for short) or "dark" (or "d" for short) or "cs".')
 
         # Validate map
         if map not in ['de_dust2', 'de_inferno', 'de_mirage', 'de_nuke', 'de_anubis', 'de_ancient', 'de_vertigo']:
@@ -67,8 +69,9 @@ class HeteroGraphVisualizer:
         player_edges = graph['player', 'closest_to', 'map'].edge_index.numpy()
 
         # Set background color
-        if style == 'light' or style == 'l':
+        if style == 'light' or style == 'l' or style == 'cs':
             plt.style.use('default')
+
         if style == 'dark' or style == 'd':
             plt.style.use('dark_background')
 
@@ -84,14 +87,17 @@ class HeteroGraphVisualizer:
             ax.set_title(f'Round: {round(graph.y['round'] * 24)}\nRemaining time: {round(graph.y['remaining_time'] * (115 + -4.78125))} sec', fontsize=16)
 
         # Plot map image
-        ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.5)
+        if style == 'l' or style == 'light':
+            ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.9)
+        else:
+            ax.imshow(img, extent=[-0.07, 1.0465, -0.085, 1.030], alpha=0.5)
 
 
 
         
 
         # Visualize map with light style
-        if style == 'light' or style == 'l':
+        if style == 'cs':
             
             # Plot map nodes and edges
             for edge in map_edges.T:
@@ -101,28 +107,31 @@ class HeteroGraphVisualizer:
             ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='dimgray', alpha=0.3, zorder=1, label='Smoked map nodes')
 
         # Visualize map with dark style
-        elif style == 'dark' or style == 'd':
+        elif style == 'dark' or style == 'd' or style == 'light' or style == 'l':
 
             # Plot map nodes and edges
             for edge in map_edges.T:
                 ax.plot(map_nodes[edge, 0], map_nodes[edge, 1], c='white', linewidth=0.5, alpha=0.5, zorder=1)
             ax.scatter(map_nodes[:, 0], map_nodes[:, 1], s=10, c='white', alpha=0.5, zorder=1, label='Map Nodes')
             ax.scatter(graph['map'].x[graph['map'].x[:, -2] == 1][:, 1], graph['map'].x[graph['map'].x[:, -2] == 1][:, 2], s=500, c='darkred', alpha=0.3, zorder=1, label='Burning map nodes')
-            ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='lightgray', alpha=0.3, zorder=1, label='Smoked map nodes')
+            if style == 'l' or style == 'light':
+                ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='mistyrose', alpha=0.5, zorder=1, label='Smoked map nodes')
+            else:
+                ax.scatter(graph['map'].x[graph['map'].x[:, -1] == 1][:, 1], graph['map'].x[graph['map'].x[:, -1] == 1][:, 2], s=750, c='lightgray', alpha=0.3, zorder=1, label='Smoked map nodes')
 
 
 
 
 
         # Visualize players with light style
-        if style == 'light' or style == 'l':
+        if style == 'cs':
 
             # Plot players
             ax.scatter(players[:5, 0], players[:5, 1], s=20, zorder=3, c='dodgerblue', label='Player nodes (Defenders)')
             ax.scatter(players[5:, 0], players[5:, 1], s=20, zorder=3, c='darkorange', label='Player nodes (Attackers)')
 
         # Visualize players with dark style
-        elif style == 'dark' or style == 'd':
+        elif style == 'dark' or style == 'd' or style == 'light' or style == 'l':
 
             # Plot players
             ax.scatter(players[:5, 0], players[:5, 1], s=20, zorder=3, c='cyan', label='Player nodes (Defenders)')
@@ -130,14 +139,14 @@ class HeteroGraphVisualizer:
 
         for edge in player_edges.T:
             if edge[0] < 5:
-                if style == 'light' or style == 'l':
+                if style == 'cs':
                     ax.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='dodgerblue', alpha=0.5, linewidth=2, zorder=2)
-                elif style == 'dark' or style == 'd':
+                elif style == 'dark' or style == 'd' or style == 'light' or style == 'l':
                     ax.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='cyan', alpha=0.5, linewidth=2, zorder=2)
             else:
-                if style == 'light' or style == 'l':
+                if style == 'cs':
                     ax.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='darkorange', alpha=0.5, linewidth=2, zorder=2)
-                elif style == 'dark' or style == 'd':
+                elif style == 'dark' or style == 'd' or style == 'light' or style == 'l':
                     ax.plot([players[edge[0]][0], map_nodes[edge[1]][0]], [players[edge[0]][1], map_nodes[edge[1]][1]], c='mediumvioletred', alpha=0.5, linewidth=2, zorder=2)
 
 
@@ -171,7 +180,9 @@ class HeteroGraphVisualizer:
 
         # Get the image
         if map == 'de_inferno':
-            if style == 'light' or style == 'l':
+            if style == 'cs':
+                img = mpimg.imread(self.INFERNO)
+            elif style == 'light' or style == 'l':
                 img = mpimg.imread(self.INFERNO_LIGHT)
             elif style == 'dark' or style == 'd':
                 img = mpimg.imread(self.INFERNO_DARK)

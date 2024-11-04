@@ -23,21 +23,21 @@ class HeteroGNNRoundAnalyzer:
     # --------------------------------------------------------------------------------------------
 
     # Analyze team win probabilities in a round
-    def analyze_round(self, graphs, model, round_number: int, style: str = 'dark', model_code: str = None, plt_title=None, plt_legend=True, save_path: str = None, return_predictions: bool = False) -> None:
+    def analyze_round(self, graphs, model, round_number: int, style: str = 'dark', model_code: str = None, fig_size=(20, 5), plt_title=None, plt_legend=True, plt_show=False, save_path: str = None, return_predictions: bool = False) -> None:
         """
         Analyze team win probabilities in a round.
         Parameters:
         - graphs: the dataset containing the match graphs.
         - model: the model to use for the analysis.
         - round_number: the round to analyze.
-        - style: the plot style. Can be 'light' ('l' for short) or 'dark' ('d' for short). Default is 'light'.
+        - style: the plot style. Can be 'light' ('l' for short) or 'dark' ('d' for short) or 'cs'. Default is 'light'.
         - plt_title: the title of the plot. Default is None.
         - plt_legend: whether to show the plot legend. Default is True.
         - save_path: the path to save the plot. Default is None.
         """
 
         # Validate style
-        if style not in ['light', 'l', 'dark', 'd']:
+        if style not in ['light', 'l', 'dark', 'd', 'cs']:
             raise ValueError('Invalid style. Must be "light" (or "l" for short) or "dark" (or "d" for short).')
 
         # If the model code is not provided, use the model class name
@@ -68,10 +68,10 @@ class HeteroGNNRoundAnalyzer:
         if return_predictions:
             return predictions
 
-        if style in ['light', 'l']:
+        if style in ['cs']:
 
             plt.style.use('default')
-            fig, ax = plt.subplots(1, 1, figsize=(20, 5))
+            fig, ax = plt.subplots(1, 1, figsize=fig_size)
 
             # Proba plots
             plt.axhline(y=50, color='lightgray', linestyle='--', label='50%')
@@ -87,10 +87,28 @@ class HeteroGNNRoundAnalyzer:
             plt.ylabel('Win probability (%)', fontsize=12)
             plt.gca().invert_xaxis()
 
+        if style in ['light', 'l']:
+
+            plt.style.use('default')
+            fig, ax = plt.subplots(1, 1, figsize=fig_size)
+
+            # Proba plots
+            plt.axhline(y=50, color='gray', linestyle='--', label='50%')
+            plt.plot(range(len(predictions)), np.array(predictions) * 100, color='cyan', lw=2, label='Defender team win probability')
+            plt.plot(range(len(predictions)), (1 - np.array(predictions)) * 100, color='mediumvioletred', lw=2, label='Attacker team win probability')
+
+
+            # Other plot params
+            plt.xticks(ticks=range(0, len(remaining_time), 20), labels=[round(remaining_time[i]) for i in range(0, len(remaining_time), 20)])
+            plt.ylim(0, len(predictions));
+            plt.ylim(0, 100);
+            plt.xlabel('Remaining time (seconds)', fontsize=12)
+            plt.ylabel('Win probability (%)', fontsize=12)
+        
         if style in ['dark', 'd']:
 
             plt.style.use('dark_background')
-            fig, ax = plt.subplots(1, 1, figsize=(20, 5))
+            fig, ax = plt.subplots(1, 1, figsize=fig_size)
 
             # Proba plots
             plt.axhline(y=50, color='white', linestyle='--', label='50%')
@@ -113,7 +131,7 @@ class HeteroGNNRoundAnalyzer:
 
         if save_path is not None:
             plt.savefig(save_path)
-        else:
+        elif plt_show:
             plt.show()
 
 

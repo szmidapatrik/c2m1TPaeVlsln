@@ -1,8 +1,0 @@
-Learning rate: 0.056808873614136425
-Weight decay: 1.1554677837397378e-05
-Player last spatial conv dim: 2
-Map last spatial conv dim: 3
-Player K: 4
-Map K: 2
--------------------------------
-Validation loss: 0.6921962618827819

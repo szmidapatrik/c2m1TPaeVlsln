@@ -220,6 +220,7 @@ class SnapshotEvents:
         cdf = rdf.diff().shift(-shift_rate).add_suffix('_change')
 
         cdf['round'] = round_backup[filler_zeros_num:-shift_rate]
+
         cdf['y'] = y_backup[filler_zeros_num:-shift_rate]
         cdf = cdf[filler_zeros_num:-shift_rate]
 
