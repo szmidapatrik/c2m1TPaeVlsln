@@ -2,3 +2,4 @@ from .tabular_graph_snapshot import TabularGraphSnapshot
 from .hetero_graph_snapshot import HeteroGraphSnapshot
 from .temporal_hetero_graph_snapshot import TemporalHeteroGraphSnapshot
 from .snapshot_events import SnapshotEvents
+from .hetero_graph_lime_sampler import HeteroGraphLIMESampler

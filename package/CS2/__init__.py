@@ -2,6 +2,7 @@ from .graph.tabular_graph_snapshot import TabularGraphSnapshot
 from .graph.hetero_graph_snapshot import HeteroGraphSnapshot
 from .graph.temporal_hetero_graph_snapshot import TemporalHeteroGraphSnapshot
 from .graph.snapshot_events import SnapshotEvents
+from .graph.hetero_graph_lime_sampler import HeteroGraphLIMESampler
 
 from .token.tokenizer import Tokenizer
 
