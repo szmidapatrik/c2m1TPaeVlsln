@@ -39,7 +39,7 @@ class HeteroGraphLIMESampler:
     # --------------------------------------------------------------------------------------------
 
     # Visualize a heterogeneous graph snapshot
-    def sample_snapshot(self, graph: HeteroData, sample_size: int, normalized: bool = True):
+    def sample_snapshot(self, graph: HeteroData, sample_size: int, probability: float = 0.1, normalized: bool = True):
         """
         Create a LIME sampling for a heterogeneous graph snapshot.
         Parameters:
@@ -65,7 +65,7 @@ class HeteroGraphLIMESampler:
         for _ in range(sample_size):
             samples.append(graph.clone())
 
-        samples = self._update_player_tensor(samples)
+        samples = self._update_player_tensor(samples, probability)
         samples = self._update_player_map_edges(samples)
         samples = self._update_map_node_burning_smoked_values(samples)
         samples = self._update_y_values(samples)
@@ -100,7 +100,7 @@ class HeteroGraphLIMESampler:
 
 
     # Update the player tensor of the graph
-    def _update_player_tensor(self, samples: list):
+    def _update_player_tensor(self, samples: list, probability: float):
         """
         Update the player tensor of the graph.
         Parameters:
@@ -113,9 +113,6 @@ class HeteroGraphLIMESampler:
         for sample in samples:
             
             tpldf = pd.DataFrame(sample.x_dict['player'].numpy(), columns=self.player_columns)
-
-            # Change value proba
-            probability = 0.25
 
             # ----------- Player coordinates ------------
             random_filter = np.random.rand(tpldf.shape[0]) < probability
@@ -168,7 +165,7 @@ class HeteroGraphLIMESampler:
 
 
             # ----------- Player is flashed ------------
-            random_filter = np.random.rand(tpldf.shape[0]) < 0.05
+            random_filter = np.random.rand(tpldf.shape[0]) < probability
             tpldf['flash_duration'] = np.where(random_filter,
                                             (tpldf['flash_duration'] + np.random.normal(0, 0.5, tpldf.shape[0])).clip(0, 1).round(4),
                                             tpldf['flash_duration'])
@@ -199,7 +196,7 @@ class HeteroGraphLIMESampler:
 
 
             # ----------- Player is spotted ------------
-            random_filter = np.random.rand(tpldf.shape[0]) < 0.03
+            random_filter = np.random.rand(tpldf.shape[0]) < probability
             tpldf['is_spotted'] = np.where(random_filter,
                                             1 - tpldf['is_spotted'],  # Flipping the value
                                             tpldf['is_spotted'])
@@ -207,7 +204,7 @@ class HeteroGraphLIMESampler:
 
 
             # ----------- Player is walking ------------
-            random_filter = np.random.rand(tpldf.shape[0]) < 0.15
+            random_filter = np.random.rand(tpldf.shape[0]) < probability
             tpldf['is_walking'] = np.where(random_filter,
                                             1 - tpldf['is_walking'],  # Flipping the value
                                             tpldf['is_walking'])
@@ -215,7 +212,7 @@ class HeteroGraphLIMESampler:
 
 
             # ----------- Player is reloading ------------
-            reloading_filter = np.random.rand(tpldf.shape[0]) < 0.05
+            reloading_filter = np.random.rand(tpldf.shape[0]) < probability
             tpldf['is_reloading'] = np.where(reloading_filter,
                                                 1 - tpldf['is_reloading'],  # Flipping the value
                                                 tpldf['is_reloading'])

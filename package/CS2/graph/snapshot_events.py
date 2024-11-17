@@ -23,11 +23,11 @@ class SnapshotEvents:
     # REGION: Public methods
     # --------------------------------------------------------------------------------------------
 
-    def get_round_events(self, data, temp_data, model, analyzer, round_num, shift_rate=1):
+    def get_round_events(self, data, temp_data, model, analyzer, round_num, shift_rate=1, keep_universal_intact=False):
 
         round_data = analyzer._EXT_get_round_data(data, round_num)
         predictions = analyzer.analyze_round(temp_data, model, round_num, return_predictions=True)
-        round_changes = self._get_round_data(round_data, predictions, shift_rate)
+        round_changes = self._get_round_data(round_data, predictions, shift_rate, keep_universal_intact)
 
         round_changes['idx'] = round_changes.reset_index().index
         return round_changes
@@ -173,6 +173,19 @@ class SnapshotEvents:
         bomb_on_A = float(graph.y['is_bomb_planted_at_A_site'])
         bomb_on_B = float(graph.y['is_bomb_planted_at_B_site'])
 
+        # Players alive
+        ct_alive = float(graph.y['CT_alive_num'])
+        t_alive = float(graph.y['T_alive_num'])
+
+        # Total Health
+        ct_health = float(graph.y['CT_total_hp'])
+        t_health = float(graph.y['T_total_hp'])
+
+        # Total Equipment Value
+        ct_equipment = float(graph.y['CT_equipment_value'])
+        t_equipment = float(graph.y['T_equipment_value'])
+
+
         # Bomb mx pos
         # bomb_mx_pos1 = float(graph.y['bomb_mx_pos1'])
         # bomb_mx_pos2 = float(graph.y['bomb_mx_pos2'])
@@ -185,17 +198,22 @@ class SnapshotEvents:
         # bomb_mx_pos9 = float(graph.y['bomb_mx_pos9'])
 
         universal_column_names = [
-            'round', 'remaining_time', 'bomb_dropped', 'bomb_being_planted', 'bomb_on_A', 'bomb_on_B' 
+            'round', 'remaining_time', 'bomb_dropped', 'bomb_being_planted', 'bomb_on_A', 'bomb_on_B',
+            'ct_alive', 't_alive', 'ct_health', 't_health', 'ct_equipment', 't_equipment',
             # 'bomb_mx_pos1', 'bomb_mx_pos2', 'bomb_mx_pos3', 'bomb_mx_pos4', 'bomb_mx_pos5', 'bomb_mx_pos6', 'bomb_mx_pos7', 'bomb_mx_pos8', 'bomb_mx_pos9'
         ]
 
-        universal_data = [round_num, remaining_time, bomb_dropped, bomb_being_planted, bomb_on_A, bomb_on_B] #bomb_mx_pos1, bomb_mx_pos2, bomb_mx_pos3, bomb_mx_pos4, bomb_mx_pos5, bomb_mx_pos6, bomb_mx_pos7, bomb_mx_pos8, bomb_mx_pos9]
+        universal_data = [
+            round_num, remaining_time, bomb_dropped, bomb_being_planted, bomb_on_A, bomb_on_B,
+            ct_alive, t_alive, ct_health, t_health, ct_equipment, t_equipment,
+            # bomb_mx_pos1, bomb_mx_pos2, bomb_mx_pos3, bomb_mx_pos4, bomb_mx_pos5, bomb_mx_pos6, bomb_mx_pos7, bomb_mx_pos8, bomb_mx_pos9
+        ] 
 
         return universal_column_names, universal_data
 
 
 
-    def _get_round_data(self, round_graphs, predictions, shift_rate):
+    def _get_round_data(self, round_graphs, predictions, shift_rate, keep_universal_intact=False):
 
         graph_infos = []
         column_names = []
@@ -217,12 +235,19 @@ class SnapshotEvents:
         round_backup = rdf['round'].copy()
         y_backup = rdf['y'].copy()
 
+        if keep_universal_intact:
+            universal_df = rdf[['round', 'remaining_time', 'bomb_dropped', 'bomb_being_planted', 'bomb_on_A', 'bomb_on_B',
+                               'ct_alive', 't_alive', 'ct_health', 't_health', 'ct_equipment', 't_equipment']].copy()
+
         cdf = rdf.diff().shift(-shift_rate).add_suffix('_change')
 
         cdf['round'] = round_backup[filler_zeros_num:-shift_rate]
 
         cdf['y'] = y_backup[filler_zeros_num:-shift_rate]
         cdf = cdf[filler_zeros_num:-shift_rate]
+
+        if keep_universal_intact:
+            cdf = pd.concat([cdf, universal_df], axis=1)
 
         return cdf
 
