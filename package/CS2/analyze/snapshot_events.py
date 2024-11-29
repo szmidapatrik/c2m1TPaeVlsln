@@ -9,6 +9,9 @@ import random
 
 class SnapshotEvents:
 
+    # Rescale player kills and damage to original
+    kills_max = 1
+    damage_max = 1
 
     # --------------------------------------------------------------------------------------------
     # REGION: Constructor
@@ -23,7 +26,11 @@ class SnapshotEvents:
     # REGION: Public methods
     # --------------------------------------------------------------------------------------------
 
-    def get_round_events(self, data, temp_data, model, predictions, round_num, shift_rate=1, keep_universal_intact=False):
+    def get_round_events(self, data, predictions, round_num, shift_rate=1, dictionary=None, keep_universal_intact=False):
+
+        if dictionary is not None:
+            self.kills_max = dictionary.loc[dictionary['column'] == '_stat_kills', 'max'].values[0]
+            self.damage_max = dictionary.loc[dictionary['column'] == '_stat_damage', 'max'].values[0]
 
         round_data = self._get_round_data(data, round_num)
         round_changes = self._shift_round_data(round_data, predictions, shift_rate, keep_universal_intact)
@@ -54,11 +61,11 @@ class SnapshotEvents:
         vel_Z = graph['player'].x[:, 7]
 
         # Health and armor
-        health = graph['player'].x[:, 8]
-        armor = graph['player'].x[:, 9]
+        health = graph['player'].x[:, 8] * 100
+        armor = graph['player'].x[:, 9] * 100
 
         # Active weapon magazine ammo left %
-        ammo_left_percent = graph['player'].x[:, 12]
+        ammo_left_percent = graph['player'].x[:, 12] * 100
 
         # Flashed
         flashed = graph['player'].x[:, 16]
@@ -87,7 +94,10 @@ class SnapshotEvents:
         is_in_bombsight = graph['player'].x[:, 33]
 
         # Stat kills
-        kills = graph['player'].x[:, 36]
+        kills = torch.round(graph['player'].x[:, 36] * self.kills_max)
+
+        # Stat damages
+        damages = torch.round(graph['player'].x[:, 44] * self.damage_max)
 
         # Actual nearenst map node
         positions = []
@@ -110,12 +120,12 @@ class SnapshotEvents:
         active_weapon = graph['player'].x[:, 95:138]
 
         # Stack the columns together
-        player_data = torch.stack([X, Y, Z, view_X, view_Y, vel_X, vel_Y, vel_Z, health, armor, ammo_left_percent, flashed, is_alive, is_ct, shooting, spotted, is_scoped, zoom_lvl, is_defusing, is_reloading, is_in_bombsight, kills], dim=1)
+        player_data = torch.stack([X, Y, Z, view_X, view_Y, vel_X, vel_Y, vel_Z, health, armor, ammo_left_percent, flashed, is_alive, is_ct, shooting, spotted, is_scoped, zoom_lvl, is_defusing, is_reloading, is_in_bombsight, kills, damages], dim=1)
         player_data = torch.cat([player_data, position_flags, inventory, active_weapon], dim=1)
 
         # Get the column names
         column_names = [
-            '_X', '_Y', '_Z', '_view_X', '_view_Y', '_vel_X', '_vel_Y', '_vel_Z', '_health', '_armor', '_ammo_left_percent', '_flashed', '_is_alive', '_is_ct', '_shooting', '_spotted', '_is_scoped', '_zoom_lvl', '_is_defusing', '_is_reloading', '_is_in_bombsight', '_kills',
+            '_X', '_Y', '_Z', '_view_X', '_view_Y', '_vel_X', '_vel_Y', '_vel_Z', '_health', '_armor', '_ammo_left_percent', '_flashed', '_is_alive', '_is_ct', '_shooting', '_spotted', '_is_scoped', '_zoom_lvl', '_is_defusing', '_is_reloading', '_is_in_bombsight', '_kills', '_damages',
             '_a', '_a_balcony', '_aps', '_arch', '_b', '_back_ally', '_banana', '_bridge', '_ct_start', '_deck', '_graveyard', '_kitchen', '_library', '_lower_mid', '_mid', '_pit', '_quad', '_ruins', '_sec_mid', '_sec_mid_balcony', '_t_aps', '_t_ramp', '_t_spawn', '_top_mid', '_under', '_upstairs',
             '_inventory_C4', '_inventory_Taser', '_inventory_USP-S', '_inventory_P2000', '_inventory_Glock-18', '_inventory_Dual Berettas', '_inventory_P250', '_inventory_Tec-9', '_inventory_CZ75 Auto', '_inventory_Five-SeveN', '_inventory_Desert Eagle', '_inventory_R8 Revolver', '_inventory_MAC-10', '_inventory_MP9', '_inventory_MP7', '_inventory_MP5-SD', '_inventory_UMP-45', '_inventory_PP-Bizon', '_inventory_P90', '_inventory_Nova', '_inventory_XM1014', '_inventory_Sawed-Off', '_inventory_MAG-7', '_inventory_M249', '_inventory_Negev', '_inventory_FAMAS', '_inventory_Galil AR', '_inventory_AK-47', '_inventory_M4A4', '_inventory_M4A1-S', '_inventory_SG 553', '_inventory_AUG', '_inventory_SSG 08', '_inventory_AWP', '_inventory_G3SG1', '_inventory_SCAR-20', '_inventory_HE Grenade', '_inventory_Flashbang', '_inventory_Smoke Grenade', '_inventory_Incendiary Grenade', '_inventory_Molotov', '_inventory_Decoy Grenade', 
             '_active_weapon_C4', '_active_weapon_Knife', '_active_weapon_Taser', '_active_weapon_USP-S', '_active_weapon_P2000', '_active_weapon_Glock-18', '_active_weapon_Dual Berettas', '_active_weapon_P250', '_active_weapon_Tec-9', '_active_weapon_CZ75 Auto', '_active_weapon_Five-SeveN', '_active_weapon_Desert Eagle', '_active_weapon_R8 Revolver', '_active_weapon_MAC-10', '_active_weapon_MP9', '_active_weapon_MP7', '_active_weapon_MP5-SD', '_active_weapon_UMP-45', '_active_weapon_PP-Bizon', '_active_weapon_P90', '_active_weapon_Nova', '_active_weapon_XM1014', '_active_weapon_Sawed-Off', '_active_weapon_MAG-7', '_active_weapon_M249', '_active_weapon_Negev', '_active_weapon_FAMAS', '_active_weapon_Galil AR', '_active_weapon_AK-47', '_active_weapon_M4A4', '_active_weapon_M4A1-S', '_active_weapon_SG 553', '_active_weapon_AUG', '_active_weapon_SSG 08', '_active_weapon_AWP', '_active_weapon_G3SG1', '_active_weapon_SCAR-20', '_active_weapon_HE Grenade', '_active_weapon_Flashbang', '_active_weapon_Smoke Grenade', '_active_weapon_Incendiary Grenade', '_active_weapon_Molotov', '_active_weapon_Decoy Grenade',     
@@ -167,7 +177,7 @@ class SnapshotEvents:
         remaining_time = float(graph.y['remaining_time'])
 
         # Bomb dropped
-        bomb_dropped = float(graph.y['is_bomb_dropped'])
+        # bomb_dropped = float(graph.y['is_bomb_dropped'])
 
         # Bomb being planted
         bomb_being_planted = float(graph.y['is_bomb_being_planted'])
@@ -201,13 +211,13 @@ class SnapshotEvents:
         # bomb_mx_pos9 = float(graph.y['bomb_mx_pos9'])
 
         universal_column_names = [
-            'round', 'remaining_time', 'bomb_dropped', 'bomb_being_planted', 'bomb_on_A', 'bomb_on_B',
+            'round', 'remaining_time', 'bomb_being_planted', 'bomb_on_A', 'bomb_on_B',
             #'ct_alive', 't_alive', 'ct_health', 't_health', 'ct_equipment', 't_equipment',
             # 'bomb_mx_pos1', 'bomb_mx_pos2', 'bomb_mx_pos3', 'bomb_mx_pos4', 'bomb_mx_pos5', 'bomb_mx_pos6', 'bomb_mx_pos7', 'bomb_mx_pos8', 'bomb_mx_pos9'
         ]
 
         universal_data = [
-            round_num, remaining_time, bomb_dropped, bomb_being_planted, bomb_on_A, bomb_on_B,
+            round_num, remaining_time, bomb_being_planted, bomb_on_A, bomb_on_B,
             #ct_alive, t_alive, ct_health, t_health, ct_equipment, t_equipment,
             # bomb_mx_pos1, bomb_mx_pos2, bomb_mx_pos3, bomb_mx_pos4, bomb_mx_pos5, bomb_mx_pos6, bomb_mx_pos7, bomb_mx_pos8, bomb_mx_pos9
         ] 

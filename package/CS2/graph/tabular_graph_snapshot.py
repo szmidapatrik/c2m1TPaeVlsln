@@ -51,6 +51,7 @@ class TabularGraphSnapshot:
 
         ticks_per_second: int = 1,
         numerical_match_id: int = None,
+        sum_damages_per_round: bool = False,
         num_permutations_per_round: int = 1,
         build_dictionary: bool = True,
 
@@ -152,7 +153,7 @@ class TabularGraphSnapshot:
             ticks, kills, rounds, bomb, damages, smokes, infernos, he_grenades = self._INIT_dataframes()
 
             # 2.
-            pf = self._PLAYER_ingame_stats(ticks, kills, rounds, damages)
+            pf = self._PLAYER_ingame_stats(ticks, kills, rounds, damages, sum_damages_per_round)
 
             # 3.
             pf = self._PLAYER_inventory(pf)
@@ -559,7 +560,7 @@ class TabularGraphSnapshot:
 
         return dpr
     
-    def _PLAYER_ingame_stats(self, ticks, kills, rounds, damages):
+    def _PLAYER_ingame_stats(self, ticks, kills, rounds, damages, sum_damages_per_round):
     
         # Merge playerFrames with rounds
         pf = ticks.merge(rounds, on='round')
@@ -637,16 +638,43 @@ class TabularGraphSnapshot:
             # Opening deaths
             pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['victim_name']), 'stat_opening_deaths'] += 1
 
+        # Sum damages per round
+        if sum_damages_per_round:
 
-        # Create damages per round dataframe for the players for all types of damages
-        dpr = self.__EXT_damage_per_round_df__(damages, 'all')
-        wdpr = self.__EXT_damage_per_round_df__(damages, 'weapon')
-        ndpr = self.__EXT_damage_per_round_df__(damages, 'nade')
+            # Create damages per round dataframe for the players for all types of damages
+            dpr = self.__EXT_damage_per_round_df__(damages, 'all')
+            wdpr = self.__EXT_damage_per_round_df__(damages, 'weapon')
+            ndpr = self.__EXT_damage_per_round_df__(damages, 'nade')
 
-        # Merge the damages per round dataframe with the player dataframe
-        pf = pf.merge(dpr, on=['round', 'name'], how='left')
-        pf = pf.merge(wdpr, on=['round', 'name'], how='left')
-        pf = pf.merge(ndpr, on=['round', 'name'], how='left')
+            # Merge the damages per round dataframe with the player dataframe
+            pf = pf.merge(dpr, on=['round', 'name'], how='left')
+            pf = pf.merge(wdpr, on=['round', 'name'], how='left')
+            pf = pf.merge(ndpr, on=['round', 'name'], how='left')
+
+        # Else calculate the damages per tickrate
+        else:
+
+            # Damage stats
+            pf['stat_damage'] = 0
+            pf['stat_weapon_damage'] = 0
+            pf['stat_nade_damage'] = 0
+
+            # Filter the damages dataframe for friendly fire
+            damages = damages.loc[damages['attacker_team_name'] != damages['victim_team_name']]
+
+            # Setting kill-stats
+            for _, row in damages.iterrows():
+
+                # Damages
+                pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_damage'] += row['dmg_health_real']
+            
+                # Weapon damages
+                if row['weapon'] not in ['inferno', 'molotov', 'hegrenade', 'flashbang', 'smokegrenade']:
+                    pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_weapon_damage'] += row['dmg_health_real']
+                
+                # Nade damages
+                if row['weapon'] in ['inferno', 'molotov', 'hegrenade', 'flashbang', 'smokegrenade']:
+                    pf.loc[(pf['tick'] >= row['tick']) & (pf['name'] == row['attacker_name']), 'stat_nade_damage'] += row['dmg_health_real']
 
 
         # Fill NaN values with 0

@@ -39,7 +39,7 @@ class HeteroGraphVisualizer:
     # --------------------------------------------------------------------------------------------
 
     # Visualize a heterogeneous graph snapshot
-    def visualize_snapshot(self, graph: HeteroData, map: str, style='light', plt_title=None, plt_legend=True) -> None:
+    def visualize_snapshot(self, graph: HeteroData, map: str, style='light', plt_title=None, plt_figsize=(10,10), plt_legend=True, plt_legend_fontsize=None, plt_show=False) -> None:
         """
         Visualize a heterogeneous graph snapshot.
         Parameters:
@@ -76,7 +76,7 @@ class HeteroGraphVisualizer:
             plt.style.use('dark_background')
 
         # Create figure
-        fig, ax = plt.subplots(figsize=(10, 10))
+        fig, ax = plt.subplots(figsize=plt_figsize)
 
         # Set title
         if plt_title is not None:
@@ -156,9 +156,11 @@ class HeteroGraphVisualizer:
 
 
         if plt_legend:
-            plt.legend(loc='upper left', labelspacing=1)
+            if plt_legend_fontsize is not None:
+                plt.legend(loc='upper left', labelspacing=1, fontsize=plt_legend_fontsize)
 
-        plt.show()
+        if plt_show:
+            plt.show()
 
 
 

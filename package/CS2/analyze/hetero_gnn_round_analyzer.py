@@ -27,6 +27,8 @@ class HeteroGNNRoundAnalyzer:
 
     model = None
 
+    normalizing_dictionary = None
+
     round_number = None
     predictions = None
 
@@ -42,12 +44,15 @@ class HeteroGNNRoundAnalyzer:
     # REGION: Constructor
     # --------------------------------------------------------------------------------------------
 
-    def __init__(self, graphs, dyn_graphs, model, round_number):
+    def __init__(self, graphs, dyn_graphs, model, round_number, dictionary=None):
 
         self.graphs = graphs
         self.dyn_graphs = dyn_graphs
         self.model = model
         self.round_number = round_number
+
+        if dictionary is not None:
+            self.normalizing_dictionary = dictionary
 
         self.predictions = self._SHAP_EVT_predict_proba(self.dyn_graphs, self.model, self.round_number)
         
@@ -182,13 +187,13 @@ class HeteroGNNRoundAnalyzer:
 
 
     # Get feature importances of the local models
-    def feature_importance(self, n=20, agg='mean'):
+    def feature_importance(self, n=0, agg='mean'):
 
         self._SHAP_EXT_process_event_datasets()
 
         models = self._SHAP_train_local_models()
 
-        return self._SHAP_local_model_feature_importance(models, n=20, agg=agg)
+        return self._SHAP_local_model_feature_importance(models, n, agg=agg)
 
 
 
@@ -369,7 +374,7 @@ class HeteroGNNRoundAnalyzer:
         if return_models:
             return models
 
-    def _SHAP_local_model_feature_importance(self, models, n=20, agg='mean'):
+    def _SHAP_local_model_feature_importance(self, models, n, agg='mean'):
 
         # Feature list
         feature_list = self.edf_1.drop(columns=['y', 'y_change', 'round', 'round_change', 'idx']).columns
@@ -383,6 +388,9 @@ class HeteroGNNRoundAnalyzer:
 
         # Feature importances
         coef_df = pd.DataFrame({"CT features": feature_list, "importance": model_coefs})
+        if n == 0:
+            return coef_df
+
         CT_n = coef_df.sort_values('importance', ascending=False).head(n)
         T_n = coef_df.sort_values('importance', ascending=True).head(n)
 
@@ -485,7 +493,7 @@ class HeteroGNNRoundAnalyzer:
         
         if self.edf_1 is None or self.edf_4 is None or self.edf_8 is None or self.edf_12 is None or self.edf_16 is None or self.edf_20 is None:
             for frame in self.previous_frames:
-                exec(f'self.edf_{frame} = SnapshotEvents().get_round_events(self.graphs, self.dyn_graphs, self.model, self.predictions, {self.round_number}, {frame})')
+                exec(f'self.edf_{frame} = SnapshotEvents().get_round_events(self.graphs, self.predictions, {self.round_number}, shift_rate={frame}, dictionary=self.normalizing_dictionary)')
 
 
 
